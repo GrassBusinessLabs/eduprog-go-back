@@ -21,6 +21,6 @@ type Eduprogs struct {
 	Pages uint
 }
 
-func (e Eduprog) getEduprogId() uint64 {
+func (e Eduprog) GetEduprogId() uint64 {
 	return e.Id
 }
