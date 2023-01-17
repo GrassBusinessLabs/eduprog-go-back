@@ -95,7 +95,12 @@ func (c EduprogController) FindById() http.HandlerFunc {
 			return
 		}
 
-		eduprog, err := c.eduprogService.FindById(id)
+		eduprog, _ := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			BadRequest(w, err)
+			return
+		}
 
 		var eduprogDto resources.EduprogDto
 		Success(w, eduprogDto.DomainToDto(eduprog))
