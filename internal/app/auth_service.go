@@ -97,7 +97,7 @@ func (s authService) ChangePassword(user domain.User, req domain.ChangePassword,
 		return err
 	}
 
-	_, err = s.userService.Update(user, domain.User{Password: req.NewPassword})
+	_, err = s.userService.Update(user)
 	if err != nil {
 		return err
 	}

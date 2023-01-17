@@ -12,7 +12,7 @@ type UserService interface {
 	FindByEmail(email string) (domain.User, error)
 	Save(user domain.User) (domain.User, error)
 	FindById(id uint64) (domain.User, error)
-	Update(user domain.User, req domain.User) (domain.User, error)
+	Update(user domain.User) (domain.User, error)
 	Delete(id uint64) error
 	GeneratePasswordHash(password string) (string, error)
 }
@@ -65,7 +65,7 @@ func (s userService) FindById(id uint64) (domain.User, error) {
 	return user, err
 }
 
-func (s userService) Update(user domain.User, req domain.User) (domain.User, error) {
+func (s userService) Update(user domain.User) (domain.User, error) {
 	user, err := s.userRepo.Update(user)
 	if err != nil {
 		log.Printf("UserService: %s", err)

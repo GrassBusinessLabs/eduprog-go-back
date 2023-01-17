@@ -49,6 +49,7 @@ func Router(cont container.Container) http.Handler {
 				apiRouter.Use(cont.AuthMw)
 
 				UserRouter(apiRouter, cont.UserController)
+				EduprogRouter(apiRouter, cont.EduprogController)
 
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
@@ -102,6 +103,24 @@ func UserRouter(r chi.Router, uc controllers.UserController) {
 			"/",
 			uc.Delete(),
 		)
+	})
+}
+
+func EduprogRouter(r chi.Router, ec controllers.EduprogController) {
+	r.Route("/eduprogs", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/create",
+			ec.Save(),
+		)
+		apiRouter.Put(
+			"/{epId}",
+			ec.Update(),
+		)
+		apiRouter.Delete(
+			"/{epId}",
+			ec.Delete(),
+		)
+
 	})
 }
 

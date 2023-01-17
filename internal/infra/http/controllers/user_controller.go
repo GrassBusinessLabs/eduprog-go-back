@@ -56,7 +56,8 @@ func (c UserController) Update() http.HandlerFunc {
 		}
 
 		u := r.Context().Value(UserKey).(domain.User)
-		user, err = c.userService.Update(u, user)
+		u.Name = user.Name
+		user, err = c.userService.Update(u)
 		if err != nil {
 			log.Printf("UserController: %s", err)
 			InternalServerError(w, err)

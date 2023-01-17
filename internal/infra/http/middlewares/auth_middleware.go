@@ -18,7 +18,6 @@ func AuthMiddleware(ja *jwtauth.JWTAuth, as app.AuthService, us app.UserService)
 		hfn := func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			token, err := jwtauth.VerifyRequest(ja, r, jwtauth.TokenFromHeader)
-
 			if err != nil {
 				controllers.Unauthorized(w, err)
 				return
