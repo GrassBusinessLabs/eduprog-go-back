@@ -14,3 +14,13 @@ type Eduprog struct {
 	UpdatedDate    time.Time
 	DeletedDate    *time.Time
 }
+
+type Eduprogs struct {
+	Items []Eduprog
+	Total uint64
+	Pages uint
+}
+
+func (e Eduprog) getEduprogId() uint64 {
+	return e.Id
+}

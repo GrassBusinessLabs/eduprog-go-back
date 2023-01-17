@@ -9,6 +9,8 @@ import (
 type EduprogService interface {
 	Save(eduprog domain.Eduprog) (domain.Eduprog, error)
 	Update(eduprog domain.Eduprog, id uint64) (domain.Eduprog, error)
+	ShowList() (domain.Eduprogs, error)
+	FindById(id uint64) (domain.Eduprog, error)
 	Delete(id uint64) error
 }
 
@@ -38,6 +40,24 @@ func (s eduprogService) Update(eduprog domain.Eduprog, id uint64) (domain.Edupro
 		return domain.Eduprog{}, err
 	}
 	return e, err
+}
+
+func (s eduprogService) ShowList() (domain.Eduprogs, error) {
+	e, err := s.eduprogRepo.ShowList()
+	if err != nil {
+		log.Printf("EduprogService: %s", err)
+		return domain.Eduprogs{}, err
+	}
+	return e, nil
+}
+
+func (s eduprogService) FindById(id uint64) (domain.Eduprog, error) {
+	e, err := s.eduprogRepo.FindById(id)
+	if err != nil {
+		log.Printf("EduprogService: %s", err)
+		return domain.Eduprog{}, err
+	}
+	return e, nil
 }
 
 func (s eduprogService) Delete(id uint64) error {

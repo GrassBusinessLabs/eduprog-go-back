@@ -12,6 +12,12 @@ type EduprogDto struct {
 	UserId         uint64 `json:"user_id"`
 }
 
+type EduprogsDto struct {
+	Items []EduprogDto `json:"items"`
+	Total uint64       `json:"total"`
+	Pages uint         `json:"pages"`
+}
+
 func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogDto {
 	return EduprogDto{
 		Id:             eduprog.Id,
@@ -22,4 +28,14 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogDto {
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
 	}
+}
+
+func (d EduprogDto) DomainToDtoCollection(eduprogs domain.Eduprogs) EduprogsDto {
+	result := make([]EduprogDto, len(eduprogs.Items))
+
+	for i := range eduprogs.Items {
+		result[i] = d.DomainToDto(eduprogs.Items[i])
+	}
+
+	return EduprogsDto{Items: result, Pages: eduprogs.Pages, Total: eduprogs.Total}
 }

@@ -24,6 +24,8 @@ type eduprog struct {
 type EduprogRepository interface {
 	Save(eduprog domain.Eduprog) (domain.Eduprog, error)
 	Update(eduprog domain.Eduprog, id uint64) (domain.Eduprog, error)
+	ShowList() (domain.Eduprogs, error)
+	FindById(id uint64) (domain.Eduprog, error)
 	Delete(id uint64) error
 }
 
@@ -54,6 +56,32 @@ func (r eduprogRepository) Update(eduprog domain.Eduprog, id uint64) (domain.Edu
 	if err != nil {
 		return domain.Eduprog{}, err
 	}
+	return r.mapModelToDomain(e), nil
+}
+
+func (r eduprogRepository) ShowList() (domain.Eduprogs, error) {
+	var eduprog_slice []eduprog
+	var eduprogs domain.Eduprogs
+	res := r.coll.Find(db.Cond{"deleted_date": nil})
+	err := res.All(&eduprog_slice)
+	if err != nil {
+		return domain.Eduprogs{}, err
+	}
+
+	for i := range eduprog_slice {
+		eduprogs.Items = append(eduprogs.Items, r.mapModelToDomain(eduprog_slice[i]))
+	}
+	eduprogs.Total = uint64(len(eduprog_slice))
+	return eduprogs, nil
+}
+
+func (r eduprogRepository) FindById(id uint64) (domain.Eduprog, error) {
+	var e eduprog
+	err := r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).One(&e)
+	if err != nil {
+		return domain.Eduprog{}, err
+	}
+
 	return r.mapModelToDomain(e), nil
 }
 

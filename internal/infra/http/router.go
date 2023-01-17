@@ -116,6 +116,14 @@ func EduprogRouter(r chi.Router, ec controllers.EduprogController) {
 			"/{epId}",
 			ec.Update(),
 		)
+		apiRouter.Get(
+			"/",
+			ec.ShowList(),
+		)
+		apiRouter.Get(
+			"/{epId}",
+			ec.FindById(),
+		)
 		apiRouter.Delete(
 			"/{epId}",
 			ec.Delete(),

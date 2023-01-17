@@ -72,6 +72,36 @@ func (c EduprogController) Update() http.HandlerFunc {
 	}
 }
 
+func (c EduprogController) ShowList() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogs, err := c.eduprogService.ShowList()
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			InternalServerError(w, err)
+			return
+		}
+
+		var eduprogsDto resources.EduprogDto
+		Success(w, eduprogsDto.DomainToDtoCollection(eduprogs))
+	}
+}
+
+func (c EduprogController) FindById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
+		eduprog, err := c.eduprogService.FindById(id)
+
+		var eduprogDto resources.EduprogDto
+		Success(w, eduprogDto.DomainToDto(eduprog))
+	}
+}
+
 func (c EduprogController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
