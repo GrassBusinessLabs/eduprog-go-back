@@ -1,15 +1,19 @@
 package resources
 
-import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+import (
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+	"time"
+)
 
 type EduprogDto struct {
-	Id             uint64 `json:"id"`
-	Name           string `json:"name"`
-	EducationLevel string `json:"education_level"`
-	Stage          string `json:"stage"`
-	Speciality     string `json:"speciality"`
-	KnowledgeField string `json:"knowledge_field"`
-	UserId         uint64 `json:"user_id"`
+	Id             uint64    `json:"id"`
+	Name           string    `json:"name"`
+	EducationLevel string    `json:"education_level"`
+	Stage          string    `json:"stage"`
+	Speciality     string    `json:"speciality"`
+	KnowledgeField string    `json:"knowledge_field"`
+	UserId         uint64    `json:"user_id"`
+	UpdatedDate    time.Time `json:"updated_date"`
 }
 
 type EduprogsDto struct {
@@ -27,6 +31,7 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogDto {
 		Speciality:     eduprog.Speciality,
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
+		UpdatedDate:    eduprog.UpdatedDate,
 	}
 }
 
