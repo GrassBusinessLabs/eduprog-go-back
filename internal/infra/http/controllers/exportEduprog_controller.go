@@ -20,7 +20,10 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			return
 		}
 		f.Path = "Book1.xlsx"
-		f.NewSheet("NewSheet")
+		_, err = f.NewSheet("NewSheet")
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+		}
 
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", f.Path))
 		w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
