@@ -124,6 +124,10 @@ func EduprogRouter(r chi.Router, ec controllers.EduprogController) {
 			"/{epId}",
 			ec.FindById(),
 		)
+		apiRouter.Get(
+			"/toExcel",
+			ec.ExportEduprogListToExcel(),
+		)
 		apiRouter.Delete(
 			"/{epId}",
 			ec.Delete(),
