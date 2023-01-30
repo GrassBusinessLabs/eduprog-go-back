@@ -12,12 +12,14 @@ import (
 )
 
 type EduprogController struct {
-	eduprogService app.EduprogService
+	eduprogService     app.EduprogService
+	eduprogcompService app.EduprogcompService
 }
 
-func NewEduprogController(es app.EduprogService) EduprogController {
+func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService) EduprogController {
 	return EduprogController{
-		eduprogService: es,
+		eduprogService:     es,
+		eduprogcompService: ecs,
 	}
 }
 
