@@ -36,6 +36,19 @@ func Success(w http.ResponseWriter, body interface{}) {
 	}
 }
 
+func SuccessExport(w http.ResponseWriter, body interface{}) {
+
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment; filename="+"Workbook.xlsx")
+	w.Header().Set("Content-Transfer-Encoding", "binary")
+	w.WriteHeader(http.StatusOK)
+
+	err := json.NewEncoder(w).Encode(body)
+	if err != nil {
+		log.Print(err)
+	}
+}
+
 func Created(w http.ResponseWriter, body interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

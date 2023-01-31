@@ -4,32 +4,92 @@ import (
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"net/http"
+	"strings"
+	"time"
 )
 
 func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		file, _, err := r.FormFile("file")
+		xlsx := excelize.NewFile()
+		_, err := xlsx.NewSheet("Sheet2")
 		if err != nil {
-			fmt.Fprint(w, err.Error())
+			fmt.Println(err)
 			return
 		}
-		defer file.Close()
-		f, err := excelize.OpenReader(file)
+		err = xlsx.SetCellValue("Sheet2", "A2", "Hello world.")
 		if err != nil {
-			fmt.Fprint(w, err.Error())
+			fmt.Println(err)
 			return
 		}
-		f.Path = "Book1.xlsx"
-		_, err = f.NewSheet("NewSheet")
+		err = xlsx.SetCellValue("Sheet1", "B2", 100)
 		if err != nil {
-			fmt.Fprint(w, err.Error())
+			fmt.Println(err)
+			return
 		}
-
-		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", f.Path))
-		w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
-
-		if err := f.Write(w); err != nil {
-			fmt.Fprint(w, err.Error())
+		xlsx.SetActiveSheet(2)
+		err = xlsx.SaveAs("./Workbook2.xlsx")
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+		//w.Header().Set("Content-Type", "application/octet-stream")
+		//w.Header().Set("Content-Disposition", "attachment; filename="+"Workbook.xlsx")
+		//w.Header().Set("Content-Transfer-Encoding", "binary")
+		//w.Header().Set("Expires", "0")
+		//xlsx.Write(w)
+		//
+		//buff, err := xlsx.WriteToBuffer()
+		//if err != nil {
+		//    fmt.Println(err)
+		//    return
+		//}
+		//SuccessExport(w, buff.Bytes())
+
+		buf, _ := xlsx.WriteToBuffer()
+		http.ServeContent(w, r, "test.xlsx", time.Time{}, strings.NewReader(buf.String()))
 	}
 }
+
+//
+//func (c EduprogcompController) ExportEduprogcompListToExcel() http.HandlerFunc {
+//	return func(w http.ResponseWriter, r *http.Request) {
+//		eduprogcomps, err := c.eduprogcompService.ShowList()
+//		if err != nil {
+//			log.Printf("EduprogcompController: %s", err)
+//			InternalServerError(w, err)
+//			return
+//		}
+//		xlsx := excelize.NewFile()
+//
+//		data := [][]interface{}{
+//			{"Код н/д", "Компоненти освітньої програми (навчальні дисципліни, курсові проекти (роботи), практики, кваліфікаційна робота)", "Кількість кредитів", "Форма підсумкового контролю"},
+//			{1, 2, 3, 4},
+//			{"Обов'язкові компоненти ОП"},
+//		}
+//
+//		//for i := range eduprogcomps.Items {
+//		//
+//		//}
+//
+//		for i, row := range data {
+//			startCell, err := excelize.JoinCellName("A", i+1)
+//			if err != nil {
+//				log.Printf("EduprogcompController: %s", err)
+//				return
+//			}
+//			err = xlsx.SetSheetRow("Sheet1", startCell, &row)
+//			if err != nil {
+//				log.Printf("EduprogcompController: %s", err)
+//				return
+//			}
+//		}
+//
+//		err = xlsx.SaveAs("./Workbook2.xlsx")
+//		if err != nil {
+//			log.Printf("EduprogcompController: %s", err)
+//			InternalServerError(w, err)
+//			return
+//		}
+//
+//	}
+//}

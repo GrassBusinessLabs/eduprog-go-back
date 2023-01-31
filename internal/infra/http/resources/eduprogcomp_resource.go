@@ -1,6 +1,8 @@
 package resources
 
-import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+import (
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+)
 
 type EduprogcompDto struct {
 	Id          uint64 `json:"id"`

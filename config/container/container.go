@@ -54,7 +54,7 @@ func New(conf config.Configuration) Container {
 
 	authController := controllers.NewAuthController(authService, userService)
 	userController := controllers.NewUserController(userService)
-	eduprogController := controllers.NewEduprogController(eduprogService, eduprogcompRepository)
+	eduprogController := controllers.NewEduprogController(eduprogService, eduprogcompService)
 	eduprogcompController := controllers.NewEduprogcompController(eduprogcompService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)

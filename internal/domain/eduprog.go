@@ -10,9 +10,15 @@ type Eduprog struct {
 	Speciality     string
 	KnowledgeField string
 	UserId         uint64
+	Components     Components
 	CreatedDate    time.Time
 	UpdatedDate    time.Time
 	DeletedDate    *time.Time
+}
+
+type Components struct {
+	Mandatory []Eduprogcomp
+	Selective []Eduprogcomp
 }
 
 type Eduprogs struct {

@@ -1,6 +1,8 @@
 package requests
 
-import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+import (
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+)
 
 type CreateEduprogcompRequest struct {
 	Code        string `json:"code" validate:"required,gte=1,max=40"`
