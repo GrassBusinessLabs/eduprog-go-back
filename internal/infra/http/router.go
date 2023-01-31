@@ -126,6 +126,10 @@ func EduprogRouter(r chi.Router, ec controllers.EduprogController) {
 			ec.FindById(),
 		)
 		apiRouter.Get(
+			"/credits/{epId}",
+			ec.CreditsInfo(),
+		)
+		apiRouter.Get(
 			"/toExcel",
 			ec.ExportEduprogListToExcel(),
 		)

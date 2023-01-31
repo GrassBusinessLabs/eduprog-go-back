@@ -83,6 +83,13 @@ func (c EduprogController) ShowList() http.HandlerFunc {
 			return
 		}
 
+		//comps, err := c.eduprogcompService.SortComponentsByMnS()
+		//if err != nil {
+		//	log.Printf("EduprogController: %s", err)
+		//	InternalServerError(w, err)
+		//	return
+		//}
+
 		var eduprogsDto resources.EduprogDto
 		Success(w, eduprogsDto.DomainToDtoCollection(eduprogs))
 	}
@@ -104,8 +111,49 @@ func (c EduprogController) FindById() http.HandlerFunc {
 			return
 		}
 
+		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			InternalServerError(w, err)
+			return
+		}
+
 		var eduprogDto resources.EduprogDto
-		Success(w, eduprogDto.DomainToDto(eduprog))
+		var compsDto resources.EduprogcompDto
+		Success(w, eduprogDto.DomainToDtoWithComps(eduprog, compsDto.DomainToDtoWCompCollection(comps)))
+	}
+}
+
+func (c EduprogController) CreditsInfo() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
+		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			InternalServerError(w, err)
+			return
+		}
+
+		var creditsDto resources.CreditsDto
+
+		for _, comp := range comps.Selective {
+			creditsDto.SelectiveCredits += comp.Credits
+		}
+		for _, comp := range comps.Mandatory {
+			creditsDto.MandatoryCredits += comp.Credits
+		}
+		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
+		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
+		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
+		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
+
+		Success(w, creditsDto)
 	}
 }
 
