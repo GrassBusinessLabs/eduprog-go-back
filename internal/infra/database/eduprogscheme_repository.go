@@ -119,15 +119,15 @@ func (r eduprogschemeRepository) mapModelToDomain(m eduprogscheme) domain.Edupro
 	}
 }
 
-func (r eduprogschemeRepository) mapDomainToModelCollection(d []domain.Eduprogscheme) []eduprogscheme {
-	result := make([]eduprogscheme, len(d))
-
-	for i := range d {
-		result[i] = r.mapDomainToModel(d[i])
-	}
-
-	return result
-}
+//func (r eduprogschemeRepository) mapDomainToModelCollection(d []domain.Eduprogscheme) []eduprogscheme {
+//	result := make([]eduprogscheme, len(d))
+//
+//	for i := range d {
+//		result[i] = r.mapDomainToModel(d[i])
+//	}
+//
+//	return result
+//}
 
 func (r eduprogschemeRepository) mapModelToDomainCollection(m []eduprogscheme) []domain.Eduprogscheme {
 	result := make([]domain.Eduprogscheme, len(m))
