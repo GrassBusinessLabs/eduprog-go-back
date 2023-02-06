@@ -11,6 +11,7 @@ const EduprogschemeTableName = "eduprogscheme"
 type eduprogscheme struct {
 	Id                 uint64    `db:"id,omitempty"`
 	SemesterNum        uint16    `db:"semester_num"`
+	Discipline         string    `db:"discipline"`
 	EduprogId          uint64    `db:"eduprog_id"`
 	EduprogcompId      uint64    `db:"eduprogcomp_id"`
 	CreditsPerSemester uint16    `db:"credits_per_semester"`
@@ -99,6 +100,7 @@ func (r eduprogschemeRepository) mapDomainToModel(d domain.Eduprogscheme) edupro
 	return eduprogscheme{
 		Id:                 d.Id,
 		SemesterNum:        d.SemesterNum,
+		Discipline:         d.Discipline,
 		EduprogId:          d.EduprogId,
 		EduprogcompId:      d.EduprogcompId,
 		CreditsPerSemester: d.CreditsPerSemester,
@@ -111,6 +113,7 @@ func (r eduprogschemeRepository) mapModelToDomain(m eduprogscheme) domain.Edupro
 	return domain.Eduprogscheme{
 		Id:                 m.Id,
 		SemesterNum:        m.SemesterNum,
+		Discipline:         m.Discipline,
 		EduprogId:          m.EduprogId,
 		EduprogcompId:      m.EduprogcompId,
 		CreditsPerSemester: m.CreditsPerSemester,
