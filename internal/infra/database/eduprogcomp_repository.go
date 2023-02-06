@@ -112,7 +112,6 @@ func (r eduprogcompRepository) SortComponentsByMnS(eduprog_id uint64) (domain.Co
 			components.Selective = append(components.Selective, r.mapModelToDomain(eduprogcomp_slice[i]))
 		}
 	}
-
 	return components, err
 }
 

@@ -119,8 +119,7 @@ func (c EduprogController) FindById() http.HandlerFunc {
 		}
 
 		var eduprogDto resources.EduprogDto
-		var compsDto resources.EduprogcompDto
-		Success(w, eduprogDto.DomainToDtoWithComps(eduprog, compsDto.DomainToDtoWCompCollection(comps)))
+		Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
 	}
 }
 

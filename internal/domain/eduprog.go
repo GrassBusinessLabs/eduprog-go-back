@@ -16,15 +16,15 @@ type Eduprog struct {
 	DeletedDate    *time.Time
 }
 
-type Components struct {
-	Mandatory []Eduprogcomp
-	Selective []Eduprogcomp
-}
-
 type Eduprogs struct {
 	Items []Eduprog
 	Total uint64
 	Pages uint
+}
+
+type Components struct {
+	Mandatory []Eduprogcomp
+	Selective []Eduprogcomp
 }
 
 func (e Eduprog) GetEduprogId() uint64 {

@@ -51,6 +51,7 @@ func Router(cont container.Container) http.Handler {
 				UserRouter(apiRouter, cont.UserController)
 				EduprogRouter(apiRouter, cont.EduprogController)
 				EduprogcompRouter(apiRouter, cont.EduprogcompController)
+				EduprogschemeRouter(apiRouter, cont.EduprogschemeController)
 
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
@@ -162,6 +163,36 @@ func EduprogcompRouter(r chi.Router, ec controllers.EduprogcompController) {
 		apiRouter.Delete(
 			"/{epcId}",
 			ec.Delete(),
+		)
+
+	})
+}
+
+func EduprogschemeRouter(r chi.Router, esc controllers.EduprogschemeController) {
+	r.Route("/eduprogs/scheme", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/setCompToSemester",
+			esc.SetComponentToEdprogscheme(),
+		)
+		apiRouter.Put(
+			"/{essId}",
+			esc.UpdateComponentInEduprogscheme(),
+		)
+		apiRouter.Get(
+			"/{essId}",
+			esc.FindById(),
+		)
+		apiRouter.Get(
+			"/bySemester/{sNum}",
+			esc.FindBySemesterNum(),
+		)
+		apiRouter.Get(
+			"/byEduprogId/{sNum}",
+			esc.ShowSchemeByEduprogId(),
+		)
+		apiRouter.Delete(
+			"/{essId}",
+			esc.Delete(),
 		)
 
 	})

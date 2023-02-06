@@ -51,8 +51,8 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogDto {
 	}
 }
 
-func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp ComponentsDto) EduprogDto {
-
+func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Components) EduprogDto {
+	var compDto EduprogcompDto
 	return EduprogDto{
 		Id:             eduprog.Id,
 		Name:           eduprog.Name,
@@ -61,7 +61,7 @@ func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp Components
 		Speciality:     eduprog.Speciality,
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
-		Components:     comp,
+		Components:     compDto.DomainToDtoWCompCollection(comp),
 		UpdatedDate:    eduprog.UpdatedDate,
 	}
 }

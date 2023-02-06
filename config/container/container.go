@@ -29,6 +29,7 @@ type Services struct {
 	app.UserService
 	app.EduprogService
 	app.EduprogcompService
+	app.EduprogschemeService
 }
 
 type Controllers struct {
@@ -36,6 +37,7 @@ type Controllers struct {
 	controllers.UserController
 	controllers.EduprogController
 	controllers.EduprogcompController
+	controllers.EduprogschemeController
 }
 
 func New(conf config.Configuration) Container {
@@ -46,16 +48,19 @@ func New(conf config.Configuration) Container {
 	sessionRepository := database.NewSessRepository(sess)
 	eduprogRepository := database.NewEduprogRepository(sess)
 	eduprogcompRepository := database.NewEduprogcompRepository(sess)
+	eduprogschemeRepository := database.NewEduprogschemeRepository(sess)
 
 	userService := app.NewUserService(userRepository)
 	eduprogService := app.NewEduprogService(eduprogRepository)
 	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository)
+	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
 
 	authController := controllers.NewAuthController(authService, userService)
 	userController := controllers.NewUserController(userService)
 	eduprogController := controllers.NewEduprogController(eduprogService, eduprogcompService)
 	eduprogcompController := controllers.NewEduprogcompController(eduprogcompService)
+	eduprogschemeController := controllers.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 
@@ -68,12 +73,14 @@ func New(conf config.Configuration) Container {
 			userService,
 			eduprogService,
 			eduprogcompService,
+			eduprogschemeService,
 		},
 		Controllers: Controllers{
 			authController,
 			userController,
 			eduprogController,
 			eduprogcompController,
+			eduprogschemeController,
 		},
 	}
 }
