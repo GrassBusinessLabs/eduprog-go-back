@@ -32,6 +32,7 @@ type EduprogcompRepository interface {
 	Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error)
 	ShowList() (domain.Eduprogcomps, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
+	ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	Delete(id uint64) error
 }
@@ -73,6 +74,24 @@ func (r eduprogcompRepository) ShowList() (domain.Eduprogcomps, error) {
 	var eduprogcomps domain.Eduprogcomps
 
 	err := r.coll.Find(db.Cond{"deleted_date": nil}).All(&eduprogcomp_slice)
+	if err != nil {
+		return domain.Eduprogcomps{}, err
+	}
+
+	for i := range eduprogcomp_slice {
+		eduprogcomps.Items = append(eduprogcomps.Items, r.mapModelToDomain(eduprogcomp_slice[i]))
+	}
+
+	//eduprogcomps.Total = uint64(len(eduprogcomp_slice))
+
+	return eduprogcomps, nil
+}
+
+func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error) {
+	var eduprogcomp_slice []eduprogcomp
+	var eduprogcomps domain.Eduprogcomps
+
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "deleted_date": nil}).OrderBy("+eduprog_id").All(&eduprogcomp_slice)
 	if err != nil {
 		return domain.Eduprogcomps{}, err
 	}

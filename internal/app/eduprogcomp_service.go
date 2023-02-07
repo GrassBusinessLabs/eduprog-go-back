@@ -12,6 +12,7 @@ type EduprogcompService interface {
 	ShowList() (domain.Eduprogcomps, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
+	ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error)
 	Delete(id uint64) error
 }
 
@@ -66,6 +67,15 @@ func (s eduprogcompService) SortComponentsByMnS(eduprog_id uint64) (domain.Compo
 	if err != nil {
 		log.Printf("EduprogService: %s", err)
 		return domain.Components{}, err
+	}
+	return e, nil
+}
+
+func (s eduprogcompService) ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error) {
+	e, err := s.eduprogcompRepo.ShowListByEduprogId(eduprog_id)
+	if err != nil {
+		log.Printf("EduprogService: %s", err)
+		return domain.Eduprogcomps{}, err
 	}
 	return e, nil
 }

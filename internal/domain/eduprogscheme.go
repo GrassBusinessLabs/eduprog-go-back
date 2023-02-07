@@ -8,6 +8,7 @@ type Eduprogscheme struct { //eduprogschemeElement
 	Discipline         string
 	EduprogId          uint64
 	EduprogcompId      uint64
+	Eduprogcomp        Eduprogcomp
 	CreditsPerSemester uint16
 	CreatedDate        time.Time
 	UpdatedDate        time.Time

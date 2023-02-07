@@ -39,8 +39,15 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			return
 		}
 
+		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
 		var eduprogschemeDto resources.EduprogschemeDto
-		Created(w, eduprogschemeDto.DomainToDto(eduprogscheme))
+		Created(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -67,8 +74,15 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 			return
 		}
 
+		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDto(eduprogscheme))
+		Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -88,8 +102,15 @@ func (c EduprogschemeController) FindById() http.HandlerFunc {
 			return
 		}
 
+		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDto(eduprogscheme))
+		Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -109,8 +130,15 @@ func (c EduprogschemeController) FindBySemesterNum() http.HandlerFunc {
 			return
 		}
 
+		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme))
+		Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -130,8 +158,15 @@ func (c EduprogschemeController) ShowSchemeByEduprogId() http.HandlerFunc {
 			return
 		}
 
+		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			BadRequest(w, err)
+			return
+		}
+
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme))
+		Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
 	}
 }
 
