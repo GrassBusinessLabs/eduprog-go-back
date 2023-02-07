@@ -29,7 +29,12 @@ func (d EduprogschemeDto) DomainToDtoCollection(eduprogscheme []domain.Eduprogsc
 	result := make([]EduprogschemeDto, len(eduprogscheme))
 
 	for i := range eduprogscheme {
-		result[i] = d.DomainToDto(eduprogscheme[i], educomp.Items[i])
+		for i2 := range educomp.Items {
+			if eduprogscheme[i].EduprogcompId == educomp.Items[i2].Id {
+				result[i] = d.DomainToDto(eduprogscheme[i], educomp.Items[i2])
+			}
+		}
+
 	}
 
 	return result
