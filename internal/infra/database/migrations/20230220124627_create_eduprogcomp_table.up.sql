@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS eduprogcomp(
     control_type varchar(50),
     "type" varchar(50),
     sub_type varchar(50),
-    category varchar(50),
+    "category" varchar(50),
     eduprog_id integer REFERENCES eduprog(id),
     created_date TIMESTAMP DEFAULT now(),
     updated_date TIMESTAMP DEFAULT now(),

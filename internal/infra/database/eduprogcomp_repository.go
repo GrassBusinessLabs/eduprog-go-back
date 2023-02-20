@@ -91,7 +91,7 @@ func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) (domain.Ed
 	var eduprogcomp_slice []eduprogcomp
 	var eduprogcomps domain.Eduprogcomps
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "deleted_date": nil}).OrderBy("+eduprog_id").All(&eduprogcomp_slice)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "deleted_date": nil}).All(&eduprogcomp_slice)
 	if err != nil {
 		return domain.Eduprogcomps{}, err
 	}
