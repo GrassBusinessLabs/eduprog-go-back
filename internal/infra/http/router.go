@@ -204,19 +204,19 @@ func DisciplineRouter(r chi.Router, d controllers.DisciplineController) {
 			d.Save(),
 		)
 		apiRouter.Put(
-			"/",
+			"/{epId}",
 			d.Update(),
 		)
 		apiRouter.Get(
-			"/getByEdId",
+			"/getByEdId/{epId}",
 			d.ShowDisciplinesByEduprogId(),
 		)
 		apiRouter.Get(
-			"/",
+			"/{epId}",
 			d.FindById(),
 		)
 		apiRouter.Delete(
-			"/",
+			"/{epId}",
 			d.Delete(),
 		)
 

@@ -58,7 +58,7 @@ func (r disciplineRepository) Update(discipline domain.Discipline, id uint64) (d
 
 func (r disciplineRepository) ShowDisciplinesByEduprogId(eduprog_id uint64) ([]domain.Discipline, error) {
 	var d []discipline
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).OrderBy("-semester_num").All(&d)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).All(&d)
 	if err != nil {
 		return []domain.Discipline{}, err
 	}
@@ -68,7 +68,7 @@ func (r disciplineRepository) ShowDisciplinesByEduprogId(eduprog_id uint64) ([]d
 
 func (r disciplineRepository) FindById(id uint64) (domain.Discipline, error) {
 	var e discipline
-	err := r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).One(&e)
+	err := r.coll.Find(db.Cond{"id": id}).One(&e)
 	if err != nil {
 		return domain.Discipline{}, err
 	}
