@@ -7,10 +7,10 @@ import (
 )
 
 type Configuration struct {
-	//DatabaseName        string
-	//DatabaseHost        string
-	//DatabaseUser        string
-	//DatabasePassword    string
+	DatabaseName        string
+	DatabaseHost        string
+	DatabaseUser        string
+	DatabasePassword    string
 	DatabasePath        string
 	MigrateToVersion    string
 	MigrationLocation   string
@@ -21,11 +21,16 @@ type Configuration struct {
 
 func GetConfiguration() Configuration {
 	return Configuration{
-		//DatabaseName:        getOrFail("DB_NAME"),
-		//DatabaseHost:        getOrFail("DB_HOST"),
-		//DatabaseUser:        getOrFail("DB_USER"),
-		//DatabasePassword:    getOrFail("DB_PASSWORD"),
-		DatabasePath:        getOrDefault("DB_PATH", "appname.db"),
+		//DatabaseName:     getOrFail("DB_NAME"),
+		//DatabaseHost:     getOrFail("DB_HOST"),
+		//DatabaseUser:     getOrFail("DB_USER"),
+		//DatabasePassword: getOrFail("DB_PASSWORD"),
+		DatabaseName:     getOrDefault("DB_NAME", "eduprog"),
+		DatabaseHost:     getOrDefault("DB_HOST", "localhost"),
+		DatabaseUser:     getOrDefault("DB_USER", "postgres"),
+		DatabasePassword: getOrDefault("DB_PASSWORD", "1488"),
+
+		//DatabasePath:        getOrDefault("DB_PATH", "appname.db"),
 		MigrateToVersion:    getOrDefault("MIGRATE", "latest"),
 		MigrationLocation:   getOrDefault("MIGRATION_LOCATION", "internal/infra/database/migrations"),
 		FileStorageLocation: getOrDefault("FILES_LOCATION", "file_storage"),

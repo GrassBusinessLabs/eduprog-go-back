@@ -8,8 +8,10 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/middlewares"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/upper/db/v4"
+	"github.com/upper/db/v4/adapter/postgresql"
+
 	//"github.com/upper/db/v4/adapter/postgresql"
-	"github.com/upper/db/v4/adapter/sqlite"
+	//"github.com/upper/db/v4/adapter/sqlite"
 	"log"
 	"net/http"
 )
@@ -30,6 +32,7 @@ type Services struct {
 	app.EduprogService
 	app.EduprogcompService
 	app.EduprogschemeService
+	app.DisciplineService
 }
 
 type Controllers struct {
@@ -38,6 +41,7 @@ type Controllers struct {
 	controllers.EduprogController
 	controllers.EduprogcompController
 	controllers.EduprogschemeController
+	controllers.DisciplineController
 }
 
 func New(conf config.Configuration) Container {
@@ -49,11 +53,13 @@ func New(conf config.Configuration) Container {
 	eduprogRepository := database.NewEduprogRepository(sess)
 	eduprogcompRepository := database.NewEduprogcompRepository(sess)
 	eduprogschemeRepository := database.NewEduprogschemeRepository(sess)
+	disciplineRepository := database.NewDisciplineRepository(sess)
 
 	userService := app.NewUserService(userRepository)
 	eduprogService := app.NewEduprogService(eduprogRepository)
 	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository)
 	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
+	disciplineService := app.NewDisciplineService(disciplineRepository)
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
 
 	authController := controllers.NewAuthController(authService, userService)
@@ -61,6 +67,7 @@ func New(conf config.Configuration) Container {
 	eduprogController := controllers.NewEduprogController(eduprogService, eduprogcompService)
 	eduprogcompController := controllers.NewEduprogcompController(eduprogcompService)
 	eduprogschemeController := controllers.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
+	disciplineController := controllers.NewDisciplineController(disciplineService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 
@@ -74,6 +81,7 @@ func New(conf config.Configuration) Container {
 			eduprogService,
 			eduprogcompService,
 			eduprogschemeService,
+			disciplineService,
 		},
 		Controllers: Controllers{
 			authController,
@@ -81,22 +89,23 @@ func New(conf config.Configuration) Container {
 			eduprogController,
 			eduprogcompController,
 			eduprogschemeController,
+			disciplineController,
 		},
 	}
 }
 
 func getDbSess(conf config.Configuration) db.Session {
-	//sess, err := postgresql.Open(
-	//	postgresql.ConnectionURL{
-	//		User:     conf.DatabaseUser,
-	//		Host:     conf.DatabaseHost,
-	//		Password: conf.DatabasePassword,
-	//		Database: conf.DatabaseName,
-	//	})
-	sess, err := sqlite.Open(
-		sqlite.ConnectionURL{
-			Database: conf.DatabasePath,
+	sess, err := postgresql.Open(
+		postgresql.ConnectionURL{
+			User:     conf.DatabaseUser,
+			Host:     conf.DatabaseHost,
+			Password: conf.DatabasePassword,
+			Database: conf.DatabaseName,
 		})
+	//sess, err := sqlite.Open(
+	//	sqlite.ConnectionURL{
+	//		Database: conf.DatabasePath,
+	//	})
 	if err != nil {
 		log.Fatalf("Unable to create new DB session: %q\n", err)
 	}
