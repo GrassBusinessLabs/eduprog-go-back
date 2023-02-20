@@ -26,6 +26,7 @@ func (r SetComponentToEdprogschemeRequest) ToDomainModel() (interface{}, error) 
 	return domain.Eduprogscheme{
 		SemesterNum:        r.SemesterNum,
 		Discipline:         r.Discipline,
+		DisciplineId:       r.DisciplineId,
 		EduprogId:          r.EduprogId,
 		EduprogcompId:      r.EduprogcompId,
 		CreditsPerSemester: r.CreditsPerSemester,
@@ -36,6 +37,7 @@ func (r UpdateComponentInEduprogschemeRequest) ToDomainModel() (interface{}, err
 	return domain.Eduprogscheme{
 		SemesterNum:        r.SemesterNum,
 		Discipline:         r.Discipline,
+		DisciplineId:       r.DisciplineId,
 		EduprogId:          r.EduprogId,
 		EduprogcompId:      r.EduprogcompId,
 		CreditsPerSemester: r.CreditsPerSemester,

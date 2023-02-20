@@ -12,6 +12,7 @@ type eduprogscheme struct {
 	Id                 uint64    `db:"id,omitempty"`
 	SemesterNum        uint16    `db:"semester_num"`
 	Discipline         string    `db:"discipline"`
+	DisciplineId       uint64    `db:"discipline_id"`
 	EduprogId          uint64    `db:"eduprog_id"`
 	EduprogcompId      uint64    `db:"eduprogcomp_id"`
 	CreditsPerSemester uint16    `db:"credits_per_semester"`
@@ -84,7 +85,7 @@ func (r eduprogschemeRepository) FindBySemesterNum(semester_num uint16) ([]domai
 
 func (r eduprogschemeRepository) ShowSchemeByEduprogId(eduprog_id uint64) ([]domain.Eduprogscheme, error) {
 	var es []eduprogscheme
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).OrderBy("-semester_num").All(&es)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "discipline_id >": 0}).OrderBy("-semester_num").All(&es)
 	if err != nil {
 		return []domain.Eduprogscheme{}, err
 	}
@@ -101,6 +102,7 @@ func (r eduprogschemeRepository) mapDomainToModel(d domain.Eduprogscheme) edupro
 		Id:                 d.Id,
 		SemesterNum:        d.SemesterNum,
 		Discipline:         d.Discipline,
+		DisciplineId:       d.DisciplineId,
 		EduprogId:          d.EduprogId,
 		EduprogcompId:      d.EduprogcompId,
 		CreditsPerSemester: d.CreditsPerSemester,
@@ -114,6 +116,7 @@ func (r eduprogschemeRepository) mapModelToDomain(m eduprogscheme) domain.Edupro
 		Id:                 m.Id,
 		SemesterNum:        m.SemesterNum,
 		Discipline:         m.Discipline,
+		DisciplineId:       m.DisciplineId,
 		EduprogId:          m.EduprogId,
 		EduprogcompId:      m.EduprogcompId,
 		CreditsPerSemester: m.CreditsPerSemester,
