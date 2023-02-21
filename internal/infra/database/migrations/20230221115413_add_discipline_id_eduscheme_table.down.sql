@@ -1,0 +1,1 @@
+ALTER TABLE public.eduprogscheme DROP COLUMN discipline_id;
