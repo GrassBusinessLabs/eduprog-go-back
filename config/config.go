@@ -25,10 +25,10 @@ func GetConfiguration() Configuration {
 		//DatabaseHost:     getOrFail("DB_HOST"),
 		//DatabaseUser:     getOrFail("DB_USER"),
 		//DatabasePassword: getOrFail("DB_PASSWORD"),
-		DatabaseName:     getOrDefault("DB_NAME", "eduprog"),
+		DatabaseName:     getOrDefault("DB_NAME", "eduprog_db"),
 		DatabaseHost:     getOrDefault("DB_HOST", "localhost"),
 		DatabaseUser:     getOrDefault("DB_USER", "postgres"),
-		DatabasePassword: getOrDefault("DB_PASSWORD", "1488"),
+		DatabasePassword: getOrDefault("DB_PASSWORD", "1478"),
 
 		//DatabasePath:        getOrDefault("DB_PATH", "appname.db"),
 		MigrateToVersion:    getOrDefault("MIGRATE", "latest"),

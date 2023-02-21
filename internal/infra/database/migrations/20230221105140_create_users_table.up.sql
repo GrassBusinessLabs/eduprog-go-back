@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS public.users(
     created_date TIMESTAMP DEFAULT now(),
     updated_date TIMESTAMP DEFAULT now(),
     deleted_date TIMESTAMP NULL
-);
+    );

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS eduprogcomp(
+CREATE TABLE IF NOT EXISTS public.eduprogcomp(
     id serial PRIMARY KEY,
     code varchar(50) NOT NULL,
     "name" varchar(50) NOT NULL,
@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS eduprogcomp(
     created_date TIMESTAMP DEFAULT now(),
     updated_date TIMESTAMP DEFAULT now(),
     deleted_date TIMESTAMP NULL
-);
+    );
