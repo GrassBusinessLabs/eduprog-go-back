@@ -1,1 +1,0 @@
-ALTER TABLE public.eduprogscheme ADD COLUMN discipline_id integer references discipline(id) default 0;

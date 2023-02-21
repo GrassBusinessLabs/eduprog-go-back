@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS public.eduprogscheme(
     id serial PRIMARY KEY,
     semester_num integer NOT NULL,
     discipline varchar(50),
+    discipline_id integer ,
     eduprog_id integer REFERENCES eduprog(id),
     eduprogcomp_id integer REFERENCES eduprogcomp(id),
     credits_per_semester integer,
