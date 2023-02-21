@@ -31,7 +31,7 @@ func GetConfiguration() Configuration {
 		DatabasePassword: getOrDefault("DB_PASSWORD", "1478"),
 
 		//DatabasePath:        getOrDefault("DB_PATH", "appname.db"),
-		MigrateToVersion:    getOrDefault("MIGRATE", "latest"),
+		MigrateToVersion:    getOrDefault("MIGRATE", "20230221105140"),
 		MigrationLocation:   getOrDefault("MIGRATION_LOCATION", "internal/infra/database/migrations"),
 		FileStorageLocation: getOrDefault("FILES_LOCATION", "file_storage"),
 		JwtSecret:           getOrDefault("JWT_SECRET", "1234567890"),
