@@ -53,7 +53,7 @@ func Router(cont container.Container) http.Handler {
 				EduprogcompRouter(apiRouter, cont.EduprogcompController)
 				EduprogschemeRouter(apiRouter, cont.EduprogschemeController)
 				DisciplineRouter(apiRouter, cont.DisciplineController)
-
+				EducompRelationsRouter(apiRouter, cont.EducompRelationsController)
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
 		})
@@ -190,6 +190,10 @@ func EduprogschemeRouter(r chi.Router, esc controllers.EduprogschemeController) 
 			"/byEduprogId/{sNum}",
 			esc.ShowSchemeByEduprogId(),
 		)
+		apiRouter.Get(
+			"/freeComps/{sNum}",
+			esc.ShowFreeComponents(),
+		)
 		apiRouter.Delete(
 			"/{essId}",
 			esc.Delete(),
@@ -221,6 +225,24 @@ func DisciplineRouter(r chi.Router, d controllers.DisciplineController) {
 		)
 
 	})
+}
+
+func EducompRelationsRouter(r chi.Router, ecrc controllers.EducompRelationsController) {
+	r.Route("/eduprogs/compRelations", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/create",
+			ecrc.CreateRelation(),
+		)
+		apiRouter.Get(
+			"/{epId}",
+			ecrc.ShowByEduprogId(),
+		)
+		apiRouter.Delete(
+			"/{epId}",
+			ecrc.DeleteByBaseId(),
+		)
+	})
+
 }
 
 func NotFoundJSON() http.HandlerFunc {

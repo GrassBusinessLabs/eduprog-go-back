@@ -28,6 +28,7 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			BadRequest(w, err)
+			return
 		}
 
 		eduprogcomp, err = c.eduprogcompService.Save(eduprogcomp)
@@ -80,7 +81,7 @@ func (c EduprogcompController) ShowList() http.HandlerFunc {
 		}
 
 		var eduprogcompsDto resources.EduprogcompDto
-		Success(w, eduprogcompsDto.DomainToDtoCollection(eduprogcomps))
+		Success(w, eduprogcompsDto.DomainToDtoCollection2(eduprogcomps))
 	}
 }
 

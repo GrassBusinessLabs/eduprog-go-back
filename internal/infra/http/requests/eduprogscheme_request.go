@@ -6,8 +6,7 @@ import (
 
 type SetComponentToEdprogschemeRequest struct {
 	SemesterNum        uint16 `json:"semester_num" validate:"required"`
-	Discipline         string `json:"discipline" validate:"required"`
-	DisciplineId       uint64 `json:"discipline_id"`
+	DisciplineId       uint64 `json:"discipline_id" validate:"required"`
 	EduprogId          uint64 `json:"eduprog_id" validate:"required"`
 	EduprogcompId      uint64 `json:"eduprogcomp_id" validate:"required"`
 	CreditsPerSemester uint16 `json:"credits_per_semester" validate:"required"`
@@ -15,8 +14,7 @@ type SetComponentToEdprogschemeRequest struct {
 
 type UpdateComponentInEduprogschemeRequest struct {
 	SemesterNum        uint16 `json:"semester_num" validate:"required"`
-	Discipline         string `json:"discipline" validate:"required"`
-	DisciplineId       uint64 `json:"discipline_id"`
+	DisciplineId       uint64 `json:"discipline_id" validate:"required"`
 	EduprogId          uint64 `json:"eduprog_id" validate:"required"`
 	EduprogcompId      uint64 `json:"eduprogcomp_id" validate:"required"`
 	CreditsPerSemester uint16 `json:"credits_per_semester" validate:"required"`
@@ -25,7 +23,6 @@ type UpdateComponentInEduprogschemeRequest struct {
 func (r SetComponentToEdprogschemeRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogscheme{
 		SemesterNum:        r.SemesterNum,
-		Discipline:         r.Discipline,
 		DisciplineId:       r.DisciplineId,
 		EduprogId:          r.EduprogId,
 		EduprogcompId:      r.EduprogcompId,
@@ -36,7 +33,6 @@ func (r SetComponentToEdprogschemeRequest) ToDomainModel() (interface{}, error) 
 func (r UpdateComponentInEduprogschemeRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogscheme{
 		SemesterNum:        r.SemesterNum,
-		Discipline:         r.Discipline,
 		DisciplineId:       r.DisciplineId,
 		EduprogId:          r.EduprogId,
 		EduprogcompId:      r.EduprogcompId,

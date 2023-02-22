@@ -25,6 +25,7 @@ func (c UserController) Save() http.HandlerFunc {
 		if err != nil {
 			log.Printf("UserController: %s", err)
 			BadRequest(w, err)
+			return
 		}
 
 		user, err = c.userService.Save(user)

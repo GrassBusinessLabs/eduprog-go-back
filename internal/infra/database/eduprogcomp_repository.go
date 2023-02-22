@@ -30,7 +30,7 @@ type eduprogcomp struct {
 type EduprogcompRepository interface {
 	Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
 	Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error)
-	ShowList() (domain.Eduprogcomps, error)
+	ShowList() ([]domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
 	ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
@@ -69,22 +69,15 @@ func (r eduprogcompRepository) Update(eduprogcomp domain.Eduprogcomp, id uint64)
 	return r.mapModelToDomain(e), nil
 }
 
-func (r eduprogcompRepository) ShowList() (domain.Eduprogcomps, error) {
-	var eduprogcomp_slice []eduprogcomp
-	var eduprogcomps domain.Eduprogcomps
+func (r eduprogcompRepository) ShowList() ([]domain.Eduprogcomp, error) {
+	var eduprogcomps []eduprogcomp
 
-	err := r.coll.Find(db.Cond{"deleted_date": nil}).All(&eduprogcomp_slice)
+	err := r.coll.Find(db.Cond{"deleted_date": nil}).All(&eduprogcomps)
 	if err != nil {
-		return domain.Eduprogcomps{}, err
+		return []domain.Eduprogcomp{}, err
 	}
 
-	for i := range eduprogcomp_slice {
-		eduprogcomps.Items = append(eduprogcomps.Items, r.mapModelToDomain(eduprogcomp_slice[i]))
-	}
-
-	//eduprogcomps.Total = uint64(len(eduprogcomp_slice))
-
-	return eduprogcomps, nil
+	return r.mapModelToDomainCollection(eduprogcomps), nil
 }
 
 func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error) {
@@ -170,4 +163,14 @@ func (r eduprogcompRepository) mapModelToDomain(m eduprogcomp) domain.Eduprogcom
 		UpdatedDate: m.UpdatedDate,
 		DeletedDate: m.DeletedDate,
 	}
+}
+
+func (r eduprogcompRepository) mapModelToDomainCollection(m []eduprogcomp) []domain.Eduprogcomp {
+	result := make([]domain.Eduprogcomp, len(m))
+
+	for i := range m {
+		result[i] = r.mapModelToDomain(m[i])
+	}
+
+	return result
 }

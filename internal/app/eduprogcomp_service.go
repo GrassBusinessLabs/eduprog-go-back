@@ -9,7 +9,7 @@ import (
 type EduprogcompService interface {
 	Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
 	Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error)
-	ShowList() (domain.Eduprogcomps, error)
+	ShowList() ([]domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	ShowListByEduprogId(eduprog_id uint64) (domain.Eduprogcomps, error)
@@ -44,11 +44,11 @@ func (s eduprogcompService) Update(eduprogcomp domain.Eduprogcomp, id uint64) (d
 	return e, err
 }
 
-func (s eduprogcompService) ShowList() (domain.Eduprogcomps, error) {
+func (s eduprogcompService) ShowList() ([]domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.ShowList()
 	if err != nil {
 		log.Printf("EduprogService: %s", err)
-		return domain.Eduprogcomps{}, err
+		return []domain.Eduprogcomp{}, err
 	}
 	return e, nil
 }

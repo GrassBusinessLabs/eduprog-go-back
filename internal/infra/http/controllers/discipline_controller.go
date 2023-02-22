@@ -26,13 +26,14 @@ func (c DisciplineController) Save() http.HandlerFunc {
 
 		discipline, err := requests.Bind(r, requests.CreateDisciplineRequest{}, domain.Discipline{})
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
+			return
 		}
 
 		discipline, err = c.disciplineService.Save(discipline)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
@@ -46,27 +47,27 @@ func (c DisciplineController) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
 
 		discipline, err := requests.Bind(r, requests.UpdateDisciplineRequest{}, domain.Discipline{})
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
 
 		discipline, err = c.disciplineService.Update(discipline, id)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			InternalServerError(w, err)
 			return
 		}
 
 		var disciplineDto resources.DisciplineDto
-		Created(w, disciplineDto.DomainToDto(discipline))
+		Success(w, disciplineDto.DomainToDto(discipline))
 	}
 }
 
@@ -75,14 +76,14 @@ func (c DisciplineController) ShowDisciplinesByEduprogId() http.HandlerFunc {
 
 		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
 
 		disciplines, err := c.disciplineService.ShowDisciplinesByEduprogId(id)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			InternalServerError(w, err)
 			return
 		}
@@ -94,7 +95,7 @@ func (c DisciplineController) ShowDisciplinesByEduprogId() http.HandlerFunc {
 		//	return
 		//}
 		var disciplineDto resources.DisciplineDto
-		Created(w, disciplineDto.DomainToDtoCollection(disciplines))
+		Success(w, disciplineDto.DomainToDtoCollection(disciplines))
 	}
 }
 
@@ -102,20 +103,20 @@ func (c DisciplineController) FindById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
 
 		discipline, _ := c.disciplineService.FindById(id)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
 
 		var disciplineDto resources.DisciplineDto
-		Created(w, disciplineDto.DomainToDto(discipline))
+		Success(w, disciplineDto.DomainToDto(discipline))
 	}
 }
 
@@ -123,14 +124,14 @@ func (c DisciplineController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			BadRequest(w, err)
 			return
 		}
 
 		err = c.disciplineService.Delete(id)
 		if err != nil {
-			log.Printf("EduprogController: %s", err)
+			log.Printf("DisciplineController: %s", err)
 			InternalServerError(w, err)
 			return
 		}

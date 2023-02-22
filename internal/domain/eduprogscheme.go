@@ -5,7 +5,6 @@ import "time"
 type Eduprogscheme struct { //eduprogschemeElement
 	Id                 uint64
 	SemesterNum        uint16
-	Discipline         string
 	DisciplineId       uint64
 	EduprogId          uint64
 	EduprogcompId      uint64

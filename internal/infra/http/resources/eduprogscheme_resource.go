@@ -5,7 +5,6 @@ import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 type EduprogschemeDto struct {
 	Id                 uint64         `json:"id"`
 	SemesterNum        uint16         `json:"semester_num"`
-	Discipline         string         `json:"discipline"`
 	DisciplineId       uint64         `json:"discipline_id"`
 	EduprogId          uint64         `json:"eduprog_id"`
 	EduprogcompId      uint64         `json:"eduprogcomp_id"`
@@ -18,7 +17,6 @@ func (d EduprogschemeDto) DomainToDto(eduprogscheme domain.Eduprogscheme, comp d
 	return EduprogschemeDto{
 		Id:                 eduprogscheme.Id,
 		SemesterNum:        eduprogscheme.SemesterNum,
-		Discipline:         eduprogscheme.Discipline,
 		DisciplineId:       eduprogscheme.DisciplineId,
 		EduprogId:          eduprogscheme.EduprogId,
 		EduprogcompId:      eduprogscheme.EduprogcompId,

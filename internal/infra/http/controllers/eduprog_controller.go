@@ -30,6 +30,7 @@ func (c EduprogController) Save() http.HandlerFunc {
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			BadRequest(w, err)
+			return
 		}
 		u := r.Context().Value(UserKey).(domain.User)
 		eduprog.UserId = u.Id

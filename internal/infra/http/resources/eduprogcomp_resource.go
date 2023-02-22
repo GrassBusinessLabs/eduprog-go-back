@@ -45,3 +45,13 @@ func (d EduprogcompDto) DomainToDtoCollection(eduprogcomps domain.Eduprogcomps) 
 
 	return EduprogcompsDto{Items: result}
 }
+
+func (d EduprogcompDto) DomainToDtoCollection2(eduprogcomps []domain.Eduprogcomp) []EduprogcompDto {
+	result := make([]EduprogcompDto, len(eduprogcomps))
+
+	for i := range eduprogcomps {
+		result[i] = d.DomainToDto(eduprogcomps[i])
+	}
+
+	return result
+}

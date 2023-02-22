@@ -33,6 +33,7 @@ type Services struct {
 	app.EduprogcompService
 	app.EduprogschemeService
 	app.DisciplineService
+	app.EducompRelationsService
 }
 
 type Controllers struct {
@@ -42,6 +43,7 @@ type Controllers struct {
 	controllers.EduprogcompController
 	controllers.EduprogschemeController
 	controllers.DisciplineController
+	controllers.EducompRelationsController
 }
 
 func New(conf config.Configuration) Container {
@@ -54,13 +56,15 @@ func New(conf config.Configuration) Container {
 	eduprogcompRepository := database.NewEduprogcompRepository(sess)
 	eduprogschemeRepository := database.NewEduprogschemeRepository(sess)
 	disciplineRepository := database.NewDisciplineRepository(sess)
+	educompRelationsRepository := database.NewEducompRelationsRepository(sess)
 
 	userService := app.NewUserService(userRepository)
+	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
 	eduprogService := app.NewEduprogService(eduprogRepository)
 	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository)
 	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
 	disciplineService := app.NewDisciplineService(disciplineRepository)
-	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
+	educompRelationsService := app.NewEducompRelationsService(educompRelationsRepository)
 
 	authController := controllers.NewAuthController(authService, userService)
 	userController := controllers.NewUserController(userService)
@@ -68,6 +72,7 @@ func New(conf config.Configuration) Container {
 	eduprogcompController := controllers.NewEduprogcompController(eduprogcompService)
 	eduprogschemeController := controllers.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
 	disciplineController := controllers.NewDisciplineController(disciplineService)
+	educompRelationsController := controllers.NewEducompRelationsController(educompRelationsService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 
@@ -82,6 +87,7 @@ func New(conf config.Configuration) Container {
 			eduprogcompService,
 			eduprogschemeService,
 			disciplineService,
+			educompRelationsService,
 		},
 		Controllers: Controllers{
 			authController,
@@ -90,6 +96,7 @@ func New(conf config.Configuration) Container {
 			eduprogcompController,
 			eduprogschemeController,
 			disciplineController,
+			educompRelationsController,
 		},
 	}
 }
