@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS public.discipline(
     updated_date TIMESTAMP DEFAULT now()
     );
 ALTER TABLE public.eduprogscheme ADD CONSTRAINT fk_disc_id FOREIGN KEY (discipline_id)
-    references discipline(id);
+    references discipline(id) ON DELETE CASCADE;
