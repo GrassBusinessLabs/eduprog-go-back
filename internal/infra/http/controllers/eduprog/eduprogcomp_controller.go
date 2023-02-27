@@ -1,8 +1,9 @@
-package controllers
+package eduprog
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/requests"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"github.com/go-chi/chi/v5"
@@ -27,19 +28,19 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		eduprogcomp, err := requests.Bind(r, requests.CreateEduprogcompRequest{}, domain.Eduprogcomp{})
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err = c.eduprogcompService.Save(eduprogcomp)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogcompDto resources.EduprogcompDto
-		Created(w, eduprogcompDto.DomainToDto(eduprogcomp))
+		controllers.Created(w, eduprogcompDto.DomainToDto(eduprogcomp))
 	}
 }
 
@@ -48,26 +49,26 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err := requests.Bind(r, requests.UpdateEduprogcompRequest{}, domain.Eduprogcomp{})
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err = c.eduprogcompService.Update(eduprogcomp, id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		var eduprogcompDto resources.EduprogcompDto
-		Success(w, eduprogcompDto.DomainToDto(eduprogcomp))
+		controllers.Success(w, eduprogcompDto.DomainToDto(eduprogcomp))
 	}
 }
 
@@ -76,12 +77,33 @@ func (c EduprogcompController) ShowList() http.HandlerFunc {
 		eduprogcomps, err := c.eduprogcompService.ShowList()
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		var eduprogcompsDto resources.EduprogcompDto
-		Success(w, eduprogcompsDto.DomainToDtoCollection2(eduprogcomps))
+		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(eduprogcomps))
+	}
+}
+
+func (c EduprogcompController) ShowListByEduprogId() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogcompsDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(eduprogcomps))
 	}
 }
 
@@ -90,19 +112,19 @@ func (c EduprogcompController) FindById() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, _ := c.eduprogcompService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogcompDto resources.EduprogcompDto
-		Success(w, eduprogcompDto.DomainToDto(eduprogcomp))
+		controllers.Success(w, eduprogcompDto.DomainToDto(eduprogcomp))
 	}
 }
 
@@ -111,16 +133,16 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		err = c.eduprogcompService.Delete(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
-		Ok(w)
+		controllers.Ok(w)
 	}
 }

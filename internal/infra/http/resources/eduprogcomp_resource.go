@@ -16,12 +16,6 @@ type EduprogcompDto struct {
 	EduprogId   uint64 `json:"eduprog_id"`
 }
 
-type EduprogcompsDto struct {
-	Items []EduprogcompDto `json:"items"`
-	//Total uint64           `json:"total"`
-	//Pages uint             `json:"pages"`
-}
-
 func (d EduprogcompDto) DomainToDto(eduprogcomp domain.Eduprogcomp) EduprogcompDto {
 	return EduprogcompDto{
 		Id:          eduprogcomp.Id,
@@ -36,17 +30,7 @@ func (d EduprogcompDto) DomainToDto(eduprogcomp domain.Eduprogcomp) EduprogcompD
 	}
 }
 
-func (d EduprogcompDto) DomainToDtoCollection(eduprogcomps domain.Eduprogcomps) EduprogcompsDto {
-	result := make([]EduprogcompDto, len(eduprogcomps.Items))
-
-	for i := range eduprogcomps.Items {
-		result[i] = d.DomainToDto(eduprogcomps.Items[i])
-	}
-
-	return EduprogcompsDto{Items: result}
-}
-
-func (d EduprogcompDto) DomainToDtoCollection2(eduprogcomps []domain.Eduprogcomp) []EduprogcompDto {
+func (d EduprogcompDto) DomainToDtoCollection(eduprogcomps []domain.Eduprogcomp) []EduprogcompDto {
 	result := make([]EduprogcompDto, len(eduprogcomps))
 
 	for i := range eduprogcomps {

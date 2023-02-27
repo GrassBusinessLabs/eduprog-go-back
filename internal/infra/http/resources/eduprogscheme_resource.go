@@ -25,13 +25,13 @@ func (d EduprogschemeDto) DomainToDto(eduprogscheme domain.Eduprogscheme, comp d
 	}
 }
 
-func (d EduprogschemeDto) DomainToDtoCollection(eduprogscheme []domain.Eduprogscheme, educomp domain.Eduprogcomps) []EduprogschemeDto {
+func (d EduprogschemeDto) DomainToDtoCollection(eduprogscheme []domain.Eduprogscheme, educomp []domain.Eduprogcomp) []EduprogschemeDto {
 	result := make([]EduprogschemeDto, len(eduprogscheme))
 
 	for i := range eduprogscheme {
-		for i2 := range educomp.Items {
-			if eduprogscheme[i].EduprogcompId == educomp.Items[i2].Id {
-				result[i] = d.DomainToDto(eduprogscheme[i], educomp.Items[i2])
+		for i2 := range educomp {
+			if eduprogscheme[i].EduprogcompId == educomp[i2].Id {
+				result[i] = d.DomainToDto(eduprogscheme[i], educomp[i2])
 			}
 		}
 

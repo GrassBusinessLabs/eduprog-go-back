@@ -1,8 +1,9 @@
-package controllers
+package auth
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/requests"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"log"
@@ -24,26 +25,26 @@ func (c UserController) Save() http.HandlerFunc {
 		user, err := requests.Bind(r, requests.RegisterRequest{}, domain.User{})
 		if err != nil {
 			log.Printf("UserController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		user, err = c.userService.Save(user)
 		if err != nil {
 			log.Printf("UserController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var userDto resources.UserDto
-		Created(w, userDto.DomainToDto(user))
+		controllers.Created(w, userDto.DomainToDto(user))
 	}
 }
 
 func (c UserController) FindMe() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value(UserKey).(domain.User)
-		Success(w, resources.UserDto{}.DomainToDto(user))
+		user := r.Context().Value(controllers.UserKey).(domain.User)
+		controllers.Success(w, resources.UserDto{}.DomainToDto(user))
 	}
 }
 
@@ -52,35 +53,35 @@ func (c UserController) Update() http.HandlerFunc {
 		user, err := requests.Bind(r, requests.UpdateUserRequest{}, domain.User{})
 		if err != nil {
 			log.Printf("UserController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
-		u := r.Context().Value(UserKey).(domain.User)
+		u := r.Context().Value(controllers.UserKey).(domain.User)
 		u.Name = user.Name
 		user, err = c.userService.Update(u)
 		if err != nil {
 			log.Printf("UserController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		var userDto resources.UserDto
-		Success(w, userDto.DomainToDto(user))
+		controllers.Success(w, userDto.DomainToDto(user))
 	}
 }
 
 func (c UserController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := r.Context().Value(UserKey).(domain.User)
+		u := r.Context().Value(controllers.UserKey).(domain.User)
 
 		err := c.userService.Delete(u.Id)
 		if err != nil {
 			log.Printf("UserController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
-		Ok(w)
+		controllers.Ok(w)
 	}
 }

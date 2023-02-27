@@ -23,7 +23,7 @@ type EduprogschemeRepository interface {
 	SetComponentToEdprogscheme(eduprogscheme domain.Eduprogscheme) (domain.Eduprogscheme, error)
 	UpdateComponentInEduprogscheme(eduprogscheme domain.Eduprogscheme, id uint64) (domain.Eduprogscheme, error)
 	FindById(id uint64) (domain.Eduprogscheme, error)
-	FindBySemesterNum(semester_num uint16) ([]domain.Eduprogscheme, error)
+	FindBySemesterNum(semester_num uint16, eduprog_id uint64) ([]domain.Eduprogscheme, error)
 	ShowSchemeByEduprogId(eduprog_id uint64) ([]domain.Eduprogscheme, error)
 	Delete(id uint64) error
 }
@@ -72,9 +72,9 @@ func (r eduprogschemeRepository) FindById(id uint64) (domain.Eduprogscheme, erro
 	return r.mapModelToDomain(es), nil
 }
 
-func (r eduprogschemeRepository) FindBySemesterNum(semester_num uint16) ([]domain.Eduprogscheme, error) {
+func (r eduprogschemeRepository) FindBySemesterNum(semester_num uint16, eduprog_id uint64) ([]domain.Eduprogscheme, error) {
 	var es []eduprogscheme
-	err := r.coll.Find(db.Cond{"semester_num": semester_num}).All(&es)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "semester_num": semester_num}).All(&es)
 	if err != nil {
 		return []domain.Eduprogscheme{}, err
 	}

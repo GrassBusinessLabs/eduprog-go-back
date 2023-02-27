@@ -1,8 +1,9 @@
-package controllers
+package eduprog
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/requests"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"github.com/go-chi/chi/v5"
@@ -29,26 +30,26 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 		eduprogscheme, err := requests.Bind(r, requests.SetComponentToEdprogschemeRequest{}, domain.Eduprogscheme{})
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogscheme, err = c.eduprogschemeService.SetComponentToEdprogscheme(eduprogscheme)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogschemeDto resources.EduprogschemeDto
-		Created(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
+		controllers.Created(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -57,33 +58,33 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 		id, err := strconv.ParseUint(chi.URLParam(r, "essId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogscheme, err := requests.Bind(r, requests.UpdateComponentInEduprogschemeRequest{}, domain.Eduprogscheme{})
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogscheme, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(eduprogscheme, id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
+		controllers.Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -92,54 +93,61 @@ func (c EduprogschemeController) FindById() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "essId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogscheme, _ := c.eduprogschemeService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
+		controllers.Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
 }
 
 func (c EduprogschemeController) FindBySemesterNum() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "sNum"), 10, 16)
+		sNum, err := strconv.ParseUint(chi.URLParam(r, "sNum"), 10, 16)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogscheme, _ := c.eduprogschemeService.FindBySemesterNum(uint16(id))
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogscheme, _ := c.eduprogschemeService.FindBySemesterNum(uint16(sNum), id)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
+		controllers.Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -148,26 +156,26 @@ func (c EduprogschemeController) ShowSchemeByEduprogId() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "sNum"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogscheme, _ := c.eduprogschemeService.ShowSchemeByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var eduprogschemeDto resources.EduprogschemeDto
-		Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
+		controllers.Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
 	}
 }
 
@@ -176,26 +184,25 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "sNum"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomps, err := c.eduprogcompService.ShowList()
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
-		//var result []domain.Eduprogcomp
-		var escIds []uint64 // 3 4 4 2 3 3
+		var escIds []uint64
 		for i := range eduprogscheme {
 			escIds = append(escIds, eduprogscheme[i].EduprogcompId)
 		}
@@ -207,10 +214,10 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			}
 		}
 
-		uniqes := unique(eduprogcomps) //not working
+		uniqes := unique(eduprogcomps)
 
 		var eduprogcompDto resources.EduprogcompDto
-		Success(w, eduprogcompDto.DomainToDtoCollection2(uniqes))
+		controllers.Success(w, eduprogcompDto.DomainToDtoCollection(uniqes))
 	}
 }
 
@@ -219,18 +226,18 @@ func (c EduprogschemeController) Delete() http.HandlerFunc {
 		id, err := strconv.ParseUint(chi.URLParam(r, "essId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		err = c.eduprogschemeService.Delete(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
-		Ok(w)
+		controllers.Ok(w)
 	}
 }
 

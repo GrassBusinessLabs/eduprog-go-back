@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/config"
 	"github.com/GrassBusinessLabs/eduprog-go-back/config/container"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/auth"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/eduprog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -71,7 +72,7 @@ func Router(cont container.Container) http.Handler {
 	return router
 }
 
-func AuthRouter(r chi.Router, ac controllers.AuthController, amw func(http.Handler) http.Handler) {
+func AuthRouter(r chi.Router, ac auth.AuthController, amw func(http.Handler) http.Handler) {
 	r.Route("/", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/register",
@@ -92,7 +93,7 @@ func AuthRouter(r chi.Router, ac controllers.AuthController, amw func(http.Handl
 	})
 }
 
-func UserRouter(r chi.Router, uc controllers.UserController) {
+func UserRouter(r chi.Router, uc auth.UserController) {
 	r.Route("/users", func(apiRouter chi.Router) {
 		apiRouter.Get(
 			"/",
@@ -109,7 +110,7 @@ func UserRouter(r chi.Router, uc controllers.UserController) {
 	})
 }
 
-func EduprogRouter(r chi.Router, ec controllers.EduprogController) {
+func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 	r.Route("/eduprogs", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/create",
@@ -143,7 +144,7 @@ func EduprogRouter(r chi.Router, ec controllers.EduprogController) {
 	})
 }
 
-func EduprogcompRouter(r chi.Router, ec controllers.EduprogcompController) {
+func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 	r.Route("/eduprogs/comps", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/create",
@@ -158,6 +159,10 @@ func EduprogcompRouter(r chi.Router, ec controllers.EduprogcompController) {
 			ec.ShowList(),
 		)
 		apiRouter.Get(
+			"/byEduprogId/{epcId}",
+			ec.ShowListByEduprogId(),
+		)
+		apiRouter.Get(
 			"/{epcId}",
 			ec.FindById(),
 		)
@@ -168,7 +173,7 @@ func EduprogcompRouter(r chi.Router, ec controllers.EduprogcompController) {
 	})
 }
 
-func EduprogschemeRouter(r chi.Router, esc controllers.EduprogschemeController) {
+func EduprogschemeRouter(r chi.Router, esc eduprog.EduprogschemeController) {
 	r.Route("/eduprogs/scheme", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/setCompToSemester",
@@ -183,7 +188,7 @@ func EduprogschemeRouter(r chi.Router, esc controllers.EduprogschemeController) 
 			esc.FindById(),
 		)
 		apiRouter.Get(
-			"/bySemester/{sNum}",
+			"/bySemester/{sNum}/{edId}",
 			esc.FindBySemesterNum(),
 		)
 		apiRouter.Get(
@@ -201,7 +206,7 @@ func EduprogschemeRouter(r chi.Router, esc controllers.EduprogschemeController) 
 	})
 }
 
-func DisciplineRouter(r chi.Router, d controllers.DisciplineController) {
+func DisciplineRouter(r chi.Router, d eduprog.DisciplineController) {
 	r.Route("/eduprogs/scheme/disciplines", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/create",
@@ -227,7 +232,7 @@ func DisciplineRouter(r chi.Router, d controllers.DisciplineController) {
 	})
 }
 
-func EducompRelationsRouter(r chi.Router, ecrc controllers.EducompRelationsController) {
+func EducompRelationsRouter(r chi.Router, ecrc eduprog.EducompRelationsController) {
 	r.Route("/eduprogs/compRelations", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/create",
@@ -237,9 +242,13 @@ func EducompRelationsRouter(r chi.Router, ecrc controllers.EducompRelationsContr
 			"/{epId}",
 			ecrc.ShowByEduprogId(),
 		)
+		apiRouter.Get(
+			"/posRel/{edId}/{compId}",
+			ecrc.ShowPossibleRelationsForComp(),
+		)
 		apiRouter.Delete(
-			"/{epId}",
-			ecrc.DeleteByBaseId(),
+			"/{baseId}/{childId}",
+			ecrc.Delete(),
 		)
 	})
 

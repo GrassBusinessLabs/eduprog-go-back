@@ -17,6 +17,17 @@ type EduprogDto struct {
 	UpdatedDate    time.Time     `json:"updated_date"`
 }
 
+type EduprogWithoutCompsDto struct {
+	Id             uint64    `json:"id"`
+	Name           string    `json:"name"`
+	EducationLevel string    `json:"education_level"`
+	Stage          string    `json:"stage"`
+	Speciality     string    `json:"speciality"`
+	KnowledgeField string    `json:"knowledge_field"`
+	UserId         uint64    `json:"user_id"`
+	UpdatedDate    time.Time `json:"updated_date"`
+}
+
 type ComponentsDto struct {
 	Mandatory []EduprogcompDto `json:"mandatory"`
 	Selective []EduprogcompDto `json:"selective"`
@@ -32,14 +43,14 @@ type CreditsDto struct {
 }
 
 type EduprogsDto struct {
-	Items []EduprogDto `json:"items"`
-	Total uint64       `json:"total"`
-	Pages uint         `json:"pages"`
+	Items []EduprogWithoutCompsDto `json:"items"`
+	Total uint64                   `json:"total"`
+	Pages uint                     `json:"pages"`
 }
 
-func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogDto {
+func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogWithoutCompsDto {
 
-	return EduprogDto{
+	return EduprogWithoutCompsDto{
 		Id:             eduprog.Id,
 		Name:           eduprog.Name,
 		EducationLevel: eduprog.EducationLevel,
@@ -85,7 +96,7 @@ func (d EduprogcompDto) DomainToDtoWCompCollection(comps domain.Components) Comp
 }
 
 func (d EduprogDto) DomainToDtoCollection(eduprogs domain.Eduprogs) EduprogsDto {
-	result := make([]EduprogDto, len(eduprogs.Items))
+	result := make([]EduprogWithoutCompsDto, len(eduprogs.Items))
 
 	for i := range eduprogs.Items {
 		result[i] = d.DomainToDto(eduprogs.Items[i])

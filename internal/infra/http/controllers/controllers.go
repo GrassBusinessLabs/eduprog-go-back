@@ -59,7 +59,7 @@ func Created(w http.ResponseWriter, body interface{}) {
 	}
 }
 
-func noContent(w http.ResponseWriter) {
+func NoContent(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }

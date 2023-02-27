@@ -9,7 +9,7 @@ import (
 type EducompRelationsService interface {
 	CreateRelation(relation domain.Educomp_relations) (domain.Educomp_relations, error)
 	ShowByEduprogId(eduprog_id uint64) ([]domain.Educomp_relations, error)
-	DeleteByBaseCompId(base_comp_id uint64) error
+	Delete(base_comp_id uint64, child_comp_id uint64) error
 }
 
 type educompRelationsService struct {
@@ -40,8 +40,8 @@ func (s educompRelationsService) ShowByEduprogId(eduprog_id uint64) ([]domain.Ed
 	return e, err
 }
 
-func (s educompRelationsService) DeleteByBaseCompId(base_comp_id uint64) error {
-	err := s.educompRelationsRepo.DeleteByBaseCompId(base_comp_id)
+func (s educompRelationsService) Delete(base_comp_id uint64, child_comp_id uint64) error {
+	err := s.educompRelationsRepo.Delete(base_comp_id, child_comp_id)
 	if err != nil {
 		log.Printf("EducompRelationsService: %s", err)
 		return err

@@ -1,9 +1,10 @@
-package controllers
+package auth
 
 import (
 	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/requests"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"log"
@@ -27,19 +28,19 @@ func (c AuthController) Register() http.HandlerFunc {
 		user, err := requests.Bind(r, requests.RegisterRequest{}, domain.User{})
 		if err != nil {
 			log.Printf("AuthController: %s", err)
-			BadRequest(w, errors.New("invalid request body"))
+			controllers.BadRequest(w, errors.New("invalid request body"))
 			return
 		}
 
 		user, token, err := c.authService.Register(user)
 		if err != nil {
 			log.Printf("AuthController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		var authDto resources.AuthDto
-		Success(w, authDto.DomainToDto(token, user))
+		controllers.Success(w, authDto.DomainToDto(token, user))
 	}
 }
 
@@ -48,32 +49,32 @@ func (c AuthController) Login() http.HandlerFunc {
 		user, err := requests.Bind(r, requests.AuthRequest{}, domain.User{})
 		if err != nil {
 			log.Printf("AuthController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
 		u, token, err := c.authService.Login(user)
 		if err != nil {
-			Unauthorized(w, err)
+			controllers.Unauthorized(w, err)
 			return
 		}
 
 		var authDto resources.AuthDto
-		Success(w, authDto.DomainToDto(token, u))
+		controllers.Success(w, authDto.DomainToDto(token, u))
 	}
 }
 
 func (c AuthController) Logout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sess := r.Context().Value(SessKey).(domain.Session)
+		sess := r.Context().Value(controllers.SessKey).(domain.Session)
 		err := c.authService.Logout(sess)
 		if err != nil {
 			log.Print(err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
-		noContent(w)
+		controllers.NoContent(w)
 	}
 }
 
@@ -82,19 +83,19 @@ func (c AuthController) ChangePassword() http.HandlerFunc {
 		req, err := requests.Bind(r, requests.ChangePasswordRequest{}, domain.ChangePassword{})
 		if err != nil {
 			log.Printf("AuthController: %s", err)
-			BadRequest(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
-		sess := r.Context().Value(SessKey).(domain.Session)
-		user := r.Context().Value(UserKey).(domain.User)
+		sess := r.Context().Value(controllers.SessKey).(domain.Session)
+		user := r.Context().Value(controllers.UserKey).(domain.User)
 
 		err = c.authService.ChangePassword(user, req, sess)
 		if err != nil {
 			log.Printf("AuthController: %s", err)
-			InternalServerError(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
-		Ok(w)
+		controllers.Ok(w)
 	}
 }

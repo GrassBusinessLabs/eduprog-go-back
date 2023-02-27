@@ -16,7 +16,7 @@ type educomp_relations struct {
 type EducompRelationsRepository interface {
 	CreateRelation(relation domain.Educomp_relations) (domain.Educomp_relations, error)
 	ShowByEduprogId(eduprog_id uint64) ([]domain.Educomp_relations, error)
-	DeleteByBaseCompId(base_comp_id uint64) error
+	Delete(base_comp_id uint64, child_comp_id uint64) error
 }
 
 type educompRelationsRepository struct {
@@ -48,8 +48,8 @@ func (r educompRelationsRepository) ShowByEduprogId(eduprog_id uint64) ([]domain
 	return r.mapModelToDomainCollection(er), nil
 }
 
-func (r educompRelationsRepository) DeleteByBaseCompId(base_comp_id uint64) error {
-	return r.coll.Find(db.Cond{"base_comp_id": base_comp_id}).Delete()
+func (r educompRelationsRepository) Delete(base_comp_id uint64, child_comp_id uint64) error {
+	return r.coll.Find(db.Cond{"base_comp_id": base_comp_id, "child_comp_id": child_comp_id}).Delete()
 }
 
 func (r educompRelationsRepository) mapDomainToModel(d domain.Educomp_relations) educomp_relations {

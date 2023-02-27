@@ -10,7 +10,7 @@ type EduprogschemeService interface {
 	SetComponentToEdprogscheme(eduprogscheme domain.Eduprogscheme) (domain.Eduprogscheme, error)
 	UpdateComponentInEduprogscheme(eduprogscheme domain.Eduprogscheme, id uint64) (domain.Eduprogscheme, error)
 	FindById(id uint64) (domain.Eduprogscheme, error)
-	FindBySemesterNum(semester_num uint16) ([]domain.Eduprogscheme, error)
+	FindBySemesterNum(semester_num uint16, eduprog_id uint64) ([]domain.Eduprogscheme, error)
 	ShowSchemeByEduprogId(eduprog_id uint64) ([]domain.Eduprogscheme, error)
 	Delete(id uint64) error
 }
@@ -52,8 +52,8 @@ func (s eduprogschemeService) FindById(id uint64) (domain.Eduprogscheme, error) 
 	return e, nil
 }
 
-func (s eduprogschemeService) FindBySemesterNum(semester_num uint16) ([]domain.Eduprogscheme, error) {
-	e, err := s.eduprogschemeRepo.FindBySemesterNum(semester_num)
+func (s eduprogschemeService) FindBySemesterNum(semester_num uint16, eduprog_id uint64) ([]domain.Eduprogscheme, error) {
+	e, err := s.eduprogschemeRepo.FindBySemesterNum(semester_num, eduprog_id)
 	if err != nil {
 		log.Printf("EduprogschemeService: %s", err)
 		return []domain.Eduprogscheme{}, err

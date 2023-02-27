@@ -4,7 +4,8 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/config"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/auth"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/eduprog"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/middlewares"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/upper/db/v4"
@@ -37,13 +38,13 @@ type Services struct {
 }
 
 type Controllers struct {
-	controllers.AuthController
-	controllers.UserController
-	controllers.EduprogController
-	controllers.EduprogcompController
-	controllers.EduprogschemeController
-	controllers.DisciplineController
-	controllers.EducompRelationsController
+	auth.AuthController
+	auth.UserController
+	eduprog.EduprogController
+	eduprog.EduprogcompController
+	eduprog.EduprogschemeController
+	eduprog.DisciplineController
+	eduprog.EducompRelationsController
 }
 
 func New(conf config.Configuration) Container {
@@ -66,13 +67,13 @@ func New(conf config.Configuration) Container {
 	disciplineService := app.NewDisciplineService(disciplineRepository)
 	educompRelationsService := app.NewEducompRelationsService(educompRelationsRepository)
 
-	authController := controllers.NewAuthController(authService, userService)
-	userController := controllers.NewUserController(userService)
-	eduprogController := controllers.NewEduprogController(eduprogService, eduprogcompService)
-	eduprogcompController := controllers.NewEduprogcompController(eduprogcompService)
-	eduprogschemeController := controllers.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
-	disciplineController := controllers.NewDisciplineController(disciplineService)
-	educompRelationsController := controllers.NewEducompRelationsController(educompRelationsService)
+	authController := auth.NewAuthController(authService, userService)
+	userController := auth.NewUserController(userService)
+	eduprogController := eduprog.NewEduprogController(eduprogService, eduprogcompService)
+	eduprogcompController := eduprog.NewEduprogcompController(eduprogcompService)
+	eduprogschemeController := eduprog.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
+	disciplineController := eduprog.NewDisciplineController(disciplineService)
+	educompRelationsController := eduprog.NewEducompRelationsController(educompRelationsService, eduprogschemeService, eduprogcompService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 

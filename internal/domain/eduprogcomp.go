@@ -18,11 +18,6 @@ type Eduprogcomp struct {
 }
 
 // todo remove educomps
-type Eduprogcomps struct {
-	Items []Eduprogcomp
-	//Total uint64
-	//Pages uint
-}
 
 func (e Eduprogcomp) GetEduprogcompId() uint64 {
 	return e.Id
