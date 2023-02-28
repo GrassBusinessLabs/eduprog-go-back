@@ -11,6 +11,7 @@ type EduprogcompService interface {
 	Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error)
 	ShowList() ([]domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
+	FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
 	Delete(id uint64) error
@@ -55,6 +56,14 @@ func (s eduprogcompService) ShowList() ([]domain.Eduprogcomp, error) {
 
 func (s eduprogcompService) FindById(id uint64) (domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.FindById(id)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+	return e, nil
+}
+func (s eduprogcompService) FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error) {
+	e, err := s.eduprogcompRepo.FindByWODeleteDate(id)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
 		return domain.Eduprogcomp{}, err

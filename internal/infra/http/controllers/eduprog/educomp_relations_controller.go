@@ -41,6 +41,14 @@ func (c EducompRelationsController) CreateRelation() http.HandlerFunc {
 			return
 		}
 
+		baseComp, _ := c.eduprogcompService.FindByWODeleteDate(relation.BaseCompId)
+		childComp, _ := c.eduprogcompService.FindByWODeleteDate(relation.ChildCompId)
+		if baseComp.DeletedDate != nil || childComp.DeletedDate != nil {
+			log.Printf("EducompRelationsController: %s", err)
+			controllers.BadRequest(w, errors.New("Base or child comp dont exist"))
+			return
+		}
+
 		relation, err = c.educompRelationsService.CreateRelation(relation)
 		if err != nil {
 			log.Printf("EducompRelationsController: %s", err)
@@ -69,8 +77,17 @@ func (c EducompRelationsController) ShowByEduprogId() http.HandlerFunc {
 			return
 		}
 
+		var result []domain.Educomp_relations
+		for i := range relations {
+			baseComp, _ := c.eduprogcompService.FindByWODeleteDate(relations[i].BaseCompId)
+			childComp, _ := c.eduprogcompService.FindByWODeleteDate(relations[i].ChildCompId)
+			if baseComp.DeletedDate == nil && childComp.DeletedDate == nil {
+				result = append(result, relations[i])
+			}
+		}
+
 		var educompRelationsDto resources.EducompRelationsDto
-		controllers.Success(w, educompRelationsDto.DomainToDtoCollection(relations))
+		controllers.Success(w, educompRelationsDto.DomainToDtoCollection(result))
 	}
 }
 

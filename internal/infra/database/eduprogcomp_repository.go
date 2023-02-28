@@ -32,6 +32,7 @@ type EduprogcompRepository interface {
 	Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error)
 	ShowList() ([]domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
+	FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error)
 	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	Delete(id uint64) error
@@ -95,6 +96,16 @@ func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) ([]domain.
 func (r eduprogcompRepository) FindById(id uint64) (domain.Eduprogcomp, error) {
 	var e eduprogcomp
 	err := r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).One(&e)
+	if err != nil {
+		return domain.Eduprogcomp{}, err
+	}
+
+	return r.mapModelToDomain(e), nil
+}
+
+func (r eduprogcompRepository) FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error) {
+	var e eduprogcomp
+	err := r.coll.Find(db.Cond{"id": id}).One(&e)
 	if err != nil {
 		return domain.Eduprogcomp{}, err
 	}

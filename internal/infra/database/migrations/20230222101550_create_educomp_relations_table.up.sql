@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS public.educomp_relations (
 
 );
 
-ALTER TABLE public.educomp_relations ADD FOREIGN KEY (base_comp_id) REFERENCES public.eduprogcomp(id);
+ALTER TABLE public.educomp_relations
+    ADD FOREIGN KEY (base_comp_id) REFERENCES public.eduprogcomp(id) ON DELETE CASCADE;
 
-ALTER TABLE public.educomp_relations ADD FOREIGN KEY (child_comp_id) REFERENCES public.eduprogcomp(id);
+ALTER TABLE public.educomp_relations
+    ADD FOREIGN KEY (child_comp_id) REFERENCES public.eduprogcomp(id) ON DELETE CASCADE;
