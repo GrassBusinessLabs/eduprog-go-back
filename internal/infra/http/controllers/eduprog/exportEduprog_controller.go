@@ -21,15 +21,15 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 
 		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
 		if err != nil {
-			log.Printf("Export controller: %s", err)
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
 		eduprogcomps, _ := c.eduprogcompService.SortComponentsByMnS(id)
 		if err != nil {
-			log.Printf("Export controller: %s", err)
-			controllers.InternalServerError(w, err)
+			log.Printf("EduprogcompController: %s", err)
+			//InternalServerError(w, err)
 			return
 		}
 
@@ -91,12 +91,12 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 				{Type: "left", Color: "#000000", Style: 1},
 			},
 		})
-		err = xlsx.SetCellStyle(SheetName, "A1", "D3", style)
-		err = xlsx.MergeCell(SheetName, "A3", "D3")
-		err = xlsx.SetColWidth(SheetName, "A", "A", 10)
-		err = xlsx.SetColWidth(SheetName, "B", "B", 50)
-		err = xlsx.SetColWidth(SheetName, "C", "C", 15)
-		err = xlsx.SetColWidth(SheetName, "D", "D", 20)
+		xlsx.SetCellStyle(SheetName, "A1", "D3", style)
+		xlsx.MergeCell(SheetName, "A3", "D3")
+		xlsx.SetColWidth(SheetName, "A", "A", 10)
+		xlsx.SetColWidth(SheetName, "B", "B", 50)
+		xlsx.SetColWidth(SheetName, "C", "C", 15)
+		xlsx.SetColWidth(SheetName, "D", "D", 20)
 
 		data := [][]interface{}{
 			{"Код н/д", "Компоненти освітньої програми (навчальні дисципліни, курсові проекти (роботи), практики, кваліфікаційна робота)", "Кількість кредитів", "Форма підсумкового контролю"},
@@ -104,12 +104,12 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			{"Обов'язкові компоненти ОП"},
 		}
 
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", 3), fmt.Sprintf("D%d", 3), styleBold)
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", 3), fmt.Sprintf("D%d", 3), styleBold)
 		startRow := 1
 
 		for i := startRow; i < len(data)+startRow; i++ {
 
-			err = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &data[i-1])
+			xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &data[i-1])
 
 		}
 
@@ -117,10 +117,10 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 
 		for i := 4; i < mandLen+4; i++ {
 
-			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
+			xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
 
-			err = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
+			xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
 				eduprogcomps.Mandatory[i-4].Type + " " + eduprogcomps.Mandatory[i-4].Code,
 				eduprogcomps.Mandatory[i-4].Name,
 				eduprogcomps.Mandatory[i-4].Credits,
@@ -129,21 +129,21 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 
 		}
 
-		err = xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4))
-		err = xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4))
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4), styleBold)
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4), styleBoldAlignLeft)
-		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", mandLen+4), "Загальний обсяг обов'язкових компонент: ")
-		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%d кредитів", creditsDto.MandatoryCredits))
+		xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4))
+		xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4))
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4), styleBold)
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4), styleBoldAlignLeft)
+		xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", mandLen+4), "Загальний обсяг обов'язкових компонент: ")
+		xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%d кредитів", creditsDto.MandatoryCredits))
 
 		selLen := len(eduprogcomps.Selective)
 
 		for i := mandLen + 5; i < selLen+mandLen+5; i++ {
 
-			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
+			xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
 
-			err = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
+			xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
 				eduprogcomps.Selective[i-mandLen-5].Type + " " + eduprogcomps.Selective[i-mandLen-5].Code,
 				eduprogcomps.Selective[i-mandLen-5].Name,
 				eduprogcomps.Selective[i-mandLen-5].Credits,
@@ -152,23 +152,22 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 
 		}
 
-		err = xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5))
-		err = xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5))
-		err = xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6))
-		err = xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6))
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5), styleBoldAlignLeft)
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5), styleBold)
-		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), "Загальний обсяг вибіркових компонент: ")
-		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("%d кредитів", creditsDto.SelectiveCredits))
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6), styleBoldAlignLeft)
-		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6), styleBold)
-		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
-		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%d кредитів", creditsDto.TotalCredits))
+		xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5))
+		xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5))
+		xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6))
+		xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6))
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5), styleBoldAlignLeft)
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5), styleBold)
+		xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), "Загальний обсяг вибіркових компонент: ")
+		xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("%d кредитів", creditsDto.SelectiveCredits))
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6), styleBoldAlignLeft)
+		xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6), styleBold)
+		xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
+		xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%d кредитів", creditsDto.TotalCredits))
 
 		err = xlsx.SaveAs("./ComponentsCollection.xlsx")
 		if err != nil {
-			log.Printf("Export controller: %s", err)
-			controllers.InternalServerError(w, err)
+			fmt.Println(err)
 			return
 		}
 		//w.Header().Set("Content-Type", "application/octet-stream")
