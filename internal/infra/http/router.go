@@ -133,7 +133,7 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 			ec.CreditsInfo(),
 		)
 		apiRouter.Get(
-			"/toExcel",
+			"/toExcel/{edId}",
 			ec.ExportEduprogListToExcel(),
 		)
 		apiRouter.Delete(

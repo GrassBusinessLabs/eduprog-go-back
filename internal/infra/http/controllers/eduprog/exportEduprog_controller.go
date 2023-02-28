@@ -2,38 +2,177 @@ package eduprog
 
 import (
 	"fmt"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
+	_ "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
+	"github.com/go-chi/chi/v5"
 	"github.com/xuri/excelize/v2"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
+const SheetName = "Перелік компонент"
+
 func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("Export controller: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcomps, _ := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("Export controller: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var creditsDto resources.CreditsDto
+
+		for _, comp := range eduprogcomps.Selective {
+			creditsDto.SelectiveCredits += comp.Credits
+		}
+		for _, comp := range eduprogcomps.Mandatory {
+			creditsDto.MandatoryCredits += comp.Credits
+		}
+		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
+		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
+		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
+		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
+
 		xlsx := excelize.NewFile()
-		_, err := xlsx.NewSheet("Sheet2")
-		if err != nil {
-			fmt.Println(err)
-			return
+		index, _ := xlsx.NewSheet("Sheet1")
+		xlsx.SetActiveSheet(index)
+		err = xlsx.SetSheetName("Sheet1", SheetName)
+
+		style, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+		styleAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12},
+			Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+		styleBold, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12, Bold: true},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+		styleBoldAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12, Bold: true},
+			Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+		err = xlsx.SetCellStyle(SheetName, "A1", "D3", style)
+		err = xlsx.MergeCell(SheetName, "A3", "D3")
+		err = xlsx.SetColWidth(SheetName, "A", "A", 10)
+		err = xlsx.SetColWidth(SheetName, "B", "B", 50)
+		err = xlsx.SetColWidth(SheetName, "C", "C", 15)
+		err = xlsx.SetColWidth(SheetName, "D", "D", 20)
+
+		data := [][]interface{}{
+			{"Код н/д", "Компоненти освітньої програми (навчальні дисципліни, курсові проекти (роботи), практики, кваліфікаційна робота)", "Кількість кредитів", "Форма підсумкового контролю"},
+			{1, 2, 3, 4},
+			{"Обов'язкові компоненти ОП"},
 		}
-		err = xlsx.SetCellValue("Sheet2", "A2", "Hello world.")
-		if err != nil {
-			fmt.Println(err)
-			return
+
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", 3), fmt.Sprintf("D%d", 3), styleBold)
+		startRow := 1
+
+		for i := startRow; i < len(data)+startRow; i++ {
+
+			err = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &data[i-1])
+
 		}
-		err = xlsx.SetCellValue("Sheet1", "B2", 100)
-		if err != nil {
-			fmt.Println(err)
-			return
+
+		mandLen := len(eduprogcomps.Mandatory)
+
+		for i := 4; i < mandLen+4; i++ {
+
+			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
+
+			err = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
+				eduprogcomps.Mandatory[i-4].Type + " " + eduprogcomps.Mandatory[i-4].Code,
+				eduprogcomps.Mandatory[i-4].Name,
+				eduprogcomps.Mandatory[i-4].Credits,
+				eduprogcomps.Mandatory[i-4].ControlType,
+			})
+
 		}
-		xlsx.SetActiveSheet(2)
-		err = xlsx.SaveAs("./Workbook2.xlsx")
+
+		err = xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4))
+		err = xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4))
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4), styleBold)
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4), styleBoldAlignLeft)
+		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", mandLen+4), "Загальний обсяг обов'язкових компонент: ")
+		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%d кредитів", creditsDto.MandatoryCredits))
+
+		selLen := len(eduprogcomps.Selective)
+
+		for i := mandLen + 5; i < selLen+mandLen+5; i++ {
+
+			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
+
+			err = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
+				eduprogcomps.Selective[i-mandLen-5].Type + " " + eduprogcomps.Selective[i-mandLen-5].Code,
+				eduprogcomps.Selective[i-mandLen-5].Name,
+				eduprogcomps.Selective[i-mandLen-5].Credits,
+				eduprogcomps.Selective[i-mandLen-5].ControlType,
+			})
+
+		}
+
+		err = xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5))
+		err = xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5))
+		err = xlsx.MergeCell(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6))
+		err = xlsx.MergeCell(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6))
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5), styleBoldAlignLeft)
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5), styleBold)
+		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", selLen+mandLen+5), "Загальний обсяг вибіркових компонент: ")
+		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("%d кредитів", creditsDto.SelectiveCredits))
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6), styleBoldAlignLeft)
+		err = xlsx.SetCellStyle(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6), styleBold)
+		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("A%d", selLen+mandLen+6), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
+		err = xlsx.SetCellValue(SheetName, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%d кредитів", creditsDto.TotalCredits))
+
+		err = xlsx.SaveAs("./ComponentsCollection.xlsx")
 		if err != nil {
-			fmt.Println(err)
+			log.Printf("Export controller: %s", err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 		//w.Header().Set("Content-Type", "application/octet-stream")
-		//w.Header().Set("Content-Disposition", "attachment; filename="+"Workbook.xlsx")
+		w.Header().Set("Content-Disposition", "attachment; filename="+"ComponentsCollection.xlsx")
 		//w.Header().Set("Content-Transfer-Encoding", "binary")
 		//w.Header().Set("Expires", "0")
 		//xlsx.Write(w)
@@ -46,7 +185,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 		//SuccessExport(w, buff.Bytes())
 
 		buf, _ := xlsx.WriteToBuffer()
-		http.ServeContent(w, r, "test.xlsx", time.Time{}, strings.NewReader(buf.String()))
+		http.ServeContent(w, r, "ComponentsCollection.xlsx", time.Time{}, strings.NewReader(buf.String()))
 	}
 }
 
