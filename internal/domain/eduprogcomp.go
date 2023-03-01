@@ -14,7 +14,6 @@ type Eduprogcomp struct {
 	EduprogId   uint64
 	CreatedDate time.Time
 	UpdatedDate time.Time
-	DeletedDate *time.Time
 }
 
 // todo remove educomps

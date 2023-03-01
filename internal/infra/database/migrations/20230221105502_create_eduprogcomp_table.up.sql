@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.eduprogcomp(
     id serial PRIMARY KEY,
     code varchar(50) NOT NULL,
-    "name" varchar(50) NOT NULL,
+    "name" varchar(50) NOT NULL UNIQUE,
     credits integer NOT NULL,
     control_type varchar(50),
     "type" varchar(50),

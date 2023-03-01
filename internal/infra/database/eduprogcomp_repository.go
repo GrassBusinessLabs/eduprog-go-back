@@ -13,18 +13,17 @@ const (
 )
 
 type eduprogcomp struct {
-	Id          uint64     `db:"id,omitempty"`
-	Code        string     `db:"code"`
-	Name        string     `db:"name"`
-	Credits     uint64     `db:"credits"`
-	ControlType string     `db:"control_type"`
-	Type        string     `db:"type"`
-	SubType     string     `db:"sub_type"`
-	Category    string     `db:"category"`
-	EduprogId   uint64     `db:"eduprog_id"`
-	CreatedDate time.Time  `db:"created_date,omitempty"`
-	UpdatedDate time.Time  `db:"updated_date,omitempty"`
-	DeletedDate *time.Time `db:"deleted_date,omitempty"`
+	Id          uint64    `db:"id,omitempty"`
+	Code        string    `db:"code"`
+	Name        string    `db:"name"`
+	Credits     uint64    `db:"credits"`
+	ControlType string    `db:"control_type"`
+	Type        string    `db:"type"`
+	SubType     string    `db:"sub_type"`
+	Category    string    `db:"category"`
+	EduprogId   uint64    `db:"eduprog_id"`
+	CreatedDate time.Time `db:"created_date,omitempty"`
+	UpdatedDate time.Time `db:"updated_date,omitempty"`
 }
 
 type EduprogcompRepository interface {
@@ -74,7 +73,7 @@ func (r eduprogcompRepository) Update(eduprogcomp domain.Eduprogcomp, id uint64)
 func (r eduprogcompRepository) ShowList() ([]domain.Eduprogcomp, error) {
 	var eduprogcomps []eduprogcomp
 
-	err := r.coll.Find(db.Cond{"deleted_date": nil}).All(&eduprogcomps)
+	err := r.coll.Find().All(&eduprogcomps)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}
@@ -85,7 +84,7 @@ func (r eduprogcompRepository) ShowList() ([]domain.Eduprogcomp, error) {
 func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error) {
 	var eduprogcomps []eduprogcomp
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "deleted_date": nil}).All(&eduprogcomps)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).All(&eduprogcomps)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}
@@ -95,7 +94,7 @@ func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) ([]domain.
 
 func (r eduprogcompRepository) FindById(id uint64) (domain.Eduprogcomp, error) {
 	var e eduprogcomp
-	err := r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).One(&e)
+	err := r.coll.Find(db.Cond{"id": id}).One(&e)
 	if err != nil {
 		return domain.Eduprogcomp{}, err
 	}
@@ -117,7 +116,7 @@ func (r eduprogcompRepository) SortComponentsByMnS(eduprog_id uint64) (domain.Co
 	var eduprogcomp_slice []eduprogcomp
 	var components domain.Components
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "deleted_date": nil}).All(&eduprogcomp_slice)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).All(&eduprogcomp_slice)
 	if err != nil {
 		return domain.Components{}, err
 	}
@@ -134,7 +133,7 @@ func (r eduprogcompRepository) SortComponentsByMnS(eduprog_id uint64) (domain.Co
 }
 
 func (r eduprogcompRepository) Delete(id uint64) error {
-	return r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).Update(map[string]interface{}{"deleted_date": time.Now()})
+	return r.coll.Find(db.Cond{"id": id}).Delete()
 }
 
 func (r eduprogcompRepository) mapDomainToModel(d domain.Eduprogcomp) eduprogcomp {
@@ -150,7 +149,6 @@ func (r eduprogcompRepository) mapDomainToModel(d domain.Eduprogcomp) eduprogcom
 		EduprogId:   d.EduprogId,
 		CreatedDate: d.CreatedDate,
 		UpdatedDate: d.UpdatedDate,
-		DeletedDate: d.DeletedDate,
 	}
 }
 
@@ -167,7 +165,6 @@ func (r eduprogcompRepository) mapModelToDomain(m eduprogcomp) domain.Eduprogcom
 		EduprogId:   m.EduprogId,
 		CreatedDate: m.CreatedDate,
 		UpdatedDate: m.UpdatedDate,
-		DeletedDate: m.DeletedDate,
 	}
 }
 
