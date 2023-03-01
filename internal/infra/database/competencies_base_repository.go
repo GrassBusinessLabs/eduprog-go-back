@@ -49,6 +49,7 @@ func (r competenciesBaseRepository) FindById(id uint64) (domain.CompetenciesBase
 	return r.mapModelToDomain(e), nil
 }
 
+// nolint
 func (r competenciesBaseRepository) mapDomainToModel(d domain.CompetenciesBase) competencies_base {
 	return competencies_base{
 		Id:         d.Id,
