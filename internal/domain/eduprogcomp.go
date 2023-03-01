@@ -16,8 +16,6 @@ type Eduprogcomp struct {
 	UpdatedDate time.Time
 }
 
-// todo remove educomps
-
 func (e Eduprogcomp) GetEduprogcompId() uint64 {
 	return e.Id
 }

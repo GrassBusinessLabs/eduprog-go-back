@@ -55,6 +55,9 @@ func Router(cont container.Container) http.Handler {
 				EduprogschemeRouter(apiRouter, cont.EduprogschemeController)
 				DisciplineRouter(apiRouter, cont.DisciplineController)
 				EducompRelationsRouter(apiRouter, cont.EducompRelationsController)
+				CompetenciesBaseRouter(apiRouter, cont.CompetenciesBaseController)
+				EduprogcompetenciesRouter(apiRouter, cont.EduprogcompetenciesController)
+				CompetenciesMatrixRouter(apiRouter, cont.CompetenciesMatrixController)
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
 		})
@@ -249,6 +252,60 @@ func EducompRelationsRouter(r chi.Router, ecrc eduprog.EducompRelationsControlle
 		apiRouter.Delete(
 			"/{baseId}/{childId}",
 			ecrc.Delete(),
+		)
+	})
+
+}
+
+func CompetenciesBaseRouter(r chi.Router, cbc eduprog.CompetenciesBaseController) {
+
+	r.Route("/competencies", func(apiRouter chi.Router) {
+		apiRouter.Get(
+			"/list",
+			cbc.ShowAllCompetencies(),
+		)
+		apiRouter.Get(
+			"/{cbId}",
+			cbc.FindById(),
+		)
+	})
+}
+
+func EduprogcompetenciesRouter(r chi.Router, ecc eduprog.EduprogcompetenciesController) {
+
+	r.Route("/eduprogs/competencies", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/add",
+			ecc.AddCompetencyToEduprog(),
+		)
+		apiRouter.Get(
+			"/byEduprogId/{edId}",
+			ecc.ShowCompetenciesByEduprogId(),
+		)
+		apiRouter.Get(
+			"/{compId}",
+			ecc.FindById(),
+		)
+		apiRouter.Delete(
+			"/{compId}",
+			ecc.Delete(),
+		)
+	})
+}
+
+func CompetenciesMatrixRouter(r chi.Router, cmc eduprog.CompetenciesMatrixController) {
+	r.Route("/eduprogs/competenciesMatrix", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/create",
+			cmc.CreateRelation(),
+		)
+		apiRouter.Get(
+			"/{epId}",
+			cmc.ShowByEduprogId(),
+		)
+		apiRouter.Delete(
+			"/{componentId}/{competencyId}",
+			cmc.Delete(),
 		)
 	})
 

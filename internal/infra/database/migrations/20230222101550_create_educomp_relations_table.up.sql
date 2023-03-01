@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS public.educomp_relations (
     eduprog_id integer NOT NULL,
     base_comp_id integer NOT NULL,
     child_comp_id integer NOT NULL
-
 );
 
 ALTER TABLE public.educomp_relations

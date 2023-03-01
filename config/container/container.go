@@ -35,6 +35,9 @@ type Services struct {
 	app.EduprogschemeService
 	app.DisciplineService
 	app.EducompRelationsService
+	app.CompetenciesBaseService
+	app.EduprogcompetenciesService
+	app.CompetenciesMatrixService
 }
 
 type Controllers struct {
@@ -45,6 +48,9 @@ type Controllers struct {
 	eduprog.EduprogschemeController
 	eduprog.DisciplineController
 	eduprog.EducompRelationsController
+	eduprog.CompetenciesBaseController
+	eduprog.EduprogcompetenciesController
+	eduprog.CompetenciesMatrixController
 }
 
 func New(conf config.Configuration) Container {
@@ -58,6 +64,9 @@ func New(conf config.Configuration) Container {
 	eduprogschemeRepository := database.NewEduprogschemeRepository(sess)
 	disciplineRepository := database.NewDisciplineRepository(sess)
 	educompRelationsRepository := database.NewEducompRelationsRepository(sess)
+	competencyBaseRepository := database.NewCompetenciesBaseRepository(sess)
+	competencyMatrixRepository := database.NewCompetenciesMatrixRepository(sess)
+	eduprogcompetenciesRepository := database.NewEduprogcompetenciesRepository(sess)
 
 	userService := app.NewUserService(userRepository)
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
@@ -66,6 +75,9 @@ func New(conf config.Configuration) Container {
 	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
 	disciplineService := app.NewDisciplineService(disciplineRepository)
 	educompRelationsService := app.NewEducompRelationsService(educompRelationsRepository)
+	competencyBaseService := app.NewCompetenciesBaseService(competencyBaseRepository)
+	competencyMatrixService := app.NewCompetenciesMatrixService(competencyMatrixRepository)
+	eduprogcompetenciesService := app.NewEduprogcompetenciesService(eduprogcompetenciesRepository)
 
 	authController := auth.NewAuthController(authService, userService)
 	userController := auth.NewUserController(userService)
@@ -74,6 +86,9 @@ func New(conf config.Configuration) Container {
 	eduprogschemeController := eduprog.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
 	disciplineController := eduprog.NewDisciplineController(disciplineService)
 	educompRelationsController := eduprog.NewEducompRelationsController(educompRelationsService, eduprogschemeService, eduprogcompService)
+	competencyBaseController := eduprog.NewCompetenciesBaseController(competencyBaseService)
+	competencyMatrixController := eduprog.NewCompetenciesMatrixController(competencyMatrixService)
+	eduprogcompetenciesController := eduprog.NewEduprogcompetenciesController(eduprogcompetenciesService, competencyBaseService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 
@@ -89,6 +104,9 @@ func New(conf config.Configuration) Container {
 			eduprogschemeService,
 			disciplineService,
 			educompRelationsService,
+			competencyBaseService,
+			eduprogcompetenciesService,
+			competencyMatrixRepository,
 		},
 		Controllers: Controllers{
 			authController,
@@ -98,6 +116,9 @@ func New(conf config.Configuration) Container {
 			eduprogschemeController,
 			disciplineController,
 			educompRelationsController,
+			competencyBaseController,
+			eduprogcompetenciesController,
+			competencyMatrixController,
 		},
 	}
 }
