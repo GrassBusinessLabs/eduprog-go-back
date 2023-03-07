@@ -56,9 +56,12 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 		var maxCode uint64 = 0
 
 		for i := range allEdpcompetencies {
-			if i == 0 || allEdpcompetencies[i].Code > maxCode {
-				maxCode = allEdpcompetencies[i].Code
+			if allEdpcompetencies[i].Type == eduprogcompetency.Type {
+				if i == 0 || allEdpcompetencies[i].Code > maxCode {
+					maxCode = allEdpcompetencies[i].Code
+				}
 			}
+
 		}
 
 		eduprogcompetency.Code = maxCode + 1
@@ -148,15 +151,18 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 		}
 
 		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].Code > competency.Code {
-				allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
-				_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
-				if err != nil {
-					log.Printf("EduprogcompetenciesController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
+			if allEdpcompetencies[i].Type == competency.Type {
+				if allEdpcompetencies[i].Code > competency.Code {
+					allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
+					_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
+					if err != nil {
+						log.Printf("EduprogcompetenciesController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
 				}
 			}
+
 		}
 
 		controllers.Ok(w)
