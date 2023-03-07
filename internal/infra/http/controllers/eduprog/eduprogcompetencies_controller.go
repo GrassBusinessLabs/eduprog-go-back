@@ -159,5 +159,6 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 			}
 		}
 
+		controllers.Ok(w)
 	}
 }

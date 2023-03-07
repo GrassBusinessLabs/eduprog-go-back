@@ -5,7 +5,6 @@ import (
 )
 
 type CreateEduprogcompRequest struct {
-	Code        string `json:"code" validate:"required,gte=1,max=40"`
 	Name        string `json:"name" validate:"required,gte=1,max=40"`
 	Credits     uint64 `json:"credits" validate:"required"`
 	ControlType string `json:"control_type" validate:"required,gte=1,max=40"`
@@ -16,7 +15,6 @@ type CreateEduprogcompRequest struct {
 }
 
 type UpdateEduprogcompRequest struct {
-	Code        string `json:"code" validate:"required,gte=1,max=40"`
 	Name        string `json:"name" validate:"required,gte=1,max=40"`
 	Credits     uint64 `json:"credits" validate:"required"`
 	ControlType string `json:"control_type" validate:"required,gte=1,max=40"`
@@ -28,7 +26,7 @@ type UpdateEduprogcompRequest struct {
 
 func (r CreateEduprogcompRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcomp{
-		Code:        r.Code,
+
 		Name:        r.Name,
 		Credits:     r.Credits,
 		ControlType: r.ControlType,
@@ -41,7 +39,7 @@ func (r CreateEduprogcompRequest) ToDomainModel() (interface{}, error) {
 
 func (r UpdateEduprogcompRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcomp{
-		Code:        r.Code,
+
 		Name:        r.Name,
 		Credits:     r.Credits,
 		ControlType: r.ControlType,

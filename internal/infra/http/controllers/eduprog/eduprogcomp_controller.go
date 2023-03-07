@@ -32,6 +32,27 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			return
 		}
 
+		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var maxCode uint64 = 0
+
+		for i := range eduprogcomps {
+			if eduprogcomps[i].Type == eduprogcomp.Type {
+				temp, _ := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
+				if i == 0 || temp > maxCode {
+					maxCode = temp
+				}
+			}
+
+		}
+
+		eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
+
 		eduprogcomp, err = c.eduprogcompService.Save(eduprogcomp)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
@@ -137,12 +158,50 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 			return
 		}
 
+		eduprogcomp, _ := c.eduprogcompService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
 		err = c.eduprogcompService.Delete(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
+
+		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for i := range eduprogcomps {
+			if eduprogcomps[i].Type == eduprogcomp.Type {
+				educompsCode, err := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
+				if err != nil {
+					panic(err)
+				}
+				educompCode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
+				if err != nil {
+					panic(err)
+				}
+				if educompsCode > educompCode {
+					eduprogcomps[i].Code = strconv.FormatUint(educompsCode-1, 10)
+					_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
+					if err != nil {
+						log.Printf("EduprogcompetenciesController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+				}
+			}
+
+		}
+
 		controllers.Ok(w)
 	}
 }
