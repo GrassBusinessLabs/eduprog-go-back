@@ -63,7 +63,7 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 
 		eduprogcompetency.Code = maxCode + 1
 
-		eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+		eduprogcompetency, _ = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -150,7 +150,12 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 		for i := range allEdpcompetencies {
 			if allEdpcompetencies[i].Code > competency.Code {
 				allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
-				_, err = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
+				_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
+				if err != nil {
+					log.Printf("EduprogcompetenciesController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
 			}
 		}
 
