@@ -16,6 +16,8 @@ type competencies_base struct {
 
 type CompetenciesBaseRepository interface {
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
+	ShowZK() ([]domain.CompetenciesBase, error)
+	ShowFK() ([]domain.CompetenciesBase, error)
 	FindById(id uint64) (domain.CompetenciesBase, error)
 }
 
@@ -32,6 +34,25 @@ func NewCompetenciesBaseRepository(dbSession db.Session) CompetenciesBaseReposit
 func (r competenciesBaseRepository) ShowAllCompetencies() ([]domain.CompetenciesBase, error) {
 	var c []competencies_base
 	err := r.coll.Find().All(&c)
+	if err != nil {
+		return []domain.CompetenciesBase{}, err
+	}
+
+	return r.mapModelToDomainCollection(c), nil
+}
+
+func (r competenciesBaseRepository) ShowZK() ([]domain.CompetenciesBase, error) {
+	var c []competencies_base
+	err := r.coll.Find(db.Cond{"type": "ЗК"}).All(&c)
+	if err != nil {
+		return []domain.CompetenciesBase{}, err
+	}
+
+	return r.mapModelToDomainCollection(c), nil
+}
+func (r competenciesBaseRepository) ShowFK() ([]domain.CompetenciesBase, error) {
+	var c []competencies_base
+	err := r.coll.Find(db.Cond{"type": "ФК"}).All(&c)
 	if err != nil {
 		return []domain.CompetenciesBase{}, err
 	}

@@ -8,6 +8,7 @@ import (
 
 type EduprogcompetenciesService interface {
 	AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error)
+	UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error)
 	ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error)
 	FindById(competencyId uint64) (domain.Eduprogcompetencies, error)
 	Delete(competencyId uint64) error
@@ -25,6 +26,15 @@ func NewEduprogcompetenciesService(cb database.EduprogcompetenciesRepository) Ed
 
 func (s eduprogcompetenciesService) AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error) {
 	e, err := s.eduprogcompetenciesRepo.AddCompetencyToEduprog(eduprogcompetency)
+	if err != nil {
+		log.Printf("Eduprogcompetency service: %s", err)
+		return domain.Eduprogcompetencies{}, err
+	}
+	return e, err
+}
+
+func (s eduprogcompetenciesService) UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error) {
+	e, err := s.eduprogcompetenciesRepo.UpdateCompetency(eduprogcompetency, id)
 	if err != nil {
 		log.Printf("Eduprogcompetency service: %s", err)
 		return domain.Eduprogcompetencies{}, err

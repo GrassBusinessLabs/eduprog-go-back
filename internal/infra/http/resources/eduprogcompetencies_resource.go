@@ -6,6 +6,8 @@ type EduprogcompetenciesDto struct {
 	Id           uint64 `json:"id"`
 	CompetencyId uint64 `json:"competency_id"`
 	EduprogId    uint64 `json:"eduprog_id"`
+	Code         uint64 `json:"code"`
+	Type         string `json:"type"`
 	Redefinition string `json:"redefinition"`
 }
 
@@ -14,6 +16,8 @@ func (d EduprogcompetenciesDto) DomainToDto(competency domain.Eduprogcompetencie
 		Id:           competency.Id,
 		CompetencyId: competency.CompetencyId,
 		EduprogId:    competency.EduprogId,
+		Code:         competency.Code,
+		Type:         competency.Type,
 		Redefinition: competency.Redefinition,
 	}
 }

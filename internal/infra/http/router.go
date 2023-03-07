@@ -265,6 +265,14 @@ func CompetenciesBaseRouter(r chi.Router, cbc eduprog.CompetenciesBaseController
 			cbc.ShowAllCompetencies(),
 		)
 		apiRouter.Get(
+			"/ZK_list",
+			cbc.ShowZK(),
+		)
+		apiRouter.Get(
+			"/FK_list",
+			cbc.ShowFK(),
+		)
+		apiRouter.Get(
 			"/{cbId}",
 			cbc.FindById(),
 		)

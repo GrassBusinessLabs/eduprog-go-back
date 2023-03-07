@@ -11,12 +11,14 @@ type eduprogcompetencies struct {
 	Id           uint64 `db:"id,omitempty"`
 	CompetencyId uint64 `db:"competency_id"`
 	EduprogId    uint64 `db:"eduprog_id"`
+	Type         string `db:"type"`
 	Code         uint64 `db:"code"`
 	Redefinition string `db:"redefinition"`
 }
 
 type EduprogcompetenciesRepository interface {
 	AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error)
+	UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error)
 	ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error)
 	FindById(competencyId uint64) (domain.Eduprogcompetencies, error)
 	Delete(competencyId uint64) error
@@ -41,6 +43,17 @@ func (r eduprogcompetenciesRepository) AddCompetencyToEduprog(eduprogcompetency 
 	}
 
 	return r.mapModelToDomain(ec), nil
+}
+
+func (r eduprogcompetenciesRepository) UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error) {
+	e := r.mapDomainToModel(eduprogcompetency)
+
+	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	if err != nil {
+		return domain.Eduprogcompetencies{}, err
+	}
+
+	return r.mapModelToDomain(e), nil
 }
 
 func (r eduprogcompetenciesRepository) ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error) {
@@ -72,6 +85,7 @@ func (r eduprogcompetenciesRepository) mapDomainToModel(d domain.Eduprogcompeten
 		Id:           d.Id,
 		CompetencyId: d.CompetencyId,
 		EduprogId:    d.EduprogId,
+		Type:         d.Type,
 		Code:         d.Code,
 		Redefinition: d.Redefinition,
 	}
@@ -82,6 +96,7 @@ func (r eduprogcompetenciesRepository) mapModelToDomain(m eduprogcompetencies) d
 		Id:           m.Id,
 		CompetencyId: m.CompetencyId,
 		EduprogId:    m.EduprogId,
+		Type:         m.Type,
 		Code:         m.Code,
 		Redefinition: m.Redefinition,
 	}

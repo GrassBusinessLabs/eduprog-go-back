@@ -35,6 +35,36 @@ func (c CompetenciesBaseController) ShowAllCompetencies() http.HandlerFunc {
 	}
 }
 
+func (c CompetenciesBaseController) ShowZK() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		competencies, err := c.competenciesBaseService.ShowZK()
+		if err != nil {
+			log.Printf("CompetenciesBase controller: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var competenciesDto resources.CompetenciesBaseDto
+		controllers.Success(w, competenciesDto.DomainToDtoCollection(competencies))
+	}
+}
+
+func (c CompetenciesBaseController) ShowFK() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		competencies, err := c.competenciesBaseService.ShowFK()
+		if err != nil {
+			log.Printf("CompetenciesBase controller: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var competenciesDto resources.CompetenciesBaseDto
+		controllers.Success(w, competenciesDto.DomainToDtoCollection(competencies))
+	}
+}
+
 func (c CompetenciesBaseController) FindById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "cbId"), 10, 64)
