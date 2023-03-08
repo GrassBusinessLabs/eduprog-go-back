@@ -1,6 +1,7 @@
 package eduprog
 
 import (
+	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -32,6 +33,7 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			return
 		}
 
+		//Code generation logic
 		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
@@ -48,10 +50,48 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 					maxCode = temp
 				}
 			}
-
 		}
 
 		eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
+
+		//Free credits check
+		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var creditsDto resources.CreditsDto
+
+		for _, comp := range comps.Selective {
+			creditsDto.SelectiveCredits += comp.Credits
+		}
+		for _, comp := range comps.Mandatory {
+			creditsDto.MandatoryCredits += comp.Credits
+		}
+		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
+		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
+		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
+		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
+
+		if eduprogcomp.Type == "ОК" {
+			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits || eduprogcomp.Credits < 0 {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.BadRequest(w, errors.New("too much credits"))
+				return
+			}
+		} else if eduprogcomp.Type == "ВБ" {
+			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits || eduprogcomp.Credits < 0 {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
+				return
+			}
+		} else {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, errors.New(`wrong type, it can only be "ОК" or "ВБ"`))
+			return
+		}
 
 		eduprogcomp, err = c.eduprogcompService.Save(eduprogcomp)
 		if err != nil {
@@ -78,6 +118,45 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
+			return
+		}
+
+		//Free credits check
+		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var creditsDto resources.CreditsDto
+
+		for _, comp := range comps.Selective {
+			creditsDto.SelectiveCredits += comp.Credits
+		}
+		for _, comp := range comps.Mandatory {
+			creditsDto.MandatoryCredits += comp.Credits
+		}
+		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
+		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
+		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
+		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
+
+		if eduprogcomp.Type == "ОК" {
+			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits || eduprogcomp.Credits < 0 {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.BadRequest(w, errors.New("too much credits"))
+				return
+			}
+		} else if eduprogcomp.Type == "ВБ" {
+			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits || eduprogcomp.Credits < 0 {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
+				return
+			}
+		} else {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, errors.New(`wrong type, it can only be "ОК" or "ВБ"`))
 			return
 		}
 

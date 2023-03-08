@@ -1,6 +1,7 @@
 package eduprog
 
 import (
+	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -34,7 +35,7 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			return
 		}
 
-		eduprogscheme, err = c.eduprogschemeService.SetComponentToEdprogscheme(eduprogscheme)
+		eduprogschemes, _ := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
@@ -44,6 +45,32 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		totalCompCredits := eduprogscheme.CreditsPerSemester
+
+		for i := range eduprogschemes {
+			if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
+				totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
+				if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
+					log.Printf("EduprogcompController: %s", err)
+					controllers.BadRequest(w, errors.New("this component already exists in this semester"))
+					return
+				}
+			}
+		}
+
+		if totalCompCredits > eduprogcomp.Credits {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, errors.New("too much credits per semester, free credits to use left: "))
+			return
+		}
+
+		eduprogscheme, err = c.eduprogschemeService.SetComponentToEdprogscheme(eduprogscheme)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}

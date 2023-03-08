@@ -10,11 +10,11 @@ const EduprogschemeTableName = "eduprogscheme"
 
 type eduprogscheme struct {
 	Id                 uint64    `db:"id,omitempty"`
-	SemesterNum        uint16    `db:"semester_num"`
+	SemesterNum        uint64    `db:"semester_num"`
 	DisciplineId       uint64    `db:"discipline_id"`
 	EduprogId          uint64    `db:"eduprog_id"`
 	EduprogcompId      uint64    `db:"eduprogcomp_id"`
-	CreditsPerSemester uint16    `db:"credits_per_semester"`
+	CreditsPerSemester uint64    `db:"credits_per_semester"`
 	CreatedDate        time.Time `db:"created_date,omitempty"`
 	UpdatedDate        time.Time `db:"updated_date,omitempty"`
 }

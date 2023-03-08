@@ -122,7 +122,7 @@ func (c EducompRelationsController) ShowPossibleRelationsForComp() http.HandlerF
 		}
 
 		var result []domain.Eduprogcomp
-		var maxCompSemester uint16 = 0
+		var maxCompSemester uint64 = 0
 		for i := range eduprogscheme {
 			if eduprogscheme[i].EduprogcompId == compId {
 				if maxCompSemester < eduprogscheme[i].SemesterNum {

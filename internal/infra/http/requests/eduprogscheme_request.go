@@ -5,19 +5,19 @@ import (
 )
 
 type SetComponentToEdprogschemeRequest struct {
-	SemesterNum        uint16 `json:"semester_num" validate:"required"`
+	SemesterNum        uint64 `json:"semester_num" validate:"required"`
 	DisciplineId       uint64 `json:"discipline_id" validate:"required"`
 	EduprogId          uint64 `json:"eduprog_id" validate:"required"`
 	EduprogcompId      uint64 `json:"eduprogcomp_id" validate:"required"`
-	CreditsPerSemester uint16 `json:"credits_per_semester" validate:"required"`
+	CreditsPerSemester uint64 `json:"credits_per_semester" validate:"required"`
 }
 
 type UpdateComponentInEduprogschemeRequest struct {
-	SemesterNum        uint16 `json:"semester_num" validate:"required"`
+	SemesterNum        uint64 `json:"semester_num" validate:"required"`
 	DisciplineId       uint64 `json:"discipline_id" validate:"required"`
 	EduprogId          uint64 `json:"eduprog_id" validate:"required"`
 	EduprogcompId      uint64 `json:"eduprogcomp_id" validate:"required"`
-	CreditsPerSemester uint16 `json:"credits_per_semester" validate:"required"`
+	CreditsPerSemester uint64 `json:"credits_per_semester" validate:"required"`
 }
 
 func (r SetComponentToEdprogschemeRequest) ToDomainModel() (interface{}, error) {

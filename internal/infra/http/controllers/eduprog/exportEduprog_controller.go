@@ -52,7 +52,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 		err = xlsx.SetSheetName("Sheet1", SheetName)
 
 		style, _ := xlsx.NewStyle(&excelize.Style{
-			Font:      &excelize.Font{Size: 12},
+			Font:      &excelize.Font{Size: 12, Family: "Times New Roman"},
 			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
 			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
 				{Type: "top", Color: "#000000", Style: 1},
@@ -62,7 +62,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			},
 		})
 		styleAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
-			Font:      &excelize.Font{Size: 12},
+			Font:      &excelize.Font{Size: 12, Family: "Times New Roman"},
 			Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
 			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
 				{Type: "top", Color: "#000000", Style: 1},
@@ -72,7 +72,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			},
 		})
 		styleBold, _ := xlsx.NewStyle(&excelize.Style{
-			Font:      &excelize.Font{Size: 12, Bold: true},
+			Font:      &excelize.Font{Size: 12, Bold: true, Family: "Times New Roman"},
 			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
 			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
 				{Type: "top", Color: "#000000", Style: 1},
@@ -82,7 +82,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			},
 		})
 		styleBoldAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
-			Font:      &excelize.Font{Size: 12, Bold: true},
+			Font:      &excelize.Font{Size: 12, Bold: true, Family: "Times New Roman"},
 			Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
 			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
 				{Type: "top", Color: "#000000", Style: 1},
@@ -121,7 +121,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
 
 			_ = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcomps.Mandatory[i-4].Type + " " + eduprogcomps.Mandatory[i-4].Code,
+				eduprogcomps.Mandatory[i-4].Type + " " + eduprogcomps.Mandatory[i-4].Code + ".",
 				eduprogcomps.Mandatory[i-4].Name,
 				eduprogcomps.Mandatory[i-4].Credits,
 				eduprogcomps.Mandatory[i-4].ControlType,
@@ -144,7 +144,7 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 			_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
 
 			_ = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcomps.Selective[i-mandLen-5].Type + " " + eduprogcomps.Selective[i-mandLen-5].Code,
+				eduprogcomps.Selective[i-mandLen-5].Type + " " + eduprogcomps.Selective[i-mandLen-5].Code + ".",
 				eduprogcomps.Selective[i-mandLen-5].Name,
 				eduprogcomps.Selective[i-mandLen-5].Credits,
 				eduprogcomps.Selective[i-mandLen-5].ControlType,
@@ -186,6 +186,176 @@ func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {
 		buf, _ := xlsx.WriteToBuffer()
 		http.ServeContent(w, r, "ComponentsCollection.xlsx", time.Time{}, strings.NewReader(buf.String()))
 	}
+}
+
+func (c EduprogController) ExportCompetenciesMatrixToExcel() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcomps, _ := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcompetencies, _ := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		xlsx := excelize.NewFile()
+		index, _ := xlsx.NewSheet("Sheet1")
+		xlsx.SetActiveSheet(index)
+		err = xlsx.SetSheetName("Sheet1", SheetName)
+
+		style, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12, Family: "Times New Roman", Bold: true},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+
+		styleRotated, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12, Family: "Times New Roman", Bold: true},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true, TextRotation: 90},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+
+		styleDot, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 24, Family: "Times New Roman", Bold: true},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
+
+		mandLen := len(eduprogcomps.Mandatory)
+		lastLetter := ""
+		_ = xlsx.SetRowHeight(SheetName, 1, 40)
+		for i := 66; i < mandLen+66; i++ {
+
+			//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
+			_ = xlsx.SetColWidth(SheetName, fmt.Sprintf("%s", string(rune(i))), fmt.Sprintf("%s", string(rune(i))), 3)
+
+			_ = xlsx.SetSheetCol(SheetName, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
+				eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+			})
+			lastLetter = fmt.Sprintf("%s", string(rune(i)))
+		}
+
+		competenicesLen := len(eduprogcompetencies)
+
+		for i := 2; i < competenicesLen+2; i++ {
+
+			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
+			_ = xlsx.SetRowHeight(SheetName, i, 15)
+			_ = xlsx.SetSheetRow(SheetName, fmt.Sprintf("A%d", i), &[]interface{}{
+				eduprogcompetencies[i-2].Type + " " + strconv.FormatUint(eduprogcompetencies[i-2].Code, 10),
+			})
+
+		}
+		//styleAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
+		//	Font:      &excelize.Font{Size: 12, Family: "Times New Roman"},
+		//	Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
+		//	Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+		//		{Type: "top", Color: "#000000", Style: 1},
+		//		{Type: "bottom", Color: "#000000", Style: 1},
+		//		{Type: "right", Color: "#000000", Style: 1},
+		//		{Type: "left", Color: "#000000", Style: 1},
+		//	},
+		//})
+		//styleBold, _ := xlsx.NewStyle(&excelize.Style{
+		//	Font:      &excelize.Font{Size: 12, Bold: true, Family: "Times New Roman"},
+		//	Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+		//	Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+		//		{Type: "top", Color: "#000000", Style: 1},
+		//		{Type: "bottom", Color: "#000000", Style: 1},
+		//		{Type: "right", Color: "#000000", Style: 1},
+		//		{Type: "left", Color: "#000000", Style: 1},
+		//	},
+		//})
+		//styleBoldAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
+		//	Font:      &excelize.Font{Size: 12, Bold: true, Family: "Times New Roman"},
+		//	Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
+		//	Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+		//		{Type: "top", Color: "#000000", Style: 1},
+		//		{Type: "bottom", Color: "#000000", Style: 1},
+		//		{Type: "right", Color: "#000000", Style: 1},
+		//		{Type: "left", Color: "#000000", Style: 1},
+		//	},
+		//})
+
+		_ = xlsx.SetCellStyle(SheetName, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesLen+1), styleDot)
+
+		competenciesMatrix, _ := c.competenciesMatrixService.ShowByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for i := 0; i < len(competenciesMatrix); i++ {
+			eduprogcomp, _ := c.eduprogcompService.FindById(competenciesMatrix[i].ComponentId)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			competency, _ := c.eduprogcompetenciesService.FindById(competenciesMatrix[i].CompetencyId)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			edcode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
+			_ = xlsx.SetCellValue(SheetName, fmt.Sprintf("%s%d", string(rune(edcode+65)), competency.Code+1), "·")
+
+		}
+
+		_ = xlsx.SaveAs("./CompetenciesMatrix.xlsx")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		//w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Disposition", "attachment; filename="+"CompetenciesMatrix.xlsx")
+		//w.Header().Set("Content-Transfer-Encoding", "binary")
+		//w.Header().Set("Expires", "0")
+		//xlsx.Write(w)
+		//
+		//buff, err := xlsx.WriteToBuffer()
+		//if err != nil {
+		//    fmt.Println(err)
+		//    return
+		//}
+		//SuccessExport(w, buff.Bytes())
+
+		buf, _ := xlsx.WriteToBuffer()
+		http.ServeContent(w, r, "CompetenciesMatrix.xlsx", time.Time{}, strings.NewReader(buf.String()))
+	}
+
 }
 
 //
