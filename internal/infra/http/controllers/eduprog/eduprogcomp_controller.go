@@ -76,13 +76,13 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
 
 		if eduprogcomp.Type == "ОК" {
-			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits || eduprogcomp.Credits < 0 {
+			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New("too much credits"))
 				return
 			}
 		} else if eduprogcomp.Type == "ВБ" {
-			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits || eduprogcomp.Credits < 0 {
+			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
 				return
@@ -143,7 +143,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
 
 		if eduprogcomp.Type == "ОК" {
-			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits || eduprogcomp.Credits < 0 {
+			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New("too much credits"))
 				return

@@ -256,12 +256,12 @@ func (c EduprogController) ExportCompetenciesMatrixToExcel() http.HandlerFunc {
 
 			//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
 			_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
-			_ = xlsx.SetColWidth(SheetName, fmt.Sprintf("%s", string(rune(i))), fmt.Sprintf("%s", string(rune(i))), 3)
+			_ = xlsx.SetColWidth(SheetName, string(rune(i)), string(rune(i)), 3)
 
 			_ = xlsx.SetSheetCol(SheetName, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
 				eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
 			})
-			lastLetter = fmt.Sprintf("%s", string(rune(i)))
+			lastLetter = string(rune(i))
 		}
 
 		competenicesLen := len(eduprogcompetencies)
