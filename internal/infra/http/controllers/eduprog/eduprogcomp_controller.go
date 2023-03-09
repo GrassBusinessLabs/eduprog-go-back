@@ -33,7 +33,6 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			return
 		}
 
-		//Code generation logic
 		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
@@ -41,9 +40,16 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			return
 		}
 
+		//Code generation logic
 		var maxCode uint64 = 0
 
 		for i := range eduprogcomps {
+			if eduprogcomps[i].Name == eduprogcomp.Name {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+				return
+			}
+
 			if eduprogcomps[i].Type == eduprogcomp.Type {
 				temp, _ := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
 				if i == 0 || temp > maxCode {
