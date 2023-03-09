@@ -1,4 +1,4 @@
-package database
+package eduprog
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"

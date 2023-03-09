@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
 )
 
@@ -14,10 +14,10 @@ type CompetenciesBaseService interface {
 }
 
 type competenciesBaseService struct {
-	competenciesBaseRepo database.CompetenciesBaseRepository
+	competenciesBaseRepo eduprog.CompetenciesBaseRepository
 }
 
-func NewCompetenciesBaseService(cb database.CompetenciesBaseRepository) CompetenciesBaseService {
+func NewCompetenciesBaseService(cb eduprog.CompetenciesBaseRepository) CompetenciesBaseService {
 	return competenciesBaseService{
 		competenciesBaseRepo: cb,
 	}

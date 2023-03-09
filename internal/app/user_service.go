@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/auth"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -18,10 +18,10 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepo database.UserRepository
+	userRepo auth.UserRepository
 }
 
-func NewUserService(ur database.UserRepository) UserService {
+func NewUserService(ur auth.UserRepository) UserService {
 	return userService{
 		userRepo: ur,
 	}

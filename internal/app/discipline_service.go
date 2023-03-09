@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
 )
 
@@ -15,10 +15,10 @@ type DisciplineService interface {
 }
 
 type disciplineService struct {
-	disciplineRepo database.DisciplineRepository
+	disciplineRepo eduprog.DisciplineRepository
 }
 
-func NewDisciplineService(dr database.DisciplineRepository) DisciplineService {
+func NewDisciplineService(dr eduprog.DisciplineRepository) DisciplineService {
 	return disciplineService{
 		disciplineRepo: dr,
 	}

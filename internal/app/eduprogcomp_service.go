@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
 )
 
@@ -18,10 +18,10 @@ type EduprogcompService interface {
 }
 
 type eduprogcompService struct {
-	eduprogcompRepo database.EduprogcompRepository
+	eduprogcompRepo eduprog.EduprogcompRepository
 }
 
-func NewEduprogcompService(er database.EduprogcompRepository) EduprogcompService {
+func NewEduprogcompService(er eduprog.EduprogcompRepository) EduprogcompService {
 	return eduprogcompService{
 		eduprogcompRepo: er,
 	}

@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
 )
 
@@ -15,10 +15,10 @@ type EduprogcompetenciesService interface {
 }
 
 type eduprogcompetenciesService struct {
-	eduprogcompetenciesRepo database.EduprogcompetenciesRepository
+	eduprogcompetenciesRepo eduprog.EduprogcompetenciesRepository
 }
 
-func NewEduprogcompetenciesService(cb database.EduprogcompetenciesRepository) EduprogcompetenciesService {
+func NewEduprogcompetenciesService(cb eduprog.EduprogcompetenciesRepository) EduprogcompetenciesService {
 	return eduprogcompetenciesService{
 		eduprogcompetenciesRepo: cb,
 	}

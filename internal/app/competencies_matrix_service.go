@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
 )
 
@@ -13,10 +13,10 @@ type CompetenciesMatrixService interface {
 }
 
 type competenciesMatrixService struct {
-	competenciesMatrixRepo database.CompetenciesMatrixRepository
+	competenciesMatrixRepo eduprog.CompetenciesMatrixRepository
 }
 
-func NewCompetenciesMatrixService(cm database.CompetenciesMatrixRepository) CompetenciesMatrixService {
+func NewCompetenciesMatrixService(cm eduprog.CompetenciesMatrixRepository) CompetenciesMatrixService {
 	return competenciesMatrixService{
 		competenciesMatrixRepo: cm,
 	}

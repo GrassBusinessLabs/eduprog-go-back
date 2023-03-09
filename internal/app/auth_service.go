@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/config"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/auth"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
 	"github.com/upper/db/v4"
@@ -22,13 +22,13 @@ type AuthService interface {
 }
 
 type authService struct {
-	authRepo    database.SessionRepository
+	authRepo    auth.SessionRepository
 	userService UserService
 	config      config.Configuration
 	tokenAuth   *jwtauth.JWTAuth
 }
 
-func NewAuthService(ar database.SessionRepository, us UserService, cf config.Configuration, ta *jwtauth.JWTAuth) AuthService {
+func NewAuthService(ar auth.SessionRepository, us UserService, cf config.Configuration, ta *jwtauth.JWTAuth) AuthService {
 	return authService{
 		authRepo:    ar,
 		userService: us,

@@ -1,6 +1,7 @@
 package eduprog
 
 import (
+	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -56,12 +57,18 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 		var maxCode uint64 = 0
 
 		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].Type == eduprogcompetency.Type {
-				if i == 0 || allEdpcompetencies[i].Code > maxCode {
-					maxCode = allEdpcompetencies[i].Code
+			if allEdpcompetencies[i].EduprogId == eduprogcompetency.EduprogId {
+				if allEdpcompetencies[i].CompetencyId == eduprogcompetency.CompetencyId {
+					log.Printf("EduprogcompetenciesController: %s", err)
+					controllers.InternalServerError(w, errors.New("competency is in this eduprog already"))
+					return
+				}
+				if allEdpcompetencies[i].Type == eduprogcompetency.Type {
+					if i == 0 || allEdpcompetencies[i].Code > maxCode {
+						maxCode = allEdpcompetencies[i].Code
+					}
 				}
 			}
-
 		}
 
 		eduprogcompetency.Code = maxCode + 1
@@ -151,14 +158,16 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 		}
 
 		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].Type == competency.Type {
-				if allEdpcompetencies[i].Code > competency.Code {
-					allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
-					_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
-					if err != nil {
-						log.Printf("EduprogcompetenciesController: %s", err)
-						controllers.InternalServerError(w, err)
-						return
+			if allEdpcompetencies[i].EduprogId == competency.EduprogId {
+				if allEdpcompetencies[i].Type == competency.Type {
+					if allEdpcompetencies[i].Code > competency.Code {
+						allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
+						_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
+						if err != nil {
+							log.Printf("EduprogcompetenciesController: %s", err)
+							controllers.InternalServerError(w, err)
+							return
+						}
 					}
 				}
 			}

@@ -3,7 +3,8 @@ package container
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/config"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database"
+	auth2 "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/auth"
+	eduprog2 "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/auth"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/eduprog"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/middlewares"
@@ -38,6 +39,7 @@ type Services struct {
 	app.CompetenciesBaseService
 	app.EduprogcompetenciesService
 	app.CompetenciesMatrixService
+	app.EduprogresultsService
 }
 
 type Controllers struct {
@@ -51,22 +53,24 @@ type Controllers struct {
 	eduprog.CompetenciesBaseController
 	eduprog.EduprogcompetenciesController
 	eduprog.CompetenciesMatrixController
+	eduprog.EduprogresultsController
 }
 
 func New(conf config.Configuration) Container {
 	tknAuth := jwtauth.New("HS256", []byte(conf.JwtSecret), nil)
 	sess := getDbSess(conf)
 
-	userRepository := database.NewUserRepository(sess)
-	sessionRepository := database.NewSessRepository(sess)
-	eduprogRepository := database.NewEduprogRepository(sess)
-	eduprogcompRepository := database.NewEduprogcompRepository(sess)
-	eduprogschemeRepository := database.NewEduprogschemeRepository(sess)
-	disciplineRepository := database.NewDisciplineRepository(sess)
-	educompRelationsRepository := database.NewEducompRelationsRepository(sess)
-	competencyBaseRepository := database.NewCompetenciesBaseRepository(sess)
-	competencyMatrixRepository := database.NewCompetenciesMatrixRepository(sess)
-	eduprogcompetenciesRepository := database.NewEduprogcompetenciesRepository(sess)
+	userRepository := auth2.NewUserRepository(sess)
+	sessionRepository := auth2.NewSessRepository(sess)
+	eduprogRepository := eduprog2.NewEduprogRepository(sess)
+	eduprogcompRepository := eduprog2.NewEduprogcompRepository(sess)
+	eduprogschemeRepository := eduprog2.NewEduprogschemeRepository(sess)
+	disciplineRepository := eduprog2.NewDisciplineRepository(sess)
+	educompRelationsRepository := eduprog2.NewEducompRelationsRepository(sess)
+	competencyBaseRepository := eduprog2.NewCompetenciesBaseRepository(sess)
+	competencyMatrixRepository := eduprog2.NewCompetenciesMatrixRepository(sess)
+	eduprogcompetenciesRepository := eduprog2.NewEduprogcompetenciesRepository(sess)
+	eduprogresultsRepository := eduprog2.NewEduprogresultsRepository(sess)
 
 	userService := app.NewUserService(userRepository)
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
@@ -78,6 +82,7 @@ func New(conf config.Configuration) Container {
 	competencyBaseService := app.NewCompetenciesBaseService(competencyBaseRepository)
 	competencyMatrixService := app.NewCompetenciesMatrixService(competencyMatrixRepository)
 	eduprogcompetenciesService := app.NewEduprogcompetenciesService(eduprogcompetenciesRepository)
+	eduprogresultsService := app.NewEduprogresultsService(eduprogresultsRepository)
 
 	authController := auth.NewAuthController(authService, userService)
 	userController := auth.NewUserController(userService)
@@ -89,6 +94,7 @@ func New(conf config.Configuration) Container {
 	competencyBaseController := eduprog.NewCompetenciesBaseController(competencyBaseService)
 	competencyMatrixController := eduprog.NewCompetenciesMatrixController(competencyMatrixService)
 	eduprogcompetenciesController := eduprog.NewEduprogcompetenciesController(eduprogcompetenciesService, competencyBaseService)
+	eduprogresultsController := eduprog.NewEduprogresultsController(eduprogresultsService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 
@@ -106,7 +112,8 @@ func New(conf config.Configuration) Container {
 			educompRelationsService,
 			competencyBaseService,
 			eduprogcompetenciesService,
-			competencyMatrixRepository,
+			competencyMatrixService,
+			eduprogresultsService,
 		},
 		Controllers: Controllers{
 			authController,
@@ -119,6 +126,7 @@ func New(conf config.Configuration) Container {
 			competencyBaseController,
 			eduprogcompetenciesController,
 			competencyMatrixController,
+			eduprogresultsController,
 		},
 	}
 }
