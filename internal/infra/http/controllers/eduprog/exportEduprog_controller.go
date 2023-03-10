@@ -403,8 +403,8 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		index3, _ := xlsx.NewSheet("Sheet3")
 		xlsx.SetActiveSheet(index3)
 		xlsx.SetActiveSheet(index)
-		err = xlsx.SetSheetName("Sheet1", SheetName1)
-		err = xlsx.SetSheetName("Sheet3", SheetName3)
+		_ = xlsx.SetSheetName("Sheet1", SheetName1)
+		_ = xlsx.SetSheetName("Sheet3", SheetName3)
 
 		style, _ := xlsx.NewStyle(&excelize.Style{
 			Font:      &excelize.Font{Size: 12, Family: "Times New Roman"},
