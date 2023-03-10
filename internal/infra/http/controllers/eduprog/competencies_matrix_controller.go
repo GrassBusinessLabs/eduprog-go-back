@@ -32,7 +32,7 @@ func (c CompetenciesMatrixController) CreateRelation() http.HandlerFunc {
 			return
 		}
 
-		relation, _ = c.competenciesMatrixService.CreateRelation(relation)
+		relation, err = c.competenciesMatrixService.CreateRelation(relation)
 		if err != nil {
 			log.Printf("CompetenciesMatrixController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -53,7 +53,7 @@ func (c CompetenciesMatrixController) ShowByEduprogId() http.HandlerFunc {
 			return
 		}
 
-		relations, _ := c.competenciesMatrixService.ShowByEduprogId(id)
+		relations, err := c.competenciesMatrixService.ShowByEduprogId(id)
 		if err != nil {
 			log.Printf("CompetenciesMatrixController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -74,7 +74,7 @@ func (c CompetenciesMatrixController) Delete() http.HandlerFunc {
 			return
 		}
 
-		competency_id, _ := strconv.ParseUint(chi.URLParam(r, "competencyId"), 10, 64)
+		competency_id, err := strconv.ParseUint(chi.URLParam(r, "competencyId"), 10, 64)
 		if err != nil {
 			log.Printf("CompetenciesMatrixController: %s", err)
 			controllers.InternalServerError(w, err)

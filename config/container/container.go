@@ -40,6 +40,7 @@ type Services struct {
 	app.EduprogcompetenciesService
 	app.CompetenciesMatrixService
 	app.EduprogresultsService
+	app.ResultsMatrixService
 }
 
 type Controllers struct {
@@ -54,6 +55,7 @@ type Controllers struct {
 	eduprog.EduprogcompetenciesController
 	eduprog.CompetenciesMatrixController
 	eduprog.EduprogresultsController
+	eduprog.ResultsMatrixController
 }
 
 func New(conf config.Configuration) Container {
@@ -71,6 +73,7 @@ func New(conf config.Configuration) Container {
 	competencyMatrixRepository := eduprog2.NewCompetenciesMatrixRepository(sess)
 	eduprogcompetenciesRepository := eduprog2.NewEduprogcompetenciesRepository(sess)
 	eduprogresultsRepository := eduprog2.NewEduprogresultsRepository(sess)
+	resultsMatrixRepository := eduprog2.NewResultsMatrixRepository(sess)
 
 	userService := app.NewUserService(userRepository)
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
@@ -83,6 +86,7 @@ func New(conf config.Configuration) Container {
 	competencyMatrixService := app.NewCompetenciesMatrixService(competencyMatrixRepository)
 	eduprogcompetenciesService := app.NewEduprogcompetenciesService(eduprogcompetenciesRepository)
 	eduprogresultsService := app.NewEduprogresultsService(eduprogresultsRepository)
+	resultMatrixService := app.NewResultsMatrixService(resultsMatrixRepository)
 
 	authController := auth.NewAuthController(authService, userService)
 	userController := auth.NewUserController(userService)
@@ -95,6 +99,7 @@ func New(conf config.Configuration) Container {
 	competencyMatrixController := eduprog.NewCompetenciesMatrixController(competencyMatrixService)
 	eduprogcompetenciesController := eduprog.NewEduprogcompetenciesController(eduprogcompetenciesService, competencyBaseService)
 	eduprogresultsController := eduprog.NewEduprogresultsController(eduprogresultsService)
+	resultsMatrixController := eduprog.NewResultsMatrixController(resultMatrixService)
 
 	authMiddleware := middlewares.AuthMiddleware(tknAuth, authService, userService)
 
@@ -114,6 +119,7 @@ func New(conf config.Configuration) Container {
 			eduprogcompetenciesService,
 			competencyMatrixService,
 			eduprogresultsService,
+			resultMatrixService,
 		},
 		Controllers: Controllers{
 			authController,
@@ -127,6 +133,7 @@ func New(conf config.Configuration) Container {
 			eduprogcompetenciesController,
 			competencyMatrixController,
 			eduprogresultsController,
+			resultsMatrixController,
 		},
 	}
 }

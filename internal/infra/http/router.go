@@ -59,6 +59,7 @@ func Router(cont container.Container) http.Handler {
 				EduprogcompetenciesRouter(apiRouter, cont.EduprogcompetenciesController)
 				CompetenciesMatrixRouter(apiRouter, cont.CompetenciesMatrixController)
 				EduprogresultsRouter(apiRouter, cont.EduprogresultsController)
+				ResultsMatrixRouter(apiRouter, cont.ResultsMatrixController)
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
 		})
@@ -342,6 +343,24 @@ func EduprogresultsRouter(r chi.Router, erc eduprog.EduprogresultsController) {
 		apiRouter.Delete(
 			"/{resId}",
 			erc.Delete(),
+		)
+	})
+}
+
+func ResultsMatrixRouter(r chi.Router, rmc eduprog.ResultsMatrixController) {
+
+	r.Route("/eduprogs/resultsMatrix", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/create",
+			rmc.CreateRelation(),
+		)
+		apiRouter.Get(
+			"/{epId}",
+			rmc.ShowByEduprogId(),
+		)
+		apiRouter.Delete(
+			"/{componentId}/{edresultId}",
+			rmc.Delete(),
 		)
 	})
 }
