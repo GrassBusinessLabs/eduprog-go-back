@@ -139,11 +139,7 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 		)
 		apiRouter.Get(
 			"/toExcel/{edId}",
-			ec.ExportEduprogListToExcel(),
-		)
-		apiRouter.Get(
-			"/cMatrixToExcel/{edId}",
-			ec.ExportCompetenciesMatrixToExcel(),
+			ec.ExportEduprogToExcel(),
 		)
 		apiRouter.Delete(
 			"/{epId}",
