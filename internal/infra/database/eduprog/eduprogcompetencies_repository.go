@@ -58,7 +58,7 @@ func (r eduprogcompetenciesRepository) UpdateCompetency(eduprogcompetency domain
 
 func (r eduprogcompetenciesRepository) ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error) {
 	var ec []eduprogcompetencies
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).All(&ec)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).OrderBy("code").All(&ec)
 	if err != nil {
 		return []domain.Eduprogcompetencies{}, err
 	}
