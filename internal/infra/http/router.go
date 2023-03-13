@@ -48,7 +48,6 @@ func Router(cont container.Container) http.Handler {
 			// Protected routes
 			apiRouter.Group(func(apiRouter chi.Router) {
 				apiRouter.Use(cont.AuthMw)
-
 				UserRouter(apiRouter, cont.UserController)
 				EduprogRouter(apiRouter, cont.EduprogController)
 				EduprogcompRouter(apiRouter, cont.EduprogcompController)

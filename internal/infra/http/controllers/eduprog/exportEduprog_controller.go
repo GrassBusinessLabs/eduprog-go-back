@@ -55,14 +55,14 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
 		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
 
+		//------------------------EXPORT EDUPROGCOMPS LOGIC-------------------------------//
+
 		xlsx := excelize.NewFile()
 		index, _ := xlsx.NewSheet("Sheet1")
 		index2, _ := xlsx.NewSheet("Sheet2")
 		index3, _ := xlsx.NewSheet("Sheet3")
-		xlsx.SetActiveSheet(index3)
 		xlsx.SetActiveSheet(index)
 		_ = xlsx.SetSheetName("Sheet1", SheetName1)
-		_ = xlsx.SetSheetName("Sheet3", SheetName3)
 
 		style, _ := xlsx.NewStyle(&excelize.Style{
 			Font:      &excelize.Font{Size: 12, Family: "Times New Roman"},
@@ -185,6 +185,8 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			return
 		}
 
+		//----------------------------EXPORT COMPETENCIES MATRIX LOGIC----------------------------------//
+
 		xlsx.SetActiveSheet(index2)
 		err = xlsx.SetSheetName("Sheet2", SheetName2)
 
@@ -211,18 +213,81 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		})
 
 		mandLen = len(eduprogcomps.Mandatory)
+		selLen = len(eduprogcomps.Selective)
 		lastLetter := ""
+		bufLetter := ""
 		_ = xlsx.SetRowHeight(SheetName2, 1, 40)
 		for i := 66; i < mandLen+66; i++ {
 
 			//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
-			_ = xlsx.SetColWidth(SheetName2, string(rune(i)), string(rune(i)), 3)
+			if i <= 90 {
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName2, string(rune(i)), string(rune(i)), 3)
 
-			_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
-				eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
-			})
-			lastLetter = string(rune(i))
+				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
+					eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+				})
+				lastLetter = string(rune(i))
+			} else if i > 90 && i <= 116 {
+				bufLetter = string(rune(65))
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName2, fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), &[]interface{}{
+					eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+				})
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-26)))
+			} else if i > 116 && i <= 142 {
+				bufLetter = string(rune(66))
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName2, fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), &[]interface{}{
+					eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+				})
+
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-52)))
+			}
+
+		}
+
+		for i := mandLen + 66; i < mandLen+selLen+66; i++ {
+
+			if i <= 90 {
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName2, string(rune(i)), string(rune(i)), 3)
+
+				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
+					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+				})
+
+				lastLetter = string(rune(i))
+			} else if i > 90 && i <= 116 {
+				bufLetter = string(rune(65))
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName2, fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), &[]interface{}{
+					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+				})
+
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-26)))
+			} else if i > 116 && i <= 142 {
+				bufLetter = string(rune(66))
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName2, fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), &[]interface{}{
+					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+				})
+
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-52)))
+			}
+
 		}
 
 		competenicesLen := len(eduprogcompetencies)
@@ -261,7 +326,154 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				return
 			}
 			edcode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
-			_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%d", string(rune(edcode+65)), competency.Code+1), "·")
+			if eduprogcomp.Type == "ВБ" {
+				edcode = edcode + uint64(len(eduprogcomps.Mandatory))
+			}
+
+			if edcode+65 <= 90 {
+				_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%d", string(rune(edcode+65)), competency.Code+1), "·")
+			} else if edcode+65 > 90 && edcode+65 <= 116 {
+				bufLetter = string(rune(65))
+				_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), competency.Code+1), "·")
+			}
+
+		}
+
+		//----------------------------EXPORT EDUPROGRESULTS MATRIX LOGIC----------------------------------//
+
+		xlsx.SetActiveSheet(index3)
+		_ = xlsx.SetSheetName("Sheet3", SheetName3)
+
+		eduprogresults, err := c.eduprogresultsService.ShowEduprogResultsByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		mandLen = len(eduprogcomps.Mandatory)
+		lastLetter = ""
+		bufLetter = ""
+		_ = xlsx.SetRowHeight(SheetName3, 1, 40)
+		for i := 66; i < mandLen+66; i++ {
+
+			//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			if i <= 90 {
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName3, string(rune(i)), string(rune(i)), 3)
+
+				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
+					eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+				})
+				lastLetter = string(rune(i))
+			} else if i > 90 && i <= 116 {
+				bufLetter = string(rune(65))
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName3, fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), &[]interface{}{
+					eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+				})
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-26)))
+			} else if i > 116 && i <= 142 {
+				bufLetter = string(rune(66))
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName3, fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), &[]interface{}{
+					eduprogcomps.Mandatory[i-66].Type + " " + eduprogcomps.Mandatory[i-66].Code,
+				})
+
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-52)))
+			}
+
+		}
+
+		for i := mandLen + 66; i < mandLen+selLen+66; i++ {
+
+			if i <= 90 {
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("%s1", string(rune(i))), fmt.Sprintf("%s1", string(rune(i))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName3, string(rune(i)), string(rune(i)), 3)
+
+				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
+					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+				})
+
+				lastLetter = string(rune(i))
+			} else if i > 90 && i <= 116 {
+				bufLetter = string(rune(65))
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName3, fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), &[]interface{}{
+					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+				})
+
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-26)))
+			} else if i > 116 && i <= 142 {
+				bufLetter = string(rune(66))
+				//	_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), styleRotated)
+				_ = xlsx.SetColWidth(SheetName3, fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), 3)
+
+				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), &[]interface{}{
+					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+				})
+
+				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-52)))
+			}
+
+		}
+
+		resultsLen := len(eduprogresults)
+
+		for i := 2; i < resultsLen+2; i++ {
+
+			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
+			_ = xlsx.SetRowHeight(SheetName3, i, 15)
+			_ = xlsx.SetSheetRow(SheetName3, fmt.Sprintf("A%d", i), &[]interface{}{
+				eduprogresults[i-2].Type + " " + strconv.FormatUint(eduprogresults[i-2].Code, 10),
+			})
+
+		}
+
+		_ = xlsx.SetCellStyle(SheetName3, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesLen+1), styleDot)
+
+		resultsMatrix, _ := c.resultsMatrixService.ShowByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for i := 0; i < len(resultsMatrix); i++ {
+			eduprogcomp, _ := c.eduprogcompService.FindById(resultsMatrix[i].ComponentId)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			result, _ := c.eduprogresultsService.FindById(resultsMatrix[i].EduprogresultId)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			edcode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
+			if eduprogcomp.Type == "ВБ" {
+				edcode = edcode + uint64(len(eduprogcomps.Mandatory))
+			}
+
+			if edcode+65 <= 90 {
+				_ = xlsx.SetCellValue(SheetName3, fmt.Sprintf("%s%d", string(rune(edcode+65)), result.Code+1), "·")
+			} else if edcode+65 > 90 && edcode+65 <= 116 {
+				bufLetter = string(rune(65))
+				_ = xlsx.SetCellValue(SheetName3, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), result.Code+1), "·")
+			}
 
 		}
 

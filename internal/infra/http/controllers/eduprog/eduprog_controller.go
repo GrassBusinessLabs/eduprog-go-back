@@ -17,14 +17,18 @@ type EduprogController struct {
 	eduprogcompService         app.EduprogcompService
 	eduprogcompetenciesService app.EduprogcompetenciesService
 	competenciesMatrixService  app.CompetenciesMatrixService
+	eduprogresultsService      app.EduprogresultsService
+	resultsMatrixService       app.ResultsMatrixService
 }
 
-func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService) EduprogController {
+func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, ers app.EduprogresultsService, rms app.ResultsMatrixService) EduprogController {
 	return EduprogController{
 		eduprogService:             es,
 		eduprogcompService:         ecs,
 		eduprogcompetenciesService: epcs,
 		competenciesMatrixService:  cms,
+		eduprogresultsService:      ers,
+		resultsMatrixService:       rms,
 	}
 }
 
