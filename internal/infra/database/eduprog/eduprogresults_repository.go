@@ -57,7 +57,7 @@ func (r eduprogresultsRepository) UpdateEduprogresult(eduprogresult domain.Edupr
 
 func (r eduprogresultsRepository) ShowEduprogResultsByEduprogId(eduprogId uint64) ([]domain.Eduprogresult, error) {
 	var er []eduprogresult
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).All(&er)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).OrderBy("code").All(&er)
 	if err != nil {
 		return []domain.Eduprogresult{}, err
 	}

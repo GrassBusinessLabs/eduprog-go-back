@@ -84,7 +84,7 @@ func (r eduprogcompRepository) ShowList() ([]domain.Eduprogcomp, error) {
 func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error) {
 	var eduprogcomps []eduprogcomp
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).All(&eduprogcomps)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).OrderBy("code").All(&eduprogcomps)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}

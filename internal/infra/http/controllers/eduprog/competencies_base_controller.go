@@ -25,7 +25,7 @@ func (c CompetenciesBaseController) ShowAllCompetencies() http.HandlerFunc {
 
 		competencies, err := c.competenciesBaseService.ShowAllCompetencies()
 		if err != nil {
-			log.Printf("CompetenciesBase controller: %s", err)
+			log.Printf("CompetenciesBaseController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -40,7 +40,7 @@ func (c CompetenciesBaseController) ShowZK() http.HandlerFunc {
 
 		competencies, err := c.competenciesBaseService.ShowZK()
 		if err != nil {
-			log.Printf("CompetenciesBase controller: %s", err)
+			log.Printf("CompetenciesBaseController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -55,7 +55,7 @@ func (c CompetenciesBaseController) ShowFK() http.HandlerFunc {
 
 		competencies, err := c.competenciesBaseService.ShowFK()
 		if err != nil {
-			log.Printf("CompetenciesBase controller: %s", err)
+			log.Printf("CompetenciesBaseController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -69,14 +69,14 @@ func (c CompetenciesBaseController) FindById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "cbId"), 10, 64)
 		if err != nil {
-			log.Printf("DisciplineController: %s", err)
+			log.Printf("CompetenciesBaseController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		competency, _ := c.competenciesBaseService.FindById(id)
+		competency, err := c.competenciesBaseService.FindById(id)
 		if err != nil {
-			log.Printf("CompetenciesBase controller: %s", err)
+			log.Printf("CompetenciesBaseController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
