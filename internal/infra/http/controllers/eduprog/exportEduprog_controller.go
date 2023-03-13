@@ -353,7 +353,6 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		mandLen = len(eduprogcomps.Mandatory)
 		lastLetter = ""
-		bufLetter = ""
 		_ = xlsx.SetRowHeight(SheetName3, 1, 40)
 		for i := 66; i < mandLen+66; i++ {
 
