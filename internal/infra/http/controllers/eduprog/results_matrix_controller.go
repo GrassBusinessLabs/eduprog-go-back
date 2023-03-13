@@ -53,7 +53,7 @@ func (c ResultsMatrixController) ShowByEduprogId() http.HandlerFunc {
 			return
 		}
 
-		relations, _ := c.resultsMatrixService.ShowByEduprogId(id)
+		relations, err := c.resultsMatrixService.ShowByEduprogId(id)
 		if err != nil {
 			log.Printf("ResultsMatrixController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -74,7 +74,7 @@ func (c ResultsMatrixController) Delete() http.HandlerFunc {
 			return
 		}
 
-		eduprogresult_id, _ := strconv.ParseUint(chi.URLParam(r, "edresultId"), 10, 64)
+		eduprogresult_id, err := strconv.ParseUint(chi.URLParam(r, "edresultId"), 10, 64)
 		if err != nil {
 			log.Printf("ResultsMatrixController: %s", err)
 			controllers.InternalServerError(w, err)

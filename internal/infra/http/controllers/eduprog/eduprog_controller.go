@@ -110,7 +110,7 @@ func (c EduprogController) FindById() http.HandlerFunc {
 			return
 		}
 
-		eduprog, _ := c.eduprogService.FindById(id)
+		eduprog, err := c.eduprogService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.BadRequest(w, err)

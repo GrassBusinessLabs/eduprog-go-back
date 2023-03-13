@@ -109,7 +109,7 @@ func (c DisciplineController) FindById() http.HandlerFunc {
 			return
 		}
 
-		discipline, _ := c.disciplineService.FindById(id)
+		discipline, err := c.disciplineService.FindById(id)
 		if err != nil {
 			log.Printf("DisciplineController: %s", err)
 			controllers.BadRequest(w, err)

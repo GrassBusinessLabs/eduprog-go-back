@@ -100,21 +100,21 @@ func (c EducompRelationsController) ShowPossibleRelationsForComp() http.HandlerF
 			controllers.BadRequest(w, err)
 			return
 		}
-		compId, _ := strconv.ParseUint(chi.URLParam(r, "compId"), 10, 64)
+		compId, err := strconv.ParseUint(chi.URLParam(r, "compId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogscheme, _ := c.eduprogschemeService.ShowSchemeByEduprogId(edId)
+		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(edId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(edId)
+		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(edId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)

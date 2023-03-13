@@ -34,7 +34,7 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 			return
 		}
 
-		baseCompetency, _ := c.competenciesBaseService.FindById(eduprogcompetency.CompetencyId)
+		baseCompetency, err := c.competenciesBaseService.FindById(eduprogcompetency.CompetencyId)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -47,7 +47,7 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 
 		eduprogcompetency.Type = baseCompetency.Type
 
-		allEdpcompetencies, _ := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(eduprogcompetency.EduprogId)
+		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(eduprogcompetency.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -73,7 +73,7 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 
 		eduprogcompetency.Code = maxCode + 1
 
-		eduprogcompetency, _ = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+		eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -94,7 +94,7 @@ func (c EduprogcompetenciesController) ShowCompetenciesByEduprogId() http.Handle
 			return
 		}
 
-		eduprogcompetencies, _ := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
+		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -115,7 +115,7 @@ func (c EduprogcompetenciesController) FindById() http.HandlerFunc {
 			return
 		}
 
-		eduprogcompetency, _ := c.eduprogcompetenciesService.FindById(id)
+		eduprogcompetency, err := c.eduprogcompetenciesService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -131,26 +131,26 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "compId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		competency, _ := c.eduprogcompetenciesService.FindById(id)
+		competency, err := c.eduprogcompetenciesService.FindById(id)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 
-		_ = c.eduprogcompetenciesService.Delete(id)
+		err = c.eduprogcompetenciesService.Delete(id)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 
-		allEdpcompetencies, _ := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(competency.EduprogId)
+		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(competency.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)

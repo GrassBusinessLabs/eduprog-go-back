@@ -33,7 +33,7 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -128,7 +128,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		}
 
 		//Free credits check
-		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
+		comps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -222,7 +222,7 @@ func (c EduprogcompController) FindById() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomp, _ := c.eduprogcompService.FindById(id)
+		eduprogcomp, err := c.eduprogcompService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
@@ -243,7 +243,7 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomp, _ := c.eduprogcompService.FindById(id)
+		eduprogcomp, err := c.eduprogcompService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -257,7 +257,7 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomps, _ := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -278,7 +278,7 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 					eduprogcomps[i].Code = strconv.FormatUint(educompsCode-1, 10)
 					_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
 					if err != nil {
-						log.Printf("EduprogcompetenciesController: %s", err)
+						log.Printf("EduprogcompController: %s", err)
 						controllers.InternalServerError(w, err)
 						return
 					}

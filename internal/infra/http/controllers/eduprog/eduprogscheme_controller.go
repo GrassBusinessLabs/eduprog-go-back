@@ -35,7 +35,7 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			return
 		}
 
-		eduprogschemes, _ := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
+		eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
@@ -44,7 +44,7 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
@@ -55,7 +55,7 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
 				totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
 				if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
-					log.Printf("EduprogcompController: %s", err)
+					log.Printf("EduprogschemeController: %s", err)
 					controllers.BadRequest(w, errors.New("this component already exists in this semester"))
 					return
 				}
@@ -63,7 +63,7 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 		}
 
 		if totalCompCredits > eduprogcomp.Credits {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, errors.New("too much credits per semester, free credits to use left: "))
 			return
 		}
@@ -124,7 +124,7 @@ func (c EduprogschemeController) FindById() http.HandlerFunc {
 			return
 		}
 
-		eduprogscheme, _ := c.eduprogschemeService.FindById(id)
+		eduprogscheme, err := c.eduprogschemeService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
@@ -133,7 +133,7 @@ func (c EduprogschemeController) FindById() http.HandlerFunc {
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
@@ -159,7 +159,7 @@ func (c EduprogschemeController) FindBySemesterNum() http.HandlerFunc {
 			return
 		}
 
-		eduprogscheme, _ := c.eduprogschemeService.FindBySemesterNum(uint16(sNum), id)
+		eduprogscheme, err := c.eduprogschemeService.FindBySemesterNum(uint16(sNum), id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
@@ -168,7 +168,7 @@ func (c EduprogschemeController) FindBySemesterNum() http.HandlerFunc {
 
 		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
@@ -187,7 +187,7 @@ func (c EduprogschemeController) ShowSchemeByEduprogId() http.HandlerFunc {
 			return
 		}
 
-		eduprogscheme, _ := c.eduprogschemeService.ShowSchemeByEduprogId(id)
+		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
@@ -196,7 +196,7 @@ func (c EduprogschemeController) ShowSchemeByEduprogId() http.HandlerFunc {
 
 		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}

@@ -33,9 +33,9 @@ func (c EduprogresultsController) AddEduprogresultToEduprog() http.HandlerFunc {
 
 		eduprogresult.Type = "ПР"
 
-		allEduprogresults, _ := c.eduprogresultsService.ShowEduprogResultsByEduprogId(eduprogresult.EduprogId)
+		allEduprogresults, err := c.eduprogresultsService.ShowEduprogResultsByEduprogId(eduprogresult.EduprogId)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -53,9 +53,9 @@ func (c EduprogresultsController) AddEduprogresultToEduprog() http.HandlerFunc {
 
 		eduprogresult.Code = maxCode + 1
 
-		eduprogresult, _ = c.eduprogresultsService.AddEduprogresultToEduprog(eduprogresult)
+		eduprogresult, err = c.eduprogresultsService.AddEduprogresultToEduprog(eduprogresult)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -69,14 +69,14 @@ func (c EduprogresultsController) ShowEduprogResultsByEduprogId() http.HandlerFu
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogresults, _ := c.eduprogresultsService.ShowEduprogResultsByEduprogId(id)
+		eduprogresults, err := c.eduprogresultsService.ShowEduprogResultsByEduprogId(id)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -90,14 +90,14 @@ func (c EduprogresultsController) FindById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "resId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogresult, _ := c.eduprogresultsService.FindById(id)
+		eduprogresult, err := c.eduprogresultsService.FindById(id)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -111,27 +111,27 @@ func (c EduprogresultsController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "resId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogresult, _ := c.eduprogresultsService.FindById(id)
+		eduprogresult, err := c.eduprogresultsService.FindById(id)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 
-		_ = c.eduprogresultsService.Delete(id)
+		err = c.eduprogresultsService.Delete(id)
 		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 		allEduprogresults, _ := c.eduprogresultsService.ShowEduprogResultsByEduprogId(eduprogresult.EduprogId)
 		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
+			log.Printf("EduprogresultController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
@@ -142,7 +142,7 @@ func (c EduprogresultsController) Delete() http.HandlerFunc {
 					allEduprogresults[i].Code = allEduprogresults[i].Code - 1
 					_, _ = c.eduprogresultsService.UpdateEduprogresult(allEduprogresults[i], allEduprogresults[i].Id)
 					if err != nil {
-						log.Printf("EduprogcompetenciesController: %s", err)
+						log.Printf("EduprogresultController: %s", err)
 						controllers.InternalServerError(w, err)
 						return
 					}
