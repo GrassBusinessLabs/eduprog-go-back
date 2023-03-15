@@ -16,8 +16,7 @@ type competencies_base struct {
 
 type CompetenciesBaseRepository interface {
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
-	ShowZK() ([]domain.CompetenciesBase, error)
-	ShowFK() ([]domain.CompetenciesBase, error)
+	ShowCompetenciesByType(ttype string) ([]domain.CompetenciesBase, error)
 	FindById(id uint64) (domain.CompetenciesBase, error)
 }
 
@@ -41,18 +40,16 @@ func (r competenciesBaseRepository) ShowAllCompetencies() ([]domain.Competencies
 	return r.mapModelToDomainCollection(c), nil
 }
 
-func (r competenciesBaseRepository) ShowZK() ([]domain.CompetenciesBase, error) {
+func (r competenciesBaseRepository) ShowCompetenciesByType(ttype string) ([]domain.CompetenciesBase, error) {
 	var c []competencies_base
-	err := r.coll.Find(db.Cond{"type": "ЗК"}).All(&c)
-	if err != nil {
-		return []domain.CompetenciesBase{}, err
+	if ttype == "ZK" {
+		ttype = "ЗК"
+	} else if ttype == "FK" {
+		ttype = "ФК"
+	} else if ttype == "PR" {
+		ttype = "ПР"
 	}
-
-	return r.mapModelToDomainCollection(c), nil
-}
-func (r competenciesBaseRepository) ShowFK() ([]domain.CompetenciesBase, error) {
-	var c []competencies_base
-	err := r.coll.Find(db.Cond{"type": "ФК"}).All(&c)
+	err := r.coll.Find(db.Cond{"type": ttype}).All(&c)
 	if err != nil {
 		return []domain.CompetenciesBase{}, err
 	}

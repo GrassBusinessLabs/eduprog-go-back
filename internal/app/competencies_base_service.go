@@ -8,8 +8,7 @@ import (
 
 type CompetenciesBaseService interface {
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
-	ShowZK() ([]domain.CompetenciesBase, error)
-	ShowFK() ([]domain.CompetenciesBase, error)
+	ShowCompetenciesByType(ttype string) ([]domain.CompetenciesBase, error)
 	FindById(id uint64) (domain.CompetenciesBase, error)
 }
 
@@ -32,17 +31,8 @@ func (s competenciesBaseService) ShowAllCompetencies() ([]domain.CompetenciesBas
 	return e, nil
 }
 
-func (s competenciesBaseService) ShowZK() ([]domain.CompetenciesBase, error) {
-	e, err := s.competenciesBaseRepo.ShowZK()
-	if err != nil {
-		log.Printf("CompetenciesBaseService: %s", err)
-		return []domain.CompetenciesBase{}, err
-	}
-	return e, nil
-}
-
-func (s competenciesBaseService) ShowFK() ([]domain.CompetenciesBase, error) {
-	e, err := s.competenciesBaseRepo.ShowFK()
+func (s competenciesBaseService) ShowCompetenciesByType(ttype string) ([]domain.CompetenciesBase, error) {
+	e, err := s.competenciesBaseRepo.ShowCompetenciesByType(ttype)
 	if err != nil {
 		log.Printf("CompetenciesBaseService: %s", err)
 		return []domain.CompetenciesBase{}, err

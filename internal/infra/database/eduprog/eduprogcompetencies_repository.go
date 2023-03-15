@@ -20,6 +20,7 @@ type EduprogcompetenciesRepository interface {
 	AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error)
 	UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error)
 	ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error)
+	ShowCompetenciesByType(eduprogId uint64, ttype string) ([]domain.Eduprogcompetencies, error)
 	FindById(competencyId uint64) (domain.Eduprogcompetencies, error)
 	Delete(competencyId uint64) error
 }
@@ -36,7 +37,6 @@ func NewEduprogcompetenciesRepository(dbSession db.Session) EduprogcompetenciesR
 
 func (r eduprogcompetenciesRepository) AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error) {
 	ec := r.mapDomainToModel(eduprogcompetency)
-
 	err := r.coll.InsertReturning(&ec)
 	if err != nil {
 		return domain.Eduprogcompetencies{}, err
@@ -58,7 +58,28 @@ func (r eduprogcompetenciesRepository) UpdateCompetency(eduprogcompetency domain
 
 func (r eduprogcompetenciesRepository) ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error) {
 	var ec []eduprogcompetencies
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).OrderBy("code").All(&ec)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).All(&ec)
+	if err != nil {
+		return []domain.Eduprogcompetencies{}, err
+	}
+
+	return r.mapModelToDomainCollection(ec), nil
+}
+
+func (r eduprogcompetenciesRepository) ShowCompetenciesByType(eduprogId uint64, ttype string) ([]domain.Eduprogcompetencies, error) {
+	var ec []eduprogcompetencies
+	if ttype == "ZK" {
+		ttype = "ЗК"
+	} else if ttype == "FK" {
+		ttype = "ФК"
+	} else if ttype == "PR" {
+		ttype = "ПР"
+	} else if ttype == "VFK" {
+		ttype = "ВФК"
+	} else if ttype == "VPR" {
+		ttype = "ВПР"
+	}
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId, "type": ttype}).OrderBy("code").All(&ec)
 	if err != nil {
 		return []domain.Eduprogcompetencies{}, err
 	}

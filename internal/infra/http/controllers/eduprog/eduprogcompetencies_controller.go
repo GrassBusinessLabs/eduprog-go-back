@@ -47,7 +47,52 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 
 		eduprogcompetency.Type = baseCompetency.Type
 
-		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(eduprogcompetency.EduprogId)
+		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(eduprogcompetency.EduprogId, eduprogcompetency.Type)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var maxCode uint64 = 0
+
+		for i := range allEdpcompetencies {
+			if allEdpcompetencies[i].CompetencyId == eduprogcompetency.CompetencyId {
+				log.Printf("EduprogcompetenciesController: %s", err)
+				controllers.InternalServerError(w, errors.New("competency is in this eduprog already"))
+				return
+			}
+			if i == 0 || allEdpcompetencies[i].Code > maxCode {
+				maxCode = allEdpcompetencies[i].Code
+			}
+		}
+
+		eduprogcompetency.Code = maxCode + 1
+
+		eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
+		controllers.Created(w, eduprogcompetenciesDto.DomainToDto(eduprogcompetency))
+	}
+}
+
+func (c EduprogcompetenciesController) AddCustomCompetencyToEduprog() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogcompetency, err := requests.Bind(r, requests.AddCustomCompetencyToEduprogRequest{}, domain.Eduprogcompetencies{})
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcompetency.CompetencyId = 65
+
+		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(eduprogcompetency.EduprogId, eduprogcompetency.Type)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -58,15 +103,8 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 
 		for i := range allEdpcompetencies {
 			if allEdpcompetencies[i].EduprogId == eduprogcompetency.EduprogId {
-				if allEdpcompetencies[i].CompetencyId == eduprogcompetency.CompetencyId {
-					log.Printf("EduprogcompetenciesController: %s", err)
-					controllers.InternalServerError(w, errors.New("competency is in this eduprog already"))
-					return
-				}
-				if allEdpcompetencies[i].Type == eduprogcompetency.Type {
-					if i == 0 || allEdpcompetencies[i].Code > maxCode {
-						maxCode = allEdpcompetencies[i].Code
-					}
+				if i == 0 || allEdpcompetencies[i].Code > maxCode {
+					maxCode = allEdpcompetencies[i].Code
 				}
 			}
 		}
@@ -95,6 +133,29 @@ func (c EduprogcompetenciesController) ShowCompetenciesByEduprogId() http.Handle
 		}
 
 		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
+		controllers.Success(w, eduprogcompetenciesDto.DomainToDtoCollection(eduprogcompetencies))
+	}
+}
+
+func (c EduprogcompetenciesController) ShowCompetenciesByType() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		ttype := r.URL.Query().Get("type")
+
+		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)

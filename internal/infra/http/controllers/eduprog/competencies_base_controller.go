@@ -35,25 +35,12 @@ func (c CompetenciesBaseController) ShowAllCompetencies() http.HandlerFunc {
 	}
 }
 
-func (c CompetenciesBaseController) ShowZK() http.HandlerFunc {
+func (c CompetenciesBaseController) ShowCompetenciesByType() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		competencies, err := c.competenciesBaseService.ShowZK()
-		if err != nil {
-			log.Printf("CompetenciesBaseController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
+		ttype := r.URL.Query().Get("type")
 
-		var competenciesDto resources.CompetenciesBaseDto
-		controllers.Success(w, competenciesDto.DomainToDtoCollection(competencies))
-	}
-}
-
-func (c CompetenciesBaseController) ShowFK() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		competencies, err := c.competenciesBaseService.ShowFK()
+		competencies, err := c.competenciesBaseService.ShowCompetenciesByType(ttype)
 		if err != nil {
 			log.Printf("CompetenciesBaseController: %s", err)
 			controllers.InternalServerError(w, err)
