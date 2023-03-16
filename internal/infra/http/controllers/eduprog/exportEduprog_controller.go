@@ -178,14 +178,33 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+6), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%d кредитів", creditsDto.TotalCredits))
 
-		eduprogcompetencies, _ := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
+		//----------------------------EXPORT COMPETENCIES MATRIX LOGIC----------------------------------//
+
+		//eduprogcompetencies, _ := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
+		//if err != nil {
+		//	log.Printf("EduprogController: %s", err)
+		//	controllers.InternalServerError(w, err)
+		//	return
+		//}
+
+		eduprogcompetenciesZK, _ := c.eduprogcompetenciesService.ShowCompetenciesByType(id, "ZK")
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
-
-		//----------------------------EXPORT COMPETENCIES MATRIX LOGIC----------------------------------//
+		eduprogcompetenciesFK, _ := c.eduprogcompetenciesService.ShowCompetenciesByType(id, "FK")
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		eduprogcompetenciesPR, _ := c.eduprogcompetenciesService.ShowCompetenciesByType(id, "PR")
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
 
 		xlsx.SetActiveSheet(index2)
 		err = xlsx.SetSheetName("Sheet2", SheetName2)
@@ -290,20 +309,31 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		}
 
-		competenicesLen := len(eduprogcompetencies)
+		competenicesZKLen := len(eduprogcompetenciesZK)
 
-		for i := 2; i < competenicesLen+2; i++ {
+		for i := 2; i < competenicesZKLen+2; i++ {
 
 			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
 			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
 			_ = xlsx.SetRowHeight(SheetName2, i, 15)
 			_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcompetencies[i-2].Type + " " + strconv.FormatUint(eduprogcompetencies[i-2].Code, 10),
+				eduprogcompetenciesZK[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesZK[i-2].Code, 10),
+			})
+
+		}
+		competenicesFKLen := len(eduprogcompetenciesFK)
+		for i := competenicesZKLen + 2; i < competenicesZKLen+competenicesFKLen+2; i++ {
+
+			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
+			_ = xlsx.SetRowHeight(SheetName2, i, 15)
+			_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
+				eduprogcompetenciesFK[i-competenicesZKLen-2].Type + " " + strconv.FormatUint(eduprogcompetenciesFK[i-competenicesZKLen-2].Code, 10),
 			})
 
 		}
 
-		_ = xlsx.SetCellStyle(SheetName2, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesLen+1), styleDot)
+		_ = xlsx.SetCellStyle(SheetName2, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesZKLen+1), styleDot)
 
 		competenciesMatrix, _ := c.competenciesMatrixService.ShowByEduprogId(id)
 		if err != nil {
@@ -343,13 +373,6 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		xlsx.SetActiveSheet(index3)
 		_ = xlsx.SetSheetName("Sheet3", SheetName3)
-
-		eduprogresults, err := c.eduprogresultsService.ShowEduprogResultsByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
 
 		mandLen = len(eduprogcomps.Mandatory)
 		lastLetter = ""
@@ -427,20 +450,19 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		}
 
-		resultsLen := len(eduprogresults)
-
-		for i := 2; i < resultsLen+2; i++ {
+		competenicesPRLen := len(eduprogcompetenciesPR)
+		for i := 2; i < competenicesPRLen+2; i++ {
 
 			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
 			_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
 			_ = xlsx.SetRowHeight(SheetName3, i, 15)
 			_ = xlsx.SetSheetRow(SheetName3, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogresults[i-2].Type + " " + strconv.FormatUint(eduprogresults[i-2].Code, 10),
+				eduprogcompetenciesPR[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesPR[i-2].Code, 10),
 			})
 
 		}
 
-		_ = xlsx.SetCellStyle(SheetName3, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesLen+1), styleDot)
+		_ = xlsx.SetCellStyle(SheetName3, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesPRLen+1), styleDot)
 
 		resultsMatrix, _ := c.resultsMatrixService.ShowByEduprogId(id)
 		if err != nil {

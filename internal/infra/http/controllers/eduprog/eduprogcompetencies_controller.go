@@ -214,13 +214,15 @@ func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
 			eduprogcompetency.Code = baseCompetencies[i].Code
 			eduprogcompetency.Redefinition = baseCompetencies[i].Definition
 
-			eduprogcompetenciesList = append(eduprogcompetenciesList, eduprogcompetency)
 			eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
 			if err != nil {
 				log.Printf("EduprogcompetenciesController: %s", err)
 				controllers.InternalServerError(w, err)
 				return
 			}
+			//competencyId,err = c.eduprogcompetenciesService.FindById(eduprogcompetency.Id)
+
+			eduprogcompetenciesList = append(eduprogcompetenciesList, eduprogcompetency)
 		}
 
 		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
