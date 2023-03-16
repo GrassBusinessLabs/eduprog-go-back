@@ -1,6 +1,7 @@
 package eduprog
 
 import (
+	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
@@ -39,7 +40,10 @@ func (c CompetenciesBaseController) ShowCompetenciesByType() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		ttype := r.URL.Query().Get("type")
-
+		if ttype != "ZK" && ttype != "FK" && ttype != "PR" {
+			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
+			return
+		}
 		competencies, err := c.competenciesBaseService.ShowCompetenciesByType(ttype)
 		if err != nil {
 			log.Printf("CompetenciesBaseController: %s", err)

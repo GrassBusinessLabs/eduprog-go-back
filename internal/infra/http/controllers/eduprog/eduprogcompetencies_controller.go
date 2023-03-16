@@ -164,6 +164,107 @@ func (c EduprogcompetenciesController) AddCustomCompetencyToEduprog() http.Handl
 	}
 }
 
+func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		ttype := r.URL.Query().Get("type")
+
+		if ttype != "ZK" && ttype != "FK" && ttype != "PR" {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
+			return
+		}
+		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for i := range eduprogcompetencies {
+			err := c.eduprogcompetenciesService.Delete(eduprogcompetencies[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompetenciesController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		baseCompetencies, err := c.competenciesBaseService.ShowCompetenciesByType(ttype)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogcompetenciesList []domain.Eduprogcompetencies
+
+		for i := range baseCompetencies {
+			var eduprogcompetency domain.Eduprogcompetencies
+
+			eduprogcompetency.CompetencyId = baseCompetencies[i].Id
+			eduprogcompetency.EduprogId = id
+			eduprogcompetency.Type = baseCompetencies[i].Type
+			eduprogcompetency.Code = baseCompetencies[i].Code
+			eduprogcompetency.Redefinition = baseCompetencies[i].Definition
+
+			eduprogcompetenciesList = append(eduprogcompetenciesList, eduprogcompetency)
+			eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+			if err != nil {
+				log.Printf("EduprogcompetenciesController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
+		controllers.Success(w, eduprogcompetenciesDto.DomainToDtoCollection(eduprogcompetenciesList))
+
+	}
+}
+
+func (c EduprogcompetenciesController) DeleteAllCompetencies() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		ttype := r.URL.Query().Get("type")
+
+		if ttype != "ZK" && ttype != "FK" && ttype != "PR" {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
+			return
+		}
+		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for i := range eduprogcompetencies {
+			err := c.eduprogcompetenciesService.Delete(eduprogcompetencies[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompetenciesController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		controllers.Ok(w)
+	}
+}
+
 func (c EduprogcompetenciesController) ShowCompetenciesByEduprogId() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
@@ -195,6 +296,11 @@ func (c EduprogcompetenciesController) ShowCompetenciesByType() http.HandlerFunc
 		}
 
 		ttype := r.URL.Query().Get("type")
+		if ttype != "ZK" && ttype != "FK" && ttype != "PR" && ttype != "VFK" && ttype != "VPR" {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, errors.New("only ZK, FK, PR, VFK or VPR"))
+			return
+		}
 
 		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
 		if err != nil {
