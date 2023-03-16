@@ -6,5 +6,5 @@ type Eduprogcompetencies struct {
 	EduprogId    uint64
 	Type         string
 	Code         uint64
-	Redefinition string
+	Definition   string
 }

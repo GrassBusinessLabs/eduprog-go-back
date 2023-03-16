@@ -5,37 +5,37 @@ import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 type AddCompetencyToEduprogRequest struct {
 	CompetencyId uint64 `json:"competency_id" validate:"required"`
 	EduprogId    uint64 `json:"eduprog_id" validate:"required"`
-	Redefinition string `json:"redefinition" `
+	Definition   string `json:"definition" `
 }
 
 type UpdateCompetencyRequest struct {
-	Redefinition string `json:"redefinition" `
+	Definition string `json:"definition" `
 }
 
 type AddCustomCompetencyToEduprogRequest struct {
-	EduprogId    uint64 `json:"eduprog_id" validate:"required"`
-	Type         string `json:"type" validate:"required"`
-	Redefinition string `json:"redefinition"`
+	EduprogId  uint64 `json:"eduprog_id" validate:"required"`
+	Type       string `json:"type" validate:"required"`
+	Definition string `json:"definition"`
 }
 
 func (r AddCompetencyToEduprogRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcompetencies{
 		CompetencyId: r.CompetencyId,
 		EduprogId:    r.EduprogId,
-		Redefinition: r.Redefinition,
+		Definition:   r.Definition,
 	}, nil
 }
 
 func (r UpdateCompetencyRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcompetencies{
-		Redefinition: r.Redefinition,
+		Definition: r.Definition,
 	}, nil
 }
 
 func (r AddCustomCompetencyToEduprogRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcompetencies{
-		EduprogId:    r.EduprogId,
-		Type:         r.Type,
-		Redefinition: r.Redefinition,
+		EduprogId:  r.EduprogId,
+		Type:       r.Type,
+		Definition: r.Definition,
 	}, nil
 }

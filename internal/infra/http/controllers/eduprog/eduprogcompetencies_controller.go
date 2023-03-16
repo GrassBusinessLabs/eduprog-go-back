@@ -41,8 +41,8 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 			return
 		}
 
-		if eduprogcompetency.Redefinition == "" {
-			eduprogcompetency.Redefinition = baseCompetency.Definition
+		if eduprogcompetency.Definition == "" {
+			eduprogcompetency.Definition = baseCompetency.Definition
 		}
 
 		eduprogcompetency.Type = baseCompetency.Type
@@ -212,7 +212,7 @@ func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
 			eduprogcompetency.EduprogId = id
 			eduprogcompetency.Type = baseCompetencies[i].Type
 			eduprogcompetency.Code = baseCompetencies[i].Code
-			eduprogcompetency.Redefinition = baseCompetencies[i].Definition
+			eduprogcompetency.Definition = baseCompetencies[i].Definition
 
 			eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
 			if err != nil {

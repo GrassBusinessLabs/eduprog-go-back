@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.eduprogcompetencies(
     eduprog_id INTEGER NOT NULL REFERENCES public.eduprog (id) ON DELETE CASCADE,
     "type" varchar(10),
     code INTEGER,
-    redefinition VARCHAR(500)
+    definition VARCHAR(500)
 );
 
 ALTER TABLE public.eduprogcompetencies

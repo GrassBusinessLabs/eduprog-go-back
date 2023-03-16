@@ -13,7 +13,7 @@ type eduprogcompetencies struct {
 	EduprogId    uint64 `db:"eduprog_id"`
 	Type         string `db:"type"`
 	Code         uint64 `db:"code"`
-	Redefinition string `db:"redefinition"`
+	Definition   string `db:"definition"`
 }
 
 type EduprogcompetenciesRepository interface {
@@ -108,7 +108,7 @@ func (r eduprogcompetenciesRepository) mapDomainToModel(d domain.Eduprogcompeten
 		EduprogId:    d.EduprogId,
 		Type:         d.Type,
 		Code:         d.Code,
-		Redefinition: d.Redefinition,
+		Definition:   d.Definition,
 	}
 }
 
@@ -119,7 +119,7 @@ func (r eduprogcompetenciesRepository) mapModelToDomain(m eduprogcompetencies) d
 		EduprogId:    m.EduprogId,
 		Type:         m.Type,
 		Code:         m.Code,
-		Redefinition: m.Redefinition,
+		Definition:   m.Definition,
 	}
 }
 
