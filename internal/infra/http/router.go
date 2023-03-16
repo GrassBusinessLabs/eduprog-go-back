@@ -287,6 +287,10 @@ func EduprogcompetenciesRouter(r chi.Router, ecc eduprog.EduprogcompetenciesCont
 			"/addCustom",
 			ecc.AddCustomCompetencyToEduprog(),
 		)
+		apiRouter.Put(
+			"/{compId}",
+			ecc.UpdateCompetency(),
+		)
 		apiRouter.Get(
 			"/byEduprogId/{edId}",
 			ecc.ShowCompetenciesByEduprogId(),
