@@ -81,6 +81,62 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 	}
 }
 
+func (c EduprogcompetenciesController) UpdateCompetency() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogcompetency, err := requests.Bind(r, requests.AddCompetencyToEduprogRequest{}, domain.Eduprogcompetencies{})
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		baseCompetency, err := c.competenciesBaseService.FindById(eduprogcompetency.CompetencyId)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		if eduprogcompetency.Redefinition == "" {
+			eduprogcompetency.Redefinition = baseCompetency.Definition
+		}
+
+		eduprogcompetency.Type = baseCompetency.Type
+
+		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(eduprogcompetency.EduprogId, eduprogcompetency.Type)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var maxCode uint64 = 0
+
+		for i := range allEdpcompetencies {
+			if allEdpcompetencies[i].CompetencyId == eduprogcompetency.CompetencyId {
+				log.Printf("EduprogcompetenciesController: %s", err)
+				controllers.InternalServerError(w, errors.New("competency is in this eduprog already"))
+				return
+			}
+			if i == 0 || allEdpcompetencies[i].Code > maxCode {
+				maxCode = allEdpcompetencies[i].Code
+			}
+		}
+
+		eduprogcompetency.Code = maxCode + 1
+
+		eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
+		controllers.Created(w, eduprogcompetenciesDto.DomainToDto(eduprogcompetency))
+	}
+}
+
 func (c EduprogcompetenciesController) AddCustomCompetencyToEduprog() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eduprogcompetency, err := requests.Bind(r, requests.AddCustomCompetencyToEduprogRequest{}, domain.Eduprogcompetencies{})

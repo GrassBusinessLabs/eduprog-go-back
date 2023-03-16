@@ -10,6 +10,7 @@ const CompetenciesBaseTableName = "competencies_base"
 type competencies_base struct {
 	Id         uint64 `db:"id"`
 	Type       string `db:"type"`
+	Code       uint64 `db:"code"`
 	Definition string `db:"definition"`
 	Specialty  string `db:"specialty"`
 }
@@ -49,7 +50,7 @@ func (r competenciesBaseRepository) ShowCompetenciesByType(ttype string) ([]doma
 	} else if ttype == "PR" {
 		ttype = "ПР"
 	}
-	err := r.coll.Find(db.Cond{"type": ttype}).All(&c)
+	err := r.coll.Find(db.Cond{"type": ttype}).OrderBy("code").All(&c)
 	if err != nil {
 		return []domain.CompetenciesBase{}, err
 	}
@@ -72,6 +73,7 @@ func (r competenciesBaseRepository) mapDomainToModel(d domain.CompetenciesBase) 
 	return competencies_base{
 		Id:         d.Id,
 		Type:       d.Type,
+		Code:       d.Code,
 		Definition: d.Definition,
 		Specialty:  d.Specialty,
 	}
@@ -81,6 +83,7 @@ func (r competenciesBaseRepository) mapModelToDomain(m competencies_base) domain
 	return domain.CompetenciesBase{
 		Id:         m.Id,
 		Type:       m.Type,
+		Code:       m.Code,
 		Definition: m.Definition,
 		Specialty:  m.Specialty,
 	}

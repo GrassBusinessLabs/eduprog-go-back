@@ -8,6 +8,10 @@ type AddCompetencyToEduprogRequest struct {
 	Redefinition string `json:"redefinition" `
 }
 
+type UpdateCompetencyRequest struct {
+	Redefinition string `json:"redefinition" `
+}
+
 type AddCustomCompetencyToEduprogRequest struct {
 	EduprogId    uint64 `json:"eduprog_id" validate:"required"`
 	Type         string `json:"type" validate:"required"`
@@ -18,6 +22,12 @@ func (r AddCompetencyToEduprogRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcompetencies{
 		CompetencyId: r.CompetencyId,
 		EduprogId:    r.EduprogId,
+		Redefinition: r.Redefinition,
+	}, nil
+}
+
+func (r UpdateCompetencyRequest) ToDomainModel() (interface{}, error) {
+	return domain.Eduprogcompetencies{
 		Redefinition: r.Redefinition,
 	}, nil
 }

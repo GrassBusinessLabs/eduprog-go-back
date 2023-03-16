@@ -157,7 +157,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		} else if eduprogcomp.Type == "ВБ" {
 			if creditsDto.SelectiveFreeCredits-eduprogcomp.Credits > creditsDto.SelectiveFreeCredits {
 				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
+				controllers.BadRequest(w, errors.New("too much credits"))
 				return
 			}
 		} else {
