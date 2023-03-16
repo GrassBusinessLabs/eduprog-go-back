@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/xuri/excelize/v2"
 	"log"
+	"mime"
 	"net/http"
 	"strconv"
 	"strings"
@@ -333,7 +334,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		}
 
-		_ = xlsx.SetCellStyle(SheetName2, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesZKLen+1), styleDot)
+		_ = xlsx.SetCellStyle(SheetName2, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesZKLen+competenicesFKLen+1), styleDot)
 
 		competenciesMatrix, _ := c.competenciesMatrixService.ShowByEduprogId(id)
 		if err != nil {
@@ -504,7 +505,13 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			return
 		}
 		xlsx.SetActiveSheet(index)
-		w.Header().Set("Content-Disposition", "attachment; filename="+fmt.Sprintf("%s.xlsx", eduprog.Name))
+		filename := fmt.Sprintf("%s.xlsx", eduprog.Name)
+		header := make(http.Header)
+		header.Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
+		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		for k, v := range header {
+			w.Header()[k] = v
+		}
 		buf, _ := xlsx.WriteToBuffer()
 		http.ServeContent(w, r, fmt.Sprintf("%s.xlsx", eduprog.Name), time.Time{}, strings.NewReader(buf.String()))
 
