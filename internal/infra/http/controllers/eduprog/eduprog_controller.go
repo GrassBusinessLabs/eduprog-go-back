@@ -204,6 +204,11 @@ func (c EduprogController) CreditsInfo() http.HandlerFunc {
 		}
 
 		creditsDto, err := c.GetCreditsInfo(comps, eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
 
 		controllers.Success(w, creditsDto)
 	}
