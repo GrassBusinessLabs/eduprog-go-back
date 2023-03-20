@@ -71,7 +71,7 @@ func (c EduprogController) Save() http.HandlerFunc {
 				eduprog.KnowledgeField = fmt.Sprintf("%s %s", allSpecialties[i].KFCode, allSpecialties[i].KnowledgeField)
 			}
 		}
-		if check == false {
+		if !check {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
 			return
@@ -131,7 +131,7 @@ func (c EduprogController) Update() http.HandlerFunc {
 				eduprog.KnowledgeField = fmt.Sprintf("%s %s", allSpecialties[i].KFCode, allSpecialties[i].KnowledgeField)
 			}
 		}
-		if check == false {
+		if !check {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
 			return

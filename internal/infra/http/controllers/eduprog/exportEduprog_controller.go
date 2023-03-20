@@ -141,7 +141,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4), styleBold)
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4), styleBoldAlignLeft)
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", mandLen+4), "Загальний обсяг обов'язкових компонент: ")
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%d кредитів", creditsDto.MandatoryCredits))
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%f кредитів", creditsDto.MandatoryCredits))
 
 		selLen := len(eduprogcomps.Selective)
 
@@ -166,11 +166,11 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5), styleBoldAlignLeft)
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5), styleBold)
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+5), "Загальний обсяг вибіркових компонент: ")
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("%d кредитів", creditsDto.SelectiveCredits))
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("%f кредитів", creditsDto.SelectiveCredits))
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6), styleBoldAlignLeft)
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6), styleBold)
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+6), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%d кредитів", creditsDto.TotalCredits))
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%f кредитів", creditsDto.TotalCredits))
 
 		//----------------------------EXPORT COMPETENCIES MATRIX LOGIC----------------------------------//
 
