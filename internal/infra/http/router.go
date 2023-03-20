@@ -129,6 +129,10 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 			ec.ShowList(),
 		)
 		apiRouter.Get(
+			"/levelsList",
+			ec.GetOPPLevelsList(),
+		)
+		apiRouter.Get(
 			"/{epId}",
 			ec.FindById(),
 		)
@@ -261,6 +265,14 @@ func EducompRelationsRouter(r chi.Router, ecrc eduprog.EducompRelationsControlle
 func CompetenciesBaseRouter(r chi.Router, cbc eduprog.CompetenciesBaseController) {
 
 	r.Route("/eduprogs/baseCompetencies", func(apiRouter chi.Router) {
+		apiRouter.Post(
+			"/create",
+			cbc.CreateCompetencyBase(),
+		)
+		apiRouter.Put(
+			"/{cbId}",
+			cbc.UpdateCompetencyBase(),
+		)
 		apiRouter.Get(
 			"/list",
 			cbc.ShowAllCompetencies(),
@@ -272,6 +284,10 @@ func CompetenciesBaseRouter(r chi.Router, cbc eduprog.CompetenciesBaseController
 		apiRouter.Get(
 			"/{cbId}",
 			cbc.FindById(),
+		)
+		apiRouter.Delete(
+			"/{cbId}",
+			cbc.Delete(),
 		)
 	})
 }

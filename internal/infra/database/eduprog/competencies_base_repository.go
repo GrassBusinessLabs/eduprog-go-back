@@ -8,7 +8,7 @@ import (
 const CompetenciesBaseTableName = "competencies_base"
 
 type competencies_base struct {
-	Id         uint64 `db:"id"`
+	Id         uint64 `db:"id,omitempty"`
 	Type       string `db:"type"`
 	Code       uint64 `db:"code"`
 	Definition string `db:"definition"`
@@ -16,9 +16,12 @@ type competencies_base struct {
 }
 
 type CompetenciesBaseRepository interface {
+	CreateCompetency(competency domain.CompetenciesBase) (domain.CompetenciesBase, error)
+	UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error)
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
-	ShowCompetenciesByType(ttype string) ([]domain.CompetenciesBase, error)
+	ShowCompetenciesByType(ttype string, specialty string) ([]domain.CompetenciesBase, error)
 	FindById(id uint64) (domain.CompetenciesBase, error)
+	Delete(id uint64) error
 }
 
 type competenciesBaseRepository struct {
@@ -31,6 +34,27 @@ func NewCompetenciesBaseRepository(dbSession db.Session) CompetenciesBaseReposit
 	}
 }
 
+func (r competenciesBaseRepository) CreateCompetency(competency domain.CompetenciesBase) (domain.CompetenciesBase, error) {
+	cb := r.mapDomainToModel(competency)
+	err := r.coll.InsertReturning(&cb)
+	if err != nil {
+		return domain.CompetenciesBase{}, err
+	}
+
+	return r.mapModelToDomain(cb), nil
+}
+
+func (r competenciesBaseRepository) UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error) {
+	e := r.mapDomainToModel(competency)
+
+	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	if err != nil {
+		return domain.CompetenciesBase{}, err
+	}
+
+	return r.mapModelToDomain(e), nil
+}
+
 func (r competenciesBaseRepository) ShowAllCompetencies() ([]domain.CompetenciesBase, error) {
 	var c []competencies_base
 	err := r.coll.Find().All(&c)
@@ -41,7 +65,7 @@ func (r competenciesBaseRepository) ShowAllCompetencies() ([]domain.Competencies
 	return r.mapModelToDomainCollection(c), nil
 }
 
-func (r competenciesBaseRepository) ShowCompetenciesByType(ttype string) ([]domain.CompetenciesBase, error) {
+func (r competenciesBaseRepository) ShowCompetenciesByType(ttype string, specialty string) ([]domain.CompetenciesBase, error) {
 	var c []competencies_base
 	if ttype == "ZK" {
 		ttype = "ЗК"
@@ -50,7 +74,7 @@ func (r competenciesBaseRepository) ShowCompetenciesByType(ttype string) ([]doma
 	} else if ttype == "PR" {
 		ttype = "ПР"
 	}
-	err := r.coll.Find(db.Cond{"type": ttype}).OrderBy("code").All(&c)
+	err := r.coll.Find(db.Cond{"type": ttype, "specialty": specialty}).OrderBy("code").All(&c)
 	if err != nil {
 		return []domain.CompetenciesBase{}, err
 	}
@@ -66,6 +90,10 @@ func (r competenciesBaseRepository) FindById(id uint64) (domain.CompetenciesBase
 	}
 
 	return r.mapModelToDomain(e), nil
+}
+
+func (r competenciesBaseRepository) Delete(id uint64) error {
+	return r.coll.Find(db.Cond{"id": id}).Delete()
 }
 
 // nolint

@@ -11,6 +11,8 @@ type EduprogService interface {
 	Update(eduprog domain.Eduprog, id uint64) (domain.Eduprog, error)
 	ShowList() (domain.Eduprogs, error)
 	FindById(id uint64) (domain.Eduprog, error)
+	GetOPPLevelsList() ([]domain.OPPLevelStruct, error)
+	GetOPPLevelData(level string) (domain.OPPLevelStruct, error)
 	Delete(id uint64) error
 }
 
@@ -56,6 +58,24 @@ func (s eduprogService) FindById(id uint64) (domain.Eduprog, error) {
 	if err != nil {
 		log.Printf("EduprogService: %s", err)
 		return domain.Eduprog{}, err
+	}
+	return e, nil
+}
+
+func (s eduprogService) GetOPPLevelsList() ([]domain.OPPLevelStruct, error) {
+	e, err := s.eduprogRepo.GetOPPLevelsList()
+	if err != nil {
+		log.Printf("EduprogService: %s", err)
+		return []domain.OPPLevelStruct{}, err
+	}
+	return e, nil
+}
+
+func (s eduprogService) GetOPPLevelData(level string) (domain.OPPLevelStruct, error) {
+	e, err := s.eduprogRepo.GetOPPLevelData(level)
+	if err != nil {
+		log.Printf("EduprogService: %s", err)
+		return domain.OPPLevelStruct{}, err
 	}
 	return e, nil
 }

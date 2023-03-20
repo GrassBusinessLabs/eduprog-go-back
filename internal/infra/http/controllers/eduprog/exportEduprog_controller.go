@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	_ "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
-	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"github.com/go-chi/chi/v5"
 	"github.com/xuri/excelize/v2"
 	"log"
@@ -43,18 +42,12 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			return
 		}
 
-		var creditsDto resources.CreditsDto
-
-		for _, comp := range eduprogcomps.Selective {
-			creditsDto.SelectiveCredits += comp.Credits
+		creditsDto, err := c.GetCreditsInfo(eduprogcomps, eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
 		}
-		for _, comp := range eduprogcomps.Mandatory {
-			creditsDto.MandatoryCredits += comp.Credits
-		}
-		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
-		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
-		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
-		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
 
 		//------------------------EXPORT EDUPROGCOMPS LOGIC-------------------------------//
 

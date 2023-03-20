@@ -15,11 +15,15 @@ import (
 
 type EduprogcompController struct {
 	eduprogcompService app.EduprogcompService
+	eduprogService     app.EduprogService
+	eduprogController  EduprogController
 }
 
-func NewEduprogcompController(es app.EduprogcompService) EduprogcompController {
+func NewEduprogcompController(es app.EduprogcompService, eps app.EduprogService, edc EduprogController) EduprogcompController {
 	return EduprogcompController{
 		eduprogcompService: es,
+		eduprogService:     eps,
+		eduprogController:  edc,
 	}
 }
 
@@ -67,19 +71,18 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
-
-		var creditsDto resources.CreditsDto
-
-		for _, comp := range comps.Selective {
-			creditsDto.SelectiveCredits += comp.Credits
+		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
 		}
-		for _, comp := range comps.Mandatory {
-			creditsDto.MandatoryCredits += comp.Credits
+		creditsDto, err := c.eduprogController.GetCreditsInfo(comps, eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
 		}
-		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
-		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
-		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
-		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
 
 		if eduprogcomp.Type == "ОК" {
 			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
@@ -135,25 +138,24 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		}
 
 		//Free credits check
-		comps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
+		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
-
-		var creditsDto resources.CreditsDto
-
-		for _, comp := range comps.Selective {
-			creditsDto.SelectiveCredits += comp.Credits
+		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
 		}
-		for _, comp := range comps.Mandatory {
-			creditsDto.MandatoryCredits += comp.Credits
+		creditsDto, err := c.eduprogController.GetCreditsInfo(comps, eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
 		}
-		creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
-		creditsDto.TotalFreeCredits = 240 - creditsDto.TotalCredits
-		creditsDto.MandatoryFreeCredits = 180 - creditsDto.MandatoryCredits
-		creditsDto.SelectiveFreeCredits = 60 - creditsDto.SelectiveCredits
 
 		if eduprogcomp.Type == "ОК" {
 			if eduprogcomp.Credits+(creditsDto.MandatoryCredits-eduprogcompById.Credits) > 180 {

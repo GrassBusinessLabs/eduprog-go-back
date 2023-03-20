@@ -22,6 +22,13 @@ type Eduprogs struct {
 	Pages uint
 }
 
+type OPPLevelStruct struct {
+	Level            string
+	Stage            string
+	MandatoryCredits uint64
+	SelectiveCredits uint64
+}
+
 type Components struct {
 	Mandatory []Eduprogcomp
 	Selective []Eduprogcomp

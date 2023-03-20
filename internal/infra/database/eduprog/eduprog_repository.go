@@ -1,12 +1,21 @@
 package eduprog
 
 import (
+	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/upper/db/v4"
 	"time"
 )
 
-const EduprogTableName = "eduprog"
+type OPPLevel string
+
+const (
+	EduprogTableName          = "eduprog"
+	EntryLevel       OPPLevel = "Початковий рівень (короткий цикл)"
+	FirstLevel       OPPLevel = "Перший (бакалаврський) рівень"
+	SecondLevel      OPPLevel = "Другий (магістерський) рівень"
+	ThirdLevel       OPPLevel = "Третій (освітньо-науковий/освітньо-творчий) рівень"
+)
 
 type eduprog struct {
 	Id             uint64     `db:"id,omitempty"`
@@ -26,6 +35,8 @@ type EduprogRepository interface {
 	Update(eduprog domain.Eduprog, id uint64) (domain.Eduprog, error)
 	ShowList() (domain.Eduprogs, error)
 	FindById(id uint64) (domain.Eduprog, error)
+	GetOPPLevelsList() ([]domain.OPPLevelStruct, error)
+	GetOPPLevelData(level string) (domain.OPPLevelStruct, error)
 	Delete(id uint64) error
 }
 
@@ -86,6 +97,66 @@ func (r eduprogRepository) FindById(id uint64) (domain.Eduprog, error) {
 	}
 
 	return r.mapModelToDomain(e), nil
+}
+
+func (r eduprogRepository) GetOPPLevelsList() ([]domain.OPPLevelStruct, error) {
+	var levels []domain.OPPLevelStruct
+	levelData, err := r.GetOPPLevelData(string(EntryLevel))
+	if err != nil {
+		return []domain.OPPLevelStruct{}, err
+	}
+	levels = append(levels, levelData)
+	levelData, err = r.GetOPPLevelData(string(FirstLevel))
+	if err != nil {
+		return []domain.OPPLevelStruct{}, err
+	}
+	levels = append(levels, levelData)
+	levelData, err = r.GetOPPLevelData(string(SecondLevel))
+	if err != nil {
+		return []domain.OPPLevelStruct{}, err
+	}
+	levels = append(levels, levelData)
+	levelData, err = r.GetOPPLevelData(string(ThirdLevel))
+	if err != nil {
+		return []domain.OPPLevelStruct{}, err
+	}
+	levels = append(levels, levelData)
+
+	return levels, nil
+}
+
+func (r eduprogRepository) GetOPPLevelData(level string) (domain.OPPLevelStruct, error) {
+	var edulevel domain.OPPLevelStruct
+
+	switch level {
+	case string(EntryLevel):
+		edulevel.Level = string(EntryLevel)
+		edulevel.Stage = "Молодший бакалавр"
+		edulevel.MandatoryCredits = 90
+		edulevel.SelectiveCredits = 30
+		return edulevel, nil
+	case string(FirstLevel):
+		edulevel.Level = string(FirstLevel)
+		edulevel.Stage = "Бакалавр"
+		edulevel.MandatoryCredits = 180
+		edulevel.SelectiveCredits = 60
+		return edulevel, nil
+	case string(SecondLevel):
+		edulevel.Level = string(SecondLevel)
+		edulevel.Stage = "Магістр"
+		edulevel.MandatoryCredits = 90
+		edulevel.SelectiveCredits = 30
+		return edulevel, nil
+	case string(ThirdLevel):
+		edulevel.Level = string(ThirdLevel)
+		edulevel.Stage = "Освітньо-науковий/освітньо-творчий рівень"
+		edulevel.MandatoryCredits = 30
+		edulevel.SelectiveCredits = 30
+		return edulevel, nil
+	default:
+		return edulevel, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; use method LevelsList")
+	}
+
 }
 
 func (r eduprogRepository) Delete(id uint64) error {

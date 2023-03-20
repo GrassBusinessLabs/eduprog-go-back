@@ -16,12 +16,14 @@ import (
 type EduprogcompetenciesController struct {
 	eduprogcompetenciesService app.EduprogcompetenciesService
 	competenciesBaseService    app.CompetenciesBaseService
+	eduprogService             app.EduprogService
 }
 
-func NewEduprogcompetenciesController(ecc app.EduprogcompetenciesService, cbs app.CompetenciesBaseService) EduprogcompetenciesController {
+func NewEduprogcompetenciesController(ecc app.EduprogcompetenciesService, cbs app.CompetenciesBaseService, es app.EduprogService) EduprogcompetenciesController {
 	return EduprogcompetenciesController{
 		eduprogcompetenciesService: ecc,
 		competenciesBaseService:    cbs,
+		eduprogService:             es,
 	}
 }
 
@@ -174,12 +176,19 @@ func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
 		}
 
 		ttype := r.URL.Query().Get("type")
-
 		if ttype != "ZK" && ttype != "FK" && ttype != "PR" {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
 			return
 		}
+
+		eduprog, err := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogcompetenciesController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
 		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
@@ -196,7 +205,7 @@ func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
 			}
 		}
 
-		baseCompetencies, err := c.competenciesBaseService.ShowCompetenciesByType(ttype)
+		baseCompetencies, err := c.competenciesBaseService.ShowCompetenciesByType(ttype, eduprog.Speciality)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -247,6 +256,7 @@ func (c EduprogcompetenciesController) DeleteAllCompetencies() http.HandlerFunc 
 			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
 			return
 		}
+
 		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
@@ -360,7 +370,7 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 			return
 		}
 
-		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(competency.EduprogId)
+		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(competency.EduprogId, competency.Type)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -368,17 +378,13 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 		}
 
 		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].EduprogId == competency.EduprogId {
-				if allEdpcompetencies[i].Type == competency.Type {
-					if allEdpcompetencies[i].Code > competency.Code {
-						allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
-						_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
-						if err != nil {
-							log.Printf("EduprogcompetenciesController: %s", err)
-							controllers.InternalServerError(w, err)
-							return
-						}
-					}
+			if allEdpcompetencies[i].Code > competency.Code {
+				allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
+				_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
+				if err != nil {
+					log.Printf("EduprogcompetenciesController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
 				}
 			}
 
