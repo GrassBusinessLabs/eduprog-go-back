@@ -14,7 +14,7 @@ type eduprogscheme struct {
 	DisciplineId       uint64    `db:"discipline_id"`
 	EduprogId          uint64    `db:"eduprog_id"`
 	EduprogcompId      uint64    `db:"eduprogcomp_id"`
-	CreditsPerSemester uint64    `db:"credits_per_semester"`
+	CreditsPerSemester float64   `db:"credits_per_semester"`
 	CreatedDate        time.Time `db:"created_date,omitempty"`
 	UpdatedDate        time.Time `db:"updated_date,omitempty"`
 }

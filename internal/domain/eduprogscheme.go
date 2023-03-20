@@ -9,7 +9,7 @@ type Eduprogscheme struct { //eduprogschemeElement
 	EduprogId          uint64
 	EduprogcompId      uint64
 	Eduprogcomp        Eduprogcomp
-	CreditsPerSemester uint64
+	CreditsPerSemester float64
 	CreatedDate        time.Time
 	UpdatedDate        time.Time
 }

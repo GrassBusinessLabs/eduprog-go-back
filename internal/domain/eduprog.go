@@ -25,8 +25,8 @@ type Eduprogs struct {
 type OPPLevelStruct struct {
 	Level            string
 	Stage            string
-	MandatoryCredits uint64
-	SelectiveCredits uint64
+	MandatoryCredits float64
+	SelectiveCredits float64
 }
 
 type Components struct {

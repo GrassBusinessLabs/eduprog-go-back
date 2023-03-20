@@ -9,7 +9,7 @@ type EduprogschemeDto struct {
 	EduprogId          uint64         `json:"eduprog_id"`
 	EduprogcompId      uint64         `json:"eduprogcomp_id"`
 	Eduprogcomp        EduprogcompDto `json:"eduprogcomp"`
-	CreditsPerSemester uint64         `json:"credits_per_semester"`
+	CreditsPerSemester float64        `json:"credits_per_semester"`
 }
 
 func (d EduprogschemeDto) DomainToDto(eduprogscheme domain.Eduprogscheme, comp domain.Eduprogcomp) EduprogschemeDto {

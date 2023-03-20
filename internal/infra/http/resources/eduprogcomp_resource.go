@@ -5,15 +5,15 @@ import (
 )
 
 type EduprogcompDto struct {
-	Id          uint64 `json:"id"`
-	Code        string `json:"code"`
-	Name        string `json:"name"`
-	Credits     uint64 `json:"credits"`
-	ControlType string `json:"control_type"`
-	Type        string `json:"type"`
-	SubType     string `json:"sub_type"`
-	Category    string `json:"category"`
-	EduprogId   uint64 `json:"eduprog_id"`
+	Id          uint64  `json:"id"`
+	Code        string  `json:"code"`
+	Name        string  `json:"name"`
+	Credits     float64 `json:"credits"`
+	ControlType string  `json:"control_type"`
+	Type        string  `json:"type"`
+	SubType     string  `json:"sub_type"`
+	Category    string  `json:"category"`
+	EduprogId   uint64  `json:"eduprog_id"`
 }
 
 func (d EduprogcompDto) DomainToDto(eduprogcomp domain.Eduprogcomp) EduprogcompDto {

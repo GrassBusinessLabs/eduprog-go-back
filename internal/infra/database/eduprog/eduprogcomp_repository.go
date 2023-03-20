@@ -16,7 +16,7 @@ type eduprogcomp struct {
 	Id          uint64    `db:"id,omitempty"`
 	Code        string    `db:"code"`
 	Name        string    `db:"name"`
-	Credits     uint64    `db:"credits"`
+	Credits     float64   `db:"credits"`
 	ControlType string    `db:"control_type"`
 	Type        string    `db:"type"`
 	SubType     string    `db:"sub_type"`

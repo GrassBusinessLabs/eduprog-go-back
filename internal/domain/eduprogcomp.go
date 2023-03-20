@@ -6,7 +6,7 @@ type Eduprogcomp struct {
 	Id          uint64
 	Code        string
 	Name        string
-	Credits     uint64
+	Credits     float64
 	ControlType string
 	Type        string
 	SubType     string

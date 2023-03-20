@@ -2,6 +2,7 @@ package eduprog
 
 import (
 	"errors"
+	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -20,9 +21,10 @@ type EduprogController struct {
 	competenciesMatrixService  app.CompetenciesMatrixService
 	eduprogresultsService      app.EduprogresultsService
 	resultsMatrixService       app.ResultsMatrixService
+	specialtiesService         app.SpecialtiesService
 }
 
-func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, ers app.EduprogresultsService, rms app.ResultsMatrixService) EduprogController {
+func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, ers app.EduprogresultsService, rms app.ResultsMatrixService, ss app.SpecialtiesService) EduprogController {
 	return EduprogController{
 		eduprogService:             es,
 		eduprogcompService:         ecs,
@@ -30,6 +32,7 @@ func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epc
 		competenciesMatrixService:  cms,
 		eduprogresultsService:      ers,
 		resultsMatrixService:       rms,
+		specialtiesService:         ss,
 	}
 }
 
@@ -48,20 +51,29 @@ func (c EduprogController) Save() http.HandlerFunc {
 		levelData, err := c.eduprogService.GetOPPLevelData(eduprog.EducationLevel)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; get this value from method `LevelsList`"))
+			controllers.InternalServerError(w, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; get this value from method `LevelsList`"))
 			return
 		}
-		eduprog.EducationLevel = string(levelData.Level)
+		eduprog.EducationLevel = levelData.Level
 		eduprog.Stage = levelData.Stage
 
-		specialty, err := strconv.ParseUint(eduprog.Speciality, 10, 64)
+		allSpecialties, err := c.specialtiesService.ShowAllSpecialties()
 		if err != nil {
-			log.Printf("CompetenciesBaseController: %s", err)
-			controllers.BadRequest(w, errors.New("only numeric from 11 to 293"))
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
 			return
 		}
-		if specialty < 11 || specialty > 293 {
-			controllers.BadRequest(w, errors.New("from 11 to 293 (currently only 141 and 121 have ZK, FK and PR)"))
+		check := false
+		for i := range allSpecialties {
+			if allSpecialties[i].Code == eduprog.Speciality {
+				check = true
+				eduprog.Speciality = fmt.Sprintf("%s %s", allSpecialties[i].Code, allSpecialties[i].Name)
+				eduprog.KnowledgeField = fmt.Sprintf("%s %s", allSpecialties[i].KFCode, allSpecialties[i].KnowledgeField)
+			}
+		}
+		if check == false {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
 			return
 		}
 
@@ -105,6 +117,27 @@ func (c EduprogController) Update() http.HandlerFunc {
 		eduprog.EducationLevel = levelData.Level
 		eduprog.Stage = levelData.Stage
 
+		allSpecialties, err := c.specialtiesService.ShowAllSpecialties()
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		check := false
+		for i := range allSpecialties {
+			if allSpecialties[i].Code == eduprog.Speciality {
+				check = true
+				eduprog.Speciality = fmt.Sprintf("%s %s", allSpecialties[i].Code, allSpecialties[i].Name)
+				eduprog.KnowledgeField = fmt.Sprintf("%s %s", allSpecialties[i].KFCode, allSpecialties[i].KnowledgeField)
+			}
+		}
+		if check == false {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
+			return
+		}
+
+		eduprog.Id = id
 		eduprog, err = c.eduprogService.Update(eduprog, id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
