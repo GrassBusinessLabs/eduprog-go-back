@@ -7,7 +7,9 @@ type Eduprog struct {
 	Name           string
 	EducationLevel string
 	Stage          string
+	SpecialtyCode  string
 	Speciality     string
+	KFCode         string
 	KnowledgeField string
 	UserId         uint64
 	Components     Components

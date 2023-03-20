@@ -2,7 +2,6 @@ package eduprog
 
 import (
 	"errors"
-	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -67,8 +66,10 @@ func (c EduprogController) Save() http.HandlerFunc {
 		for i := range allSpecialties {
 			if allSpecialties[i].Code == eduprog.Speciality {
 				check = true
-				eduprog.Speciality = fmt.Sprintf("%s %s", allSpecialties[i].Code, allSpecialties[i].Name)
-				eduprog.KnowledgeField = fmt.Sprintf("%s %s", allSpecialties[i].KFCode, allSpecialties[i].KnowledgeField)
+				eduprog.SpecialtyCode = allSpecialties[i].Code
+				eduprog.Speciality = allSpecialties[i].Name
+				eduprog.KFCode = allSpecialties[i].KFCode
+				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
 			}
 		}
 		if !check {
@@ -127,8 +128,10 @@ func (c EduprogController) Update() http.HandlerFunc {
 		for i := range allSpecialties {
 			if allSpecialties[i].Code == eduprog.Speciality {
 				check = true
-				eduprog.Speciality = fmt.Sprintf("%s %s", allSpecialties[i].Code, allSpecialties[i].Name)
-				eduprog.KnowledgeField = fmt.Sprintf("%s %s", allSpecialties[i].KFCode, allSpecialties[i].KnowledgeField)
+				eduprog.SpecialtyCode = allSpecialties[i].Code
+				eduprog.Speciality = allSpecialties[i].Name
+				eduprog.KFCode = allSpecialties[i].KFCode
+				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
 			}
 		}
 		if !check {

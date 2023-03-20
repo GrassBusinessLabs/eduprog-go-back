@@ -10,7 +10,9 @@ type EduprogDto struct {
 	Name           string        `json:"name"`
 	EducationLevel string        `json:"education_level"`
 	Stage          string        `json:"stage"`
+	SpecialityCode string        `json:"speciality_code"`
 	Speciality     string        `json:"speciality"`
+	KFCode         string        `json:"kf_code"`
 	KnowledgeField string        `json:"knowledge_field"`
 	UserId         uint64        `json:"user_id"`
 	Components     ComponentsDto `json:"components"`
@@ -22,7 +24,9 @@ type EduprogWithoutCompsDto struct {
 	Name           string    `json:"name"`
 	EducationLevel string    `json:"education_level"`
 	Stage          string    `json:"stage"`
+	SpecialityCode string    `json:"speciality_code"`
 	Speciality     string    `json:"speciality"`
+	KFCode         string    `json:"kf_code"`
 	KnowledgeField string    `json:"knowledge_field"`
 	UserId         uint64    `json:"user_id"`
 	UpdatedDate    time.Time `json:"updated_date"`
@@ -64,7 +68,9 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogWithoutCompsDto {
 		Name:           eduprog.Name,
 		EducationLevel: eduprog.EducationLevel,
 		Stage:          eduprog.Stage,
+		SpecialityCode: eduprog.SpecialtyCode,
 		Speciality:     eduprog.Speciality,
+		KFCode:         eduprog.KFCode,
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
 		UpdatedDate:    eduprog.UpdatedDate,
@@ -78,7 +84,9 @@ func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Com
 		Name:           eduprog.Name,
 		EducationLevel: eduprog.EducationLevel,
 		Stage:          eduprog.Stage,
+		SpecialityCode: eduprog.SpecialtyCode,
 		Speciality:     eduprog.Speciality,
+		KFCode:         eduprog.KFCode,
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
 		Components:     compDto.DomainToDtoWCompCollection(comp),

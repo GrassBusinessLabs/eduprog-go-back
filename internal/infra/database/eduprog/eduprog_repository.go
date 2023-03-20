@@ -22,7 +22,9 @@ type eduprog struct {
 	Name           string     `db:"name"`
 	EducationLevel string     `db:"education_level"`
 	Stage          string     `db:"stage"`
+	SpecialtyCode  string     `db:"speciality_code"`
 	Speciality     string     `db:"speciality"`
+	KFCode         string     `db:"kf_code"`
 	KnowledgeField string     `db:"knowledge_field"`
 	UserId         uint64     `db:"user_id"`
 	CreatedDate    time.Time  `db:"created_date,omitempty"`
@@ -169,7 +171,9 @@ func (r eduprogRepository) mapDomainToModel(d domain.Eduprog) eduprog {
 		Name:           d.Name,
 		EducationLevel: d.EducationLevel,
 		Stage:          d.Stage,
+		SpecialtyCode:  d.SpecialtyCode,
 		Speciality:     d.Speciality,
+		KFCode:         d.KFCode,
 		KnowledgeField: d.KnowledgeField,
 		UserId:         d.UserId,
 		CreatedDate:    d.CreatedDate,
@@ -184,7 +188,9 @@ func (r eduprogRepository) mapModelToDomain(m eduprog) domain.Eduprog {
 		Name:           m.Name,
 		EducationLevel: m.EducationLevel,
 		Stage:          m.Stage,
+		SpecialtyCode:  m.SpecialtyCode,
 		Speciality:     m.Speciality,
+		KFCode:         m.KFCode,
 		KnowledgeField: m.KnowledgeField,
 		UserId:         m.UserId,
 		CreatedDate:    m.CreatedDate,
