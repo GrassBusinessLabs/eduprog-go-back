@@ -5,23 +5,23 @@ import (
 )
 
 type CreateEduprogcompRequest struct {
-	Name        string  `json:"name" validate:"required,gte=1,max=40"`
-	Credits     float64 `json:"credits" validate:"required"`
-	ControlType string  `json:"control_type" validate:"required,gte=1,max=40"`
-	Type        string  `json:"type" validate:"required,gte=1,max=40"`
-	SubType     string  `json:"sub_type" validate:"required,gte=1,max=40"`
-	Category    string  `json:"category" validate:"required,gte=1,max=40"`
-	EduprogId   uint64  `json:"eduprog_id" validate:"required"`
+	Name        string  `json:"name" validate:"required,gte=1,max=50"`
+	Credits     float64 `json:"credits" validate:"required,number"`
+	ControlType string  `json:"control_type" validate:"required,gte=1,max=50"`
+	Type        string  `json:"type" validate:"required,gte=1,max=50"`
+	SubType     string  `json:"sub_type" validate:"required,gte=1,max=50"`
+	Category    string  `json:"category" validate:"required,gte=1,max=50"`
+	EduprogId   uint64  `json:"eduprog_id" validate:"required,number"`
 }
 
 type UpdateEduprogcompRequest struct {
-	Name        string  `json:"name" validate:"required,gte=1,max=40"`
-	Credits     float64 `json:"credits" validate:"required"`
-	ControlType string  `json:"control_type" validate:"required,gte=1,max=40"`
-	Type        string  `json:"type" validate:"required,gte=1,max=40"`
-	SubType     string  `json:"sub_type" validate:"required,gte=1,max=40"`
-	Category    string  `json:"category" validate:"required,gte=1,max=40"`
-	EduprogId   uint64  `json:"eduprog_id" validate:"required"`
+	Name        string  `json:"name" validate:"gte=1,max=50"`
+	Credits     float64 `json:"credits" validate:"number"`
+	ControlType string  `json:"control_type" validate:"gte=1,max=50"`
+	Type        string  `json:"type" validate:"gte=1,max=50"`
+	SubType     string  `json:"sub_type" validate:"gte=1,max=50"`
+	Category    string  `json:"category" validate:"gte=1,max=50"`
+	EduprogId   uint64  `json:"eduprog_id" validate:"number"`
 }
 
 func (r CreateEduprogcompRequest) ToDomainModel() (interface{}, error) {

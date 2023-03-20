@@ -3,17 +3,17 @@ package requests
 import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 
 type CreateSpecialtyRequest struct {
-	Code           string `json:"code" validate:"required"`
-	Name           string `json:"name" validate:"required"`
-	KFCode         string `json:"kf_code" validate:"required"`
-	KnowledgeField string `json:"knowledge_field" validate:"required"`
+	Code           string `json:"code" validate:"required,numeric"`
+	Name           string `json:"name" validate:"required,gte=1,max=100"`
+	KFCode         string `json:"kf_code" validate:"required,numeric"`
+	KnowledgeField string `json:"knowledge_field" validate:"required,gte=1,max=100"`
 }
 
 type UpdateSpecialtyRequest struct {
-	Code           string `json:"code"`
-	Name           string `json:"name"`
-	KFCode         string `json:"kf_code"`
-	KnowledgeField string `json:"knowledge_field"`
+	Code           string `json:"code" validate:"numeric"`
+	Name           string `json:"name" validate:"gte=1,max=100"`
+	KFCode         string `json:"kf_code" validate:"numeric"`
+	KnowledgeField string `json:"knowledge_field" validate:"gte=1,max=100"`
 }
 
 func (r CreateSpecialtyRequest) ToDomainModel() (interface{}, error) {

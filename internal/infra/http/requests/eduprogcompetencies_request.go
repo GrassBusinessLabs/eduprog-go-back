@@ -3,19 +3,19 @@ package requests
 import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 
 type AddCompetencyToEduprogRequest struct {
-	CompetencyId uint64 `json:"competency_id" validate:"required"`
-	EduprogId    uint64 `json:"eduprog_id" validate:"required"`
-	Definition   string `json:"definition" `
+	CompetencyId uint64 `json:"competency_id" validate:"required,number"`
+	EduprogId    uint64 `json:"eduprog_id" validate:"required,number"`
+	Definition   string `json:"definition" validate:"alphanum,gte=1,max=500"`
 }
 
 type UpdateCompetencyRequest struct {
-	Definition string `json:"definition" `
+	Definition string `json:"definition" validate:"alphanum,gte=1,max=500"`
 }
 
 type AddCustomCompetencyToEduprogRequest struct {
-	EduprogId  uint64 `json:"eduprog_id" validate:"required"`
-	Type       string `json:"type" validate:"required"`
-	Definition string `json:"definition"`
+	EduprogId  uint64 `json:"eduprog_id" validate:"required,number"`
+	Type       string `json:"type" validate:"required,alpha"`
+	Definition string `json:"definition" validate:"alphanum,gte=1,max=500"`
 }
 
 func (r AddCompetencyToEduprogRequest) ToDomainModel() (interface{}, error) {
