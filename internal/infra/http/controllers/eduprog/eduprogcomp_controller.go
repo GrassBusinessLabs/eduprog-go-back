@@ -13,6 +13,10 @@ import (
 	"strconv"
 )
 
+const (
+	BLOC = "BLOC"
+)
+
 type EduprogcompController struct {
 	eduprogcompService app.EduprogcompService
 	eduprogService     app.EduprogService
@@ -37,7 +41,7 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -47,30 +51,24 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		//Code generation logic
 		var maxCode uint64 = 0
 
-		for i := range eduprogcomps {
-			if eduprogcomps[i].Name == eduprogcomp.Name {
+		for i := range comps.Mandatory {
+			if comps.Mandatory[i].Name == eduprogcomp.Name {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
 				return
 			}
-
-			if eduprogcomps[i].Type == eduprogcomp.Type {
-				temp, _ := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
-				if i == 0 || temp > maxCode {
-					maxCode = temp
-				}
+			temp, _ := strconv.ParseUint(comps.Mandatory[i].Code, 10, 64)
+			if i == 0 || temp > maxCode {
+				maxCode = temp
 			}
 		}
-
-		eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
-
-		//Free credits check
-		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
+		if eduprogcomp.Type == "ОК" {
+			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
+		} else if eduprogcomp.Type == "ВБ" {
+			eduprogcomp.Category = BLOC
 		}
+		//Free credits check
+
 		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)

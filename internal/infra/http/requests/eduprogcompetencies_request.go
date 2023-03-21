@@ -5,17 +5,17 @@ import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 type AddCompetencyToEduprogRequest struct {
 	CompetencyId uint64 `json:"competency_id" validate:"required,number"`
 	EduprogId    uint64 `json:"eduprog_id" validate:"required,number"`
-	Definition   string `json:"definition" validate:"gte=1,max=500"`
+	Definition   string `json:"definition"`
 }
 
 type UpdateCompetencyRequest struct {
-	Definition string `json:"definition" validate:"gte=1,max=500"`
+	Definition string `json:"definition"`
 }
 
 type AddCustomCompetencyToEduprogRequest struct {
 	EduprogId  uint64 `json:"eduprog_id" validate:"required,number"`
 	Type       string `json:"type" validate:"required"`
-	Definition string `json:"definition" validate:"gte=1,max=500"`
+	Definition string `json:"definition"`
 }
 
 func (r AddCompetencyToEduprogRequest) ToDomainModel() (interface{}, error) {
