@@ -416,7 +416,10 @@ func SpecialtiesRouter(r chi.Router, sc eduprog.SpecialtyController) {
 			"/byKF",
 			sc.ShowByKFCode(),
 		)
-
+		apiRouter.Get(
+			"/allKFs",
+			sc.ShowAllKFs(),
+		)
 		apiRouter.Get(
 			"/byCode",
 			sc.FindByCode(),

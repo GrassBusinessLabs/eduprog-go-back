@@ -4,6 +4,7 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
+	"reflect"
 )
 
 type EduprogcompService interface {
@@ -15,6 +16,7 @@ type EduprogcompService interface {
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
 	Delete(id uint64) error
+	GetVBBlocksDomain(eduprogcomps domain.Components) []domain.BlockInfo
 }
 
 type eduprogcompService struct {
@@ -25,6 +27,39 @@ func NewEduprogcompService(er eduprog.EduprogcompRepository) EduprogcompService 
 	return eduprogcompService{
 		eduprogcompRepo: er,
 	}
+}
+
+func (s eduprogcompService) GetVBBlocksDomain(eduprogcomps domain.Components) []domain.BlockInfo {
+	var blockInfo []domain.BlockInfo
+	for i := range eduprogcomps.Selective {
+		var temp domain.BlockInfo
+		temp.BlockNum = eduprogcomps.Selective[i].BlockNum
+		temp.BlockName = eduprogcomps.Selective[i].BlockName
+		blockInfo = append(blockInfo, temp)
+	}
+
+	blockInfo = RemoveDuplicatesByField(blockInfo, "BlockNum")
+	for i := range blockInfo {
+		for i2 := range eduprogcomps.Selective {
+			if blockInfo[i].BlockNum == eduprogcomps.Selective[i2].BlockNum {
+				blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps.Selective[i2])
+			}
+		}
+	}
+	return blockInfo
+}
+
+func RemoveDuplicatesByField(mySlice []domain.BlockInfo, fieldName string) []domain.BlockInfo {
+	unique := make(map[string]bool)
+	result := make([]domain.BlockInfo, 0)
+	for _, v := range mySlice {
+		fieldValue := reflect.ValueOf(v).FieldByName(fieldName).String()
+		if !unique[fieldValue] {
+			unique[fieldValue] = true
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
 func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {

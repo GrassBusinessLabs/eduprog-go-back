@@ -2,6 +2,7 @@ package eduprog
 
 import (
 	"fmt"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	_ "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	"github.com/go-chi/chi/v5"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -88,6 +90,16 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				{Type: "left", Color: "#000000", Style: 1},
 			},
 		})
+		styleItalic, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 12, Italic: true, Family: "Times New Roman"},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
 		styleBoldAlignLeft, _ := xlsx.NewStyle(&excelize.Style{
 			Font:      &excelize.Font{Size: 12, Bold: true, Family: "Times New Roman"},
 			Alignment: &excelize.Alignment{Horizontal: "left", Vertical: "center", WrapText: true},
@@ -141,39 +153,46 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("D%d", mandLen+4), styleBold)
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4), styleBoldAlignLeft)
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", mandLen+4), "Загальний обсяг обов'язкових компонент: ")
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%f кредитів", creditsDto.MandatoryCredits))
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%.1f кредитів", creditsDto.MandatoryCredits))
 		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", mandLen+5), fmt.Sprintf("D%d", mandLen+5))
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", mandLen+5), "Вибіркові компоненти ОП")
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", mandLen+5), fmt.Sprintf("D%d", mandLen+5), styleBold)
 
+		blocksInfo := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
 		selLen := len(eduprogcomps.Selective)
+		blocksInfoLen := len(blocksInfo)
+		var temp = 0
+		for i := mandLen + 6; i < blocksInfoLen+selLen+mandLen+6; i++ {
+			_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i))
+			_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", i), fmt.Sprintf("Вибірковий блок %s (%s)", blocksInfo[temp].BlockNum, blocksInfo[temp].BlockName))
+			_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), styleItalic)
+			for _, comps := range blocksInfo[temp].CompsInBlock {
+				i++
+				_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
+				_ = xlsx.SetSheetRow(SheetName1, fmt.Sprintf("A%d", i), &[]interface{}{
+					comps.Type + " " + comps.BlockNum + "." + comps.Code,
+					comps.Name,
+					comps.Credits,
+					comps.ControlType,
+				})
 
-		for i := mandLen + 6; i < selLen+mandLen+6; i++ {
-
-			_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
-
-			_ = xlsx.SetSheetRow(SheetName1, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcomps.Selective[i-mandLen-6].Type + " " + eduprogcomps.Selective[i-mandLen-6].Code + ".",
-				eduprogcomps.Selective[i-mandLen-6].Name,
-				eduprogcomps.Selective[i-mandLen-6].Credits,
-				eduprogcomps.Selective[i-mandLen-6].ControlType,
-			})
-
+			}
+			temp++
 		}
 
-		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5))
-		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5))
-		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6))
-		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6))
-		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+5), fmt.Sprintf("B%d", selLen+mandLen+5), styleBoldAlignLeft)
-		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("D%d", selLen+mandLen+5), styleBold)
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+5), "Загальний обсяг вибіркових компонент: ")
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+5), fmt.Sprintf("%f кредитів", creditsDto.SelectiveCredits))
-		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+6), fmt.Sprintf("B%d", selLen+mandLen+6), styleBoldAlignLeft)
-		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("D%d", selLen+mandLen+6), styleBold)
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", selLen+mandLen+6), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
-		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", selLen+mandLen+6), fmt.Sprintf("%f кредитів", creditsDto.TotalCredits))
+		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", blocksInfoLen+selLen+mandLen+6), fmt.Sprintf("B%d", blocksInfoLen+selLen+mandLen+6))
+		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("C%d", blocksInfoLen+selLen+mandLen+6), fmt.Sprintf("D%d", blocksInfoLen+selLen+mandLen+6))
+		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", blocksInfoLen+selLen+mandLen+7), fmt.Sprintf("B%d", blocksInfoLen+selLen+mandLen+7))
+		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("C%d", blocksInfoLen+selLen+mandLen+7), fmt.Sprintf("D%d", blocksInfoLen+selLen+mandLen+7))
+		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", blocksInfoLen+selLen+mandLen+6), fmt.Sprintf("B%d", blocksInfoLen+selLen+mandLen+6), styleBoldAlignLeft)
+		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", blocksInfoLen+selLen+mandLen+6), fmt.Sprintf("D%d", blocksInfoLen+selLen+mandLen+6), styleBold)
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", blocksInfoLen+selLen+mandLen+6), "Загальний обсяг вибіркових компонент: ")
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", blocksInfoLen+selLen+mandLen+6), fmt.Sprintf("%.1f кредитів", creditsDto.SelectiveCredits))
+		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", blocksInfoLen+selLen+mandLen+7), fmt.Sprintf("B%d", blocksInfoLen+selLen+mandLen+7), styleBoldAlignLeft)
+		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("C%d", blocksInfoLen+selLen+mandLen+7), fmt.Sprintf("D%d", blocksInfoLen+selLen+mandLen+7), styleBold)
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", blocksInfoLen+selLen+mandLen+7), "ЗАГАЛЬНИЙ ОБСЯГ ОСВІТНЬОЇ ПРОГРАМИ: ")
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", blocksInfoLen+selLen+mandLen+7), fmt.Sprintf("%.1f кредитів", creditsDto.TotalCredits))
 
 		//----------------------------EXPORT COMPETENCIES MATRIX LOGIC----------------------------------//
 
@@ -268,6 +287,8 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		}
 
+		selective := sortStructsByField(eduprogcomps.Selective)
+
 		for i := mandLen + 66; i < mandLen+selLen+66; i++ {
 
 			if i <= 90 {
@@ -276,7 +297,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				_ = xlsx.SetColWidth(SheetName2, string(rune(i)), string(rune(i)), 3)
 
 				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
-					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+					selective[i-mandLen-66].Type + " " + selective[i-mandLen-66].BlockNum + "." + selective[i-mandLen-66].Code,
 				})
 
 				lastLetter = string(rune(i))
@@ -287,7 +308,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				_ = xlsx.SetColWidth(SheetName2, fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), 3)
 
 				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), &[]interface{}{
-					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+					selective[i-mandLen-66].Type + " " + selective[i-mandLen-66].BlockNum + "." + selective[i-mandLen-66].Code,
 				})
 
 				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-26)))
@@ -298,7 +319,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				_ = xlsx.SetColWidth(SheetName2, fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), 3)
 
 				_ = xlsx.SetSheetCol(SheetName2, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), &[]interface{}{
-					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+					selective[i-mandLen-66].Type + " " + selective[i-mandLen-66].BlockNum + "." + selective[i-mandLen-66].Code,
 				})
 
 				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-52)))
@@ -311,7 +332,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		for i := 2; i < competenicesZKLen+2; i++ {
 
 			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
 			_ = xlsx.SetRowHeight(SheetName2, i, 15)
 			_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
 				eduprogcompetenciesZK[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesZK[i-2].Code, 10),
@@ -322,7 +343,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		for i := competenicesZKLen + 2; i < competenicesZKLen+competenicesFKLen+2; i++ {
 
 			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
 			_ = xlsx.SetRowHeight(SheetName2, i, 15)
 			_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
 				eduprogcompetenciesFK[i-competenicesZKLen-2].Type + " " + strconv.FormatUint(eduprogcompetenciesFK[i-competenicesZKLen-2].Code, 10),
@@ -409,6 +430,8 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 
 		}
 
+		selective = sortStructsByField(eduprogcomps.Selective)
+
 		for i := mandLen + 66; i < mandLen+selLen+66; i++ {
 
 			if i <= 90 {
@@ -417,7 +440,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				_ = xlsx.SetColWidth(SheetName3, string(rune(i)), string(rune(i)), 3)
 
 				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s1", string(rune(i))), &[]interface{}{
-					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+					selective[i-mandLen-66].Type + " " + selective[i-mandLen-66].BlockNum + "." + selective[i-mandLen-66].Code,
 				})
 
 				lastLetter = string(rune(i))
@@ -428,7 +451,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				_ = xlsx.SetColWidth(SheetName3, fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-26))), 3)
 
 				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-26))), &[]interface{}{
-					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+					selective[i-mandLen-66].Type + " " + selective[i-mandLen-66].BlockNum + "." + selective[i-mandLen-66].Code,
 				})
 
 				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-26)))
@@ -439,7 +462,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				_ = xlsx.SetColWidth(SheetName3, fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), fmt.Sprintf("%s%s", bufLetter, string(rune(i-52))), 3)
 
 				_ = xlsx.SetSheetCol(SheetName3, fmt.Sprintf("%s%s1", bufLetter, string(rune(i-52))), &[]interface{}{
-					eduprogcomps.Selective[i-mandLen-66].Type + " " + eduprogcomps.Selective[i-mandLen-66].Code,
+					selective[i-mandLen-66].Type + " " + selective[i-mandLen-66].BlockNum + "." + selective[i-mandLen-66].Code,
 				})
 
 				lastLetter = fmt.Sprintf("%s%s", bufLetter, string(rune(i-52)))
@@ -451,7 +474,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		for i := 2; i < competenicesPRLen+2; i++ {
 
 			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), style)
+			_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
 			_ = xlsx.SetRowHeight(SheetName3, i, 15)
 			_ = xlsx.SetSheetRow(SheetName3, fmt.Sprintf("A%d", i), &[]interface{}{
 				eduprogcompetenciesPR[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesPR[i-2].Code, 10),
@@ -512,6 +535,19 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		http.ServeContent(w, r, fmt.Sprintf("%s.xlsx", eduprog.Name), time.Time{}, strings.NewReader(buf.String()))
 
 	}
+}
+
+func sortStructsByField(mySlice []domain.Eduprogcomp) []domain.Eduprogcomp {
+	// Використовуємо "sort.SliceStable" з стандартної бібліотеки Go, щоб відсортувати наш слайс структур.
+	// Параметр "less" - це функція порівняння, що порівнює значення поля "field" у двох структурах.
+	// Параметр "swap" - це функція, що замінює місцями дві структури в межах слайсу.
+	sort.SliceStable(mySlice, func(i, j int) bool {
+		first, _ := strconv.ParseInt(mySlice[i].BlockNum, 10, 64)
+		second, _ := strconv.ParseInt(mySlice[j].BlockNum, 10, 64)
+		return first < second
+	})
+
+	return mySlice
 }
 
 //func (c EduprogController) ExportEduprogListToExcel() http.HandlerFunc {

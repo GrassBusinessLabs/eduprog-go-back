@@ -10,7 +10,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
-	"reflect"
 	"strconv"
 )
 
@@ -239,23 +238,9 @@ func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
-		var blockInfo []domain.BlockInfo
 
-		for i := range eduprogcomps.Selective {
-			var temp domain.BlockInfo
-			temp.BlockNum = eduprogcomps.Selective[i].BlockNum
-			temp.BlockName = eduprogcomps.Selective[i].BlockName
-			blockInfo = append(blockInfo, temp)
-		}
+		blockInfo := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
 
-		blockInfo = RemoveDuplicatesByField(blockInfo, "BlockNum")
-		for i := range blockInfo {
-			for i2 := range eduprogcomps.Selective {
-				if blockInfo[i].BlockNum == eduprogcomps.Selective[i2].BlockNum {
-					blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps.Selective[i2])
-				}
-			}
-		}
 		var eduprogcompsDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(blockInfo))
 	}
@@ -358,17 +343,4 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 
 		controllers.Ok(w)
 	}
-}
-
-func RemoveDuplicatesByField(mySlice []domain.BlockInfo, fieldName string) []domain.BlockInfo {
-	unique := make(map[string]bool)
-	result := make([]domain.BlockInfo, 0)
-	for _, v := range mySlice {
-		fieldValue := reflect.ValueOf(v).FieldByName(fieldName).String()
-		if !unique[fieldValue] {
-			unique[fieldValue] = true
-			result = append(result, v)
-		}
-	}
-	return result
 }

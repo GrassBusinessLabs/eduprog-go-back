@@ -8,6 +8,7 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 type SpecialtyController struct {
@@ -76,6 +77,34 @@ func (c SpecialtyController) ShowAllSpecialties() http.HandlerFunc {
 		var specialtyDto resources.SpecialtyDto
 		controllers.Success(w, specialtyDto.DomainToDtoCollection(specialties))
 	}
+}
+
+func (c SpecialtyController) ShowAllKFs() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		specialties, err := c.specialtiesService.ShowAllSpecialties()
+		if err != nil {
+			log.Printf("SpecialtyController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var specialtyDto resources.SpecialtyDto
+		controllers.Success(w, specialtyDto.KnowledgeFieldToDtoCollection(removeDuplicatesByField(specialties, "KFCode")))
+	}
+}
+
+func removeDuplicatesByField(mySlice []domain.Specialty, fieldName string) []domain.Specialty {
+	unique := make(map[string]bool)
+	result := make([]domain.Specialty, 0)
+	for _, v := range mySlice {
+		fieldValue := reflect.ValueOf(v).FieldByName(fieldName).String()
+		if !unique[fieldValue] {
+			unique[fieldValue] = true
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
 func (c SpecialtyController) ShowByKFCode() http.HandlerFunc {
