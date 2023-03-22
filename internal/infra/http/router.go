@@ -175,6 +175,10 @@ func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 			"/{epcId}",
 			ec.FindById(),
 		)
+		apiRouter.Get(
+			"/getVB/{epcId}",
+			ec.GetVBBlocksInfo(),
+		)
 		apiRouter.Delete(
 			"/{epcId}",
 			ec.Delete(),
@@ -412,6 +416,7 @@ func SpecialtiesRouter(r chi.Router, sc eduprog.SpecialtyController) {
 			"/byKF",
 			sc.ShowByKFCode(),
 		)
+
 		apiRouter.Get(
 			"/byCode",
 			sc.FindByCode(),

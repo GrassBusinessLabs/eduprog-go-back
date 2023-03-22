@@ -142,19 +142,22 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", mandLen+4), fmt.Sprintf("B%d", mandLen+4), styleBoldAlignLeft)
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", mandLen+4), "Загальний обсяг обов'язкових компонент: ")
 		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("C%d", mandLen+4), fmt.Sprintf("%f кредитів", creditsDto.MandatoryCredits))
+		_ = xlsx.MergeCell(SheetName1, fmt.Sprintf("A%d", mandLen+5), fmt.Sprintf("D%d", mandLen+5))
+		_ = xlsx.SetCellValue(SheetName1, fmt.Sprintf("A%d", mandLen+5), "Вибіркові компоненти ОП")
+		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", mandLen+5), fmt.Sprintf("D%d", mandLen+5), styleBold)
 
 		selLen := len(eduprogcomps.Selective)
 
-		for i := mandLen + 5; i < selLen+mandLen+5; i++ {
+		for i := mandLen + 6; i < selLen+mandLen+6; i++ {
 
 			_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
 			_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("B%d", i), fmt.Sprintf("B%d", i), styleAlignLeft)
 
 			_ = xlsx.SetSheetRow(SheetName1, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcomps.Selective[i-mandLen-5].Type + " " + eduprogcomps.Selective[i-mandLen-5].Code + ".",
-				eduprogcomps.Selective[i-mandLen-5].Name,
-				eduprogcomps.Selective[i-mandLen-5].Credits,
-				eduprogcomps.Selective[i-mandLen-5].ControlType,
+				eduprogcomps.Selective[i-mandLen-6].Type + " " + eduprogcomps.Selective[i-mandLen-6].Code + ".",
+				eduprogcomps.Selective[i-mandLen-6].Name,
+				eduprogcomps.Selective[i-mandLen-6].Credits,
+				eduprogcomps.Selective[i-mandLen-6].ControlType,
 			})
 
 		}

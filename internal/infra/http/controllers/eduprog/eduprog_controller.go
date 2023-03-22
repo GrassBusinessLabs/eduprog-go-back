@@ -64,9 +64,8 @@ func (c EduprogController) Save() http.HandlerFunc {
 		}
 		check := false
 		for i := range allSpecialties {
-			if allSpecialties[i].Code == eduprog.Speciality {
+			if allSpecialties[i].Code == eduprog.SpecialtyCode {
 				check = true
-				eduprog.SpecialtyCode = allSpecialties[i].Code
 				eduprog.Speciality = allSpecialties[i].Name
 				eduprog.KFCode = allSpecialties[i].KFCode
 				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
@@ -126,9 +125,8 @@ func (c EduprogController) Update() http.HandlerFunc {
 		}
 		check := false
 		for i := range allSpecialties {
-			if allSpecialties[i].Code == eduprog.Speciality {
+			if allSpecialties[i].Code == eduprog.SpecialtyCode {
 				check = true
-				eduprog.SpecialtyCode = allSpecialties[i].Code
 				eduprog.Speciality = allSpecialties[i].Name
 				eduprog.KFCode = allSpecialties[i].KFCode
 				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField

@@ -10,11 +10,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 )
 
 const (
-	BLOC = "BLOC"
+	MANDATORY = "MANDATORY"
+	BLOC      = "BLOC" // ВБ
+	LIST      = "LIST" // ВП
 )
 
 type EduprogcompController struct {
@@ -49,24 +52,45 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		}
 
 		//Code generation logic
-		var maxCode uint64 = 0
 
-		for i := range comps.Mandatory {
-			if comps.Mandatory[i].Name == eduprogcomp.Name {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-				return
-			}
-			temp, _ := strconv.ParseUint(comps.Mandatory[i].Code, 10, 64)
-			if i == 0 || temp > maxCode {
-				maxCode = temp
-			}
-		}
 		if eduprogcomp.Type == "ОК" {
+			var maxCode uint64 = 0
+			eduprogcomp.Category = MANDATORY
+			for i := range comps.Mandatory {
+				if comps.Mandatory[i].Name == eduprogcomp.Name {
+					log.Printf("EduprogcompController: %s", err)
+					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+					return
+				}
+				temp, _ := strconv.ParseUint(comps.Mandatory[i].Code, 10, 64)
+				if i == 0 || temp > maxCode {
+					maxCode = temp
+				}
+			}
 			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
+			eduprogcomp.BlockName = ""
+			eduprogcomp.BlockNum = ""
 		} else if eduprogcomp.Type == "ВБ" {
+			var maxCode uint64 = 0
 			eduprogcomp.Category = BLOC
+			for i := range comps.Selective {
+				if comps.Selective[i].Name == eduprogcomp.Name {
+					log.Printf("EduprogcompController: %s", err)
+					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+					return
+				}
+				if comps.Selective[i].BlockNum == eduprogcomp.BlockNum {
+					temp, _ := strconv.ParseUint(comps.Selective[i].Code, 10, 64)
+					if i == 0 || temp > maxCode {
+						maxCode = temp
+					}
+				}
+			}
+			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
+		} else if eduprogcomp.Type == "ВП" {
+			eduprogcomp.Category = LIST
 		}
+
 		//Free credits check
 
 		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
@@ -200,6 +224,43 @@ func (c EduprogcompController) ShowList() http.HandlerFunc {
 	}
 }
 
+func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		var blockInfo []domain.BlockInfo
+
+		for i := range eduprogcomps.Selective {
+			var temp domain.BlockInfo
+			temp.BlockNum = eduprogcomps.Selective[i].BlockNum
+			temp.BlockName = eduprogcomps.Selective[i].BlockName
+			blockInfo = append(blockInfo, temp)
+		}
+
+		blockInfo = RemoveDuplicatesByField(blockInfo, "BlockNum")
+		for i := range blockInfo {
+			for i2 := range eduprogcomps.Selective {
+				if blockInfo[i].BlockNum == eduprogcomps.Selective[i2].BlockNum {
+					blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps.Selective[i2])
+				}
+			}
+		}
+		var eduprogcompsDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(blockInfo))
+	}
+}
+
 func (c EduprogcompController) ShowListByEduprogId() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
@@ -297,4 +358,17 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 
 		controllers.Ok(w)
 	}
+}
+
+func RemoveDuplicatesByField(mySlice []domain.BlockInfo, fieldName string) []domain.BlockInfo {
+	unique := make(map[string]bool)
+	result := make([]domain.BlockInfo, 0)
+	for _, v := range mySlice {
+		fieldValue := reflect.ValueOf(v).FieldByName(fieldName).String()
+		if !unique[fieldValue] {
+			unique[fieldValue] = true
+			result = append(result, v)
+		}
+	}
+	return result
 }

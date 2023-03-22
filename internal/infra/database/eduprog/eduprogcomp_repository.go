@@ -19,7 +19,8 @@ type eduprogcomp struct {
 	Credits     float64   `db:"credits"`
 	ControlType string    `db:"control_type"`
 	Type        string    `db:"type"`
-	SubType     string    `db:"sub_type"`
+	BlockNum    string    `db:"block_num"`
+	BlockName   string    `db:"block_name"`
 	Category    string    `db:"category"`
 	EduprogId   uint64    `db:"eduprog_id"`
 	CreatedDate time.Time `db:"created_date,omitempty"`
@@ -144,7 +145,8 @@ func (r eduprogcompRepository) mapDomainToModel(d domain.Eduprogcomp) eduprogcom
 		Credits:     d.Credits,
 		ControlType: d.ControlType,
 		Type:        d.Type,
-		SubType:     d.SubType,
+		BlockNum:    d.BlockNum,
+		BlockName:   d.BlockName,
 		Category:    d.Category,
 		EduprogId:   d.EduprogId,
 		CreatedDate: d.CreatedDate,
@@ -160,8 +162,9 @@ func (r eduprogcompRepository) mapModelToDomain(m eduprogcomp) domain.Eduprogcom
 		Credits:     m.Credits,
 		ControlType: m.ControlType,
 		Type:        m.Type,
-		SubType:     m.SubType,
-		Category:    m.SubType,
+		BlockNum:    m.BlockNum,
+		BlockName:   m.BlockName,
+		Category:    m.Category,
 		EduprogId:   m.EduprogId,
 		CreatedDate: m.CreatedDate,
 		UpdatedDate: m.UpdatedDate,

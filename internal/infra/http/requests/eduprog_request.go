@@ -7,20 +7,20 @@ import (
 type CreateEduprogRequest struct {
 	Name           string `json:"name" validate:"required,gte=1,max=50"`
 	EducationLevel string `json:"education_level" validate:"required,gte=1,max=50"`
-	Speciality     string `json:"speciality" validate:"required,gte=1,max=100"`
+	SpecialityCode string `json:"speciality_code" validate:"required,gte=1,max=3"`
 }
 
 type UpdateEduprogRequest struct {
 	Name           string `json:"name" validate:"required,gte=1,max=50"`
 	EducationLevel string `json:"education_level" validate:"required,gte=1,max=50"`
-	Speciality     string `json:"speciality" validate:"required,gte=1,max=100"`
+	SpecialityCode string `json:"speciality_code" validate:"required,gte=1,max=3"`
 }
 
 func (r CreateEduprogRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprog{
 		Name:           r.Name,
 		EducationLevel: r.EducationLevel,
-		Speciality:     r.Speciality,
+		SpecialtyCode:  r.SpecialityCode,
 	}, nil
 }
 
@@ -28,7 +28,7 @@ func (r UpdateEduprogRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprog{
 		Name:           r.Name,
 		EducationLevel: r.EducationLevel,
-		Speciality:     r.Speciality,
+		SpecialtyCode:  r.SpecialityCode,
 	}, nil
 }
 

@@ -11,9 +11,35 @@ type EduprogcompDto struct {
 	Credits     float64 `json:"credits"`
 	ControlType string  `json:"control_type"`
 	Type        string  `json:"type"`
-	SubType     string  `json:"sub_type"`
+	BlockNum    string  `json:"block_num"`
+	BlockName   string  `json:"block_name"`
 	Category    string  `json:"category"`
 	EduprogId   uint64  `json:"eduprog_id"`
+}
+
+type BlockInfoDto struct {
+	BlockNum     string           `json:"block_num"`
+	BlockName    string           `json:"block_name"`
+	CompsInBlock []EduprogcompDto `json:"comps_in_block"`
+}
+
+func (d EduprogcompDto) BlockInfoToDto(blockInfo domain.BlockInfo) BlockInfoDto {
+	var compDto EduprogcompDto
+	return BlockInfoDto{
+		BlockNum:     blockInfo.BlockNum,
+		BlockName:    blockInfo.BlockName,
+		CompsInBlock: compDto.DomainToDtoCollection(blockInfo.CompsInBlock),
+	}
+}
+
+func (d EduprogcompDto) BlockInfoToDtoCollection(blockinfo []domain.BlockInfo) []BlockInfoDto {
+	result := make([]BlockInfoDto, len(blockinfo))
+
+	for i := range blockinfo {
+		result[i] = d.BlockInfoToDto(blockinfo[i])
+	}
+
+	return result
 }
 
 func (d EduprogcompDto) DomainToDto(eduprogcomp domain.Eduprogcomp) EduprogcompDto {
@@ -24,7 +50,8 @@ func (d EduprogcompDto) DomainToDto(eduprogcomp domain.Eduprogcomp) EduprogcompD
 		Credits:     eduprogcomp.Credits,
 		ControlType: eduprogcomp.ControlType,
 		Type:        eduprogcomp.Type,
-		SubType:     eduprogcomp.SubType,
+		BlockNum:    eduprogcomp.BlockNum,
+		BlockName:   eduprogcomp.BlockName,
 		Category:    eduprogcomp.Category,
 		EduprogId:   eduprogcomp.EduprogId,
 	}
