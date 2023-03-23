@@ -74,6 +74,11 @@ func (c SpecialtyController) ShowAllSpecialties() http.HandlerFunc {
 			return
 		}
 
+		for i := range specialties {
+			specialties[i].Name = specialties[i].Code + " " + specialties[i].Name
+			specialties[i].KnowledgeField = specialties[i].KFCode + " " + specialties[i].KnowledgeField
+		}
+
 		var specialtyDto resources.SpecialtyDto
 		controllers.Success(w, specialtyDto.DomainToDtoCollection(specialties))
 	}
@@ -87,6 +92,9 @@ func (c SpecialtyController) ShowAllKFs() http.HandlerFunc {
 			log.Printf("SpecialtyController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
+		}
+		for i := range specialties {
+			specialties[i].KnowledgeField = specialties[i].KFCode + " " + specialties[i].KnowledgeField
 		}
 
 		var specialtyDto resources.SpecialtyDto
@@ -117,6 +125,10 @@ func (c SpecialtyController) ShowByKFCode() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
+		for i := range specialties {
+			specialties[i].Name = specialties[i].Code + " " + specialties[i].Name
+			specialties[i].KnowledgeField = specialties[i].KFCode + " " + specialties[i].KnowledgeField
+		}
 
 		var specialtyDto resources.SpecialtyDto
 		controllers.Success(w, specialtyDto.DomainToDtoCollection(specialties))
@@ -134,6 +146,8 @@ func (c SpecialtyController) FindByCode() http.HandlerFunc {
 			return
 		}
 
+		specialty.Name = specialty.Code + " " + specialty.Name
+		specialty.KnowledgeField = specialty.KFCode + " " + specialty.KnowledgeField
 		var specialtyDto resources.SpecialtyDto
 		controllers.Success(w, specialtyDto.DomainToDto(specialty))
 	}
