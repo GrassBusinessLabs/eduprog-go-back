@@ -565,6 +565,11 @@ func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
 		//}
 
 		relationships, err := c.educompRelationsService.ShowByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
 
 		graph := gographviz.NewGraph()
 		_ = graph.SetName("G")
@@ -621,7 +626,9 @@ func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
 		graphStr := graph.String()
 		file, err := os.Create("graph.dot")
 		if err != nil {
-			panic(err)
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
 		}
 		defer func(file *os.File) {
 			err := file.Close()
