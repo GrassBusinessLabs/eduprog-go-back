@@ -145,6 +145,10 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 			"/toExcel/{edId}",
 			ec.ExportEduprogToExcel(),
 		)
+		apiRouter.Get(
+			"/compsToPng/{edId}",
+			ec.ExportEducompRelationsToJpg(),
+		)
 		apiRouter.Delete(
 			"/{epId}",
 			ec.Delete(),

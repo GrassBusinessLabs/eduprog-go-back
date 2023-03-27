@@ -5,21 +5,25 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	_ "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
+	"github.com/awalterschulze/gographviz"
 	"github.com/go-chi/chi/v5"
 	"github.com/xuri/excelize/v2"
 	"log"
 	"mime"
 	"net/http"
+	"os"
+	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const SheetName1 = "Перелік компонент"
-const SheetName2 = "Матриця компетентностей"
-
-const SheetName3 = "Матриця відповідності ПР"
+const (
+	SheetName1 = "Перелік компонент"
+	SheetName2 = "Матриця компетентностей"
+	SheetName3 = "Матриця відповідності ПР"
+)
 
 func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -534,6 +538,125 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		buf, _ := xlsx.WriteToBuffer()
 		http.ServeContent(w, r, fmt.Sprintf("%s.xlsx", eduprog.Name), time.Time{}, strings.NewReader(buf.String()))
 
+	}
+}
+
+func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprog, _ := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		//eduprogcomps, _ := c.eduprogcompService.SortComponentsByMnS(id)
+		//if err != nil {
+		//	log.Printf("EduprogController: %s", err)
+		//	controllers.InternalServerError(w, err)
+		//	return
+		//}
+
+		relationships, err := c.educompRelationsService.ShowByEduprogId(id)
+
+		graph := gographviz.NewGraph()
+		_ = graph.SetName("G")
+		_ = graph.SetDir(true)
+		nodeAttrs := make(map[string]string)
+		nodeAttrs["shape"] = "box"
+		var nodeName string
+		for _, r := range relationships {
+			edcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
+			if edcomp.Type == "ОК" {
+				nodeName = fmt.Sprintf("%s%s", edcomp.Type, edcomp.Code)
+			} else if edcomp.Type == "ВБ" {
+				nodeName = fmt.Sprintf("Блок%s", edcomp.BlockNum)
+			}
+			//nodeName := fmt.Sprintf("%s", edcomp.Code)
+			_ = graph.AddNode("G", nodeName, nodeAttrs)
+
+		}
+
+		// Add nodes for each child component
+		for _, r := range relationships {
+			edcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
+			if edcomp.Type == "ОК" {
+				nodeName = fmt.Sprintf("%s%s", edcomp.Type, edcomp.Code)
+			} else if edcomp.Type == "ВБ" {
+				nodeName = fmt.Sprintf("Блок%s", edcomp.BlockNum)
+			}
+			//nodeName := fmt.Sprintf("%s", edcomp.Code)
+			_ = graph.AddNode("G", nodeName, nodeAttrs)
+		}
+
+		var baseCompNode string
+		var childCompNode string
+		// Add edges between base components and child components
+		for _, r := range relationships {
+			baseedcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
+			childedcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
+
+			if baseedcomp.Type == "ОК" {
+				baseCompNode = fmt.Sprintf("%s%s", baseedcomp.Type, baseedcomp.Code)
+			} else if baseedcomp.Type == "ВБ" {
+				baseCompNode = fmt.Sprintf("Блок%s", baseedcomp.BlockNum)
+			}
+			if childedcomp.Type == "ОК" {
+				childCompNode = fmt.Sprintf("%s%s", childedcomp.Type, childedcomp.Code)
+			} else if childedcomp.Type == "ВБ" {
+				childCompNode = fmt.Sprintf("Блок%s", childedcomp.BlockNum)
+			}
+
+			//baseCompNode := fmt.Sprintf("%s", baseedcomp.Code)
+			//childCompNode := fmt.Sprintf("%s", childedcomp.Code)
+			_ = graph.AddEdge(baseCompNode, childCompNode, true, nil)
+		}
+		graphStr := graph.String()
+		file, err := os.Create("graph.dot")
+		if err != nil {
+			panic(err)
+		}
+		defer func(file *os.File) {
+			err := file.Close()
+			if err != nil {
+
+			}
+		}(file)
+		if _, err := file.WriteString(graphStr); err != nil {
+			panic(err)
+		}
+		cmd := exec.Command("dot", "-Tpng", "-o", "graph.png", "graph.dot")
+		if err := cmd.Run(); err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		//filename := fmt.Sprintf("%s.png", eduprog.Name)
+		filename := "graph.png"
+		header := make(http.Header)
+		header.Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
+		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		for k, v := range header {
+			w.Header()[k] = v
+		}
+		f, err := os.Open(filename)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		defer func(f *os.File) {
+			_ = f.Close()
+		}(f)
+
+		http.ServeContent(w, r, fmt.Sprintf("%s.png", eduprog.Name), time.Time{}, f)
 	}
 }
 

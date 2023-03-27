@@ -21,9 +21,10 @@ type EduprogController struct {
 	eduprogresultsService      app.EduprogresultsService
 	resultsMatrixService       app.ResultsMatrixService
 	specialtiesService         app.SpecialtiesService
+	educompRelationsService    app.EducompRelationsService
 }
 
-func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, ers app.EduprogresultsService, rms app.ResultsMatrixService, ss app.SpecialtiesService) EduprogController {
+func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, ers app.EduprogresultsService, rms app.ResultsMatrixService, ss app.SpecialtiesService, errs app.EducompRelationsService) EduprogController {
 	return EduprogController{
 		eduprogService:             es,
 		eduprogcompService:         ecs,
@@ -32,6 +33,7 @@ func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epc
 		eduprogresultsService:      ers,
 		resultsMatrixService:       rms,
 		specialtiesService:         ss,
+		educompRelationsService:    errs,
 	}
 }
 
