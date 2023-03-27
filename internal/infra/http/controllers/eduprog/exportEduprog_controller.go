@@ -633,7 +633,9 @@ func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
 		defer func(file *os.File) {
 			err := file.Close()
 			if err != nil {
-
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
 			}
 		}(file)
 		if _, err := file.WriteString(graphStr); err != nil {
