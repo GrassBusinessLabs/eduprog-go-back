@@ -197,6 +197,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		}
 
 		eduprogcomp.Id = id
+		eduprogcomp.Code = eduprogcompById.Code
 		eduprogcomp, err = c.eduprogcompService.Update(eduprogcomp, id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
