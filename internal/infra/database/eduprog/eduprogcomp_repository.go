@@ -114,21 +114,21 @@ func (r eduprogcompRepository) FindByWODeleteDate(id uint64) (domain.Eduprogcomp
 }
 
 func (r eduprogcompRepository) SortComponentsByMnS(eduprog_id uint64) (domain.Components, error) {
-	var eduprogcomp_slice []eduprogcomp
+	var mandeduprogcomp_slice []eduprogcomp
+	var seleduprogcomp_slice []eduprogcomp
 	var components domain.Components
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).All(&eduprogcomp_slice)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "type": MandCompType}).All(&mandeduprogcomp_slice)
+	if err != nil {
+		return domain.Components{}, err
+	}
+	err = r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "type": SelectCompType}).All(&seleduprogcomp_slice)
 	if err != nil {
 		return domain.Components{}, err
 	}
 
-	for i := range eduprogcomp_slice {
-		if eduprogcomp_slice[i].Type == MandCompType {
-			components.Mandatory = append(components.Mandatory, r.mapModelToDomain(eduprogcomp_slice[i]))
-		} else if eduprogcomp_slice[i].Type == SelectCompType {
-			components.Selective = append(components.Selective, r.mapModelToDomain(eduprogcomp_slice[i]))
-		}
-	}
+	components.Mandatory = r.mapModelToDomainCollection(mandeduprogcomp_slice)
+	components.Selective = r.mapModelToDomainCollection(seleduprogcomp_slice)
 
 	return components, err
 }

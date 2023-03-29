@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 )
 
@@ -211,9 +212,25 @@ func (c EduprogController) FindById() http.HandlerFunc {
 			return
 		}
 
+		comps.Mandatory = sortByCode(comps.Mandatory)
+
 		var eduprogDto resources.EduprogDto
 		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
 	}
+}
+
+func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
+	sort.Slice(eduprogcomps, func(i, j int) bool {
+		// Parse the Code field as integers and compare them
+		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
+		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
+		if errI != nil || errJ != nil {
+			// Handle error cases where the Code field cannot be parsed as integers
+			return eduprogcomps[i].Code < eduprogcomps[j].Code
+		}
+		return codeI < codeJ
+	})
+	return eduprogcomps
 }
 
 func (c EduprogController) CreditsInfo() http.HandlerFunc {
