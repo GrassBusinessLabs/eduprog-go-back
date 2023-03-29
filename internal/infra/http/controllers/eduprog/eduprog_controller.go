@@ -225,7 +225,6 @@ func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
 		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
 		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
 		if errI != nil || errJ != nil {
-			// Handle error cases where the Code field cannot be parsed as integers
 			return eduprogcomps[i].Code < eduprogcomps[j].Code
 		}
 		return codeI < codeJ
