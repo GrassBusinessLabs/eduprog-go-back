@@ -5,6 +5,8 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
 	"log"
 	"reflect"
+	"sort"
+	"strconv"
 )
 
 type EduprogcompService interface {
@@ -46,7 +48,20 @@ func (s eduprogcompService) GetVBBlocksDomain(eduprogcomps domain.Components) []
 			}
 		}
 	}
+	sortBlocks(blockInfo)
 	return blockInfo
+}
+
+func sortBlocks(blocks []domain.BlockInfo) {
+	sort.Slice(blocks, func(i, j int) bool {
+		blockNumI, errI := strconv.Atoi(blocks[i].BlockNum)
+		blockNumJ, errJ := strconv.Atoi(blocks[j].BlockNum)
+		if errI != nil || errJ != nil {
+			// handle error cases where blockNum is not an integer
+			return false
+		}
+		return blockNumI < blockNumJ
+	})
 }
 
 func RemoveDuplicatesByField(mySlice []domain.BlockInfo, fieldName string) []domain.BlockInfo {
