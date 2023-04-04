@@ -5,8 +5,8 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
 	_ "github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
-	"github.com/awalterschulze/gographviz"
 	"github.com/go-chi/chi/v5"
+	"github.com/goccy/go-graphviz"
 	"github.com/xuri/excelize/v2"
 	"log"
 	"mime"
@@ -571,76 +571,152 @@ func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
 			return
 		}
 
-		graph := gographviz.NewGraph()
-		_ = graph.SetName("G")
-		_ = graph.SetDir(true)
+		//graph := gographviz.NewGraph()
+		//_ = graph.SetName("G")
+		//_ = graph.SetDir(true)
+		//nodeAttrs := make(map[string]string)
+		//nodeAttrs["shape"] = "box"
+		//var nodeName string
+		//for _, r := range relationships {
+		//	edcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
+		//	if edcomp.Type == "ОК" {
+		//		nodeName = fmt.Sprintf("%s%s", edcomp.Type, edcomp.Code)
+		//	} else if edcomp.Type == "ВБ" {
+		//		nodeName = fmt.Sprintf("Блок%s", edcomp.BlockNum)
+		//	}
+		//	//nodeName := fmt.Sprintf("%s", edcomp.Code)
+		//	_ = graph.AddNode("G", nodeName, nodeAttrs)
+		//
+		//}
+		//
+		//// Add nodes for each child component
+		//for _, r := range relationships {
+		//	edcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
+		//	if edcomp.Type == "ОК" {
+		//		nodeName = fmt.Sprintf("%s%s", edcomp.Type, edcomp.Code)
+		//	} else if edcomp.Type == "ВБ" {
+		//		nodeName = fmt.Sprintf("Блок%s", edcomp.BlockNum)
+		//	}
+		//	//nodeName := fmt.Sprintf("%s", edcomp.Code)
+		//	_ = graph.AddNode("G", nodeName, nodeAttrs)
+		//}
+		//
+		//var baseCompNode string
+		//var childCompNode string
+		//// Add edges between base components and child components
+		//for _, r := range relationships {
+		//	baseedcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
+		//	childedcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
+		//
+		//	if baseedcomp.Type == "ОК" {
+		//		baseCompNode = fmt.Sprintf("%s%s", baseedcomp.Type, baseedcomp.Code)
+		//	} else if baseedcomp.Type == "ВБ" {
+		//		baseCompNode = fmt.Sprintf("Блок%s", baseedcomp.BlockNum)
+		//	}
+		//	if childedcomp.Type == "ОК" {
+		//		childCompNode = fmt.Sprintf("%s%s", childedcomp.Type, childedcomp.Code)
+		//	} else if childedcomp.Type == "ВБ" {
+		//		childCompNode = fmt.Sprintf("Блок%s", childedcomp.BlockNum)
+		//	}
+		//
+		//	//baseCompNode := fmt.Sprintf("%s", baseedcomp.Code)
+		//	//childCompNode := fmt.Sprintf("%s", childedcomp.Code)
+		//	_ = graph.AddEdge(baseCompNode, childCompNode, true, nil)
+		//}
+		//graphStr := graph.String()
+		//file, err := os.Create("graph.dot")
+		//if err != nil {
+		//	log.Printf("EduprogController: %s", err)
+		//	controllers.InternalServerError(w, err)
+		//	return
+		//}
+		//defer func(file *os.File) {
+		//	err := file.Close()
+		//	if err != nil {
+		//		log.Printf("EduprogController: %s", err)
+		//		controllers.InternalServerError(w, err)
+		//		return
+		//	}
+		//}(file)
+		//if _, err := file.WriteString(graphStr); err != nil {
+		//	panic(err)
+		//}
+
+		g := graphviz.New()
+
+		graph, err := g.Graph(graphviz.Name("G"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			if err := graph.Close(); err != nil {
+				log.Fatal(err)
+			}
+			err := g.Close()
+			if err != nil {
+				return
+			}
+		}()
+
 		nodeAttrs := make(map[string]string)
 		nodeAttrs["shape"] = "box"
 		var nodeName string
-		for _, r := range relationships {
-			edcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
-			if edcomp.Type == "ОК" {
-				nodeName = fmt.Sprintf("%s%s", edcomp.Type, edcomp.Code)
-			} else if edcomp.Type == "ВБ" {
-				nodeName = fmt.Sprintf("Блок%s", edcomp.BlockNum)
-			}
-			//nodeName := fmt.Sprintf("%s", edcomp.Code)
-			_ = graph.AddNode("G", nodeName, nodeAttrs)
 
+		// Add nodes for base components and child components
+		for _, r := range relationships {
+			baseedcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
+			childedcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
+
+			if baseedcomp.Type == "ОК" {
+				nodeName = fmt.Sprintf("%s%s", baseedcomp.Type, baseedcomp.Code)
+			} else if baseedcomp.Type == "ВБ" {
+				nodeName = fmt.Sprintf("Блок%s", baseedcomp.BlockNum)
+			}
+			_, err = graph.CreateNode(nodeName)
+
+			if childedcomp.Type == "ОК" {
+				nodeName = fmt.Sprintf("%s%s", childedcomp.Type, childedcomp.Code)
+			} else if childedcomp.Type == "ВБ" {
+				nodeName = fmt.Sprintf("Блок%s", childedcomp.BlockNum)
+			}
+			_, err = graph.CreateNode(nodeName)
 		}
 
-		// Add nodes for each child component
-		for _, r := range relationships {
-			edcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
-			if edcomp.Type == "ОК" {
-				nodeName = fmt.Sprintf("%s%s", edcomp.Type, edcomp.Code)
-			} else if edcomp.Type == "ВБ" {
-				nodeName = fmt.Sprintf("Блок%s", edcomp.BlockNum)
-			}
-			//nodeName := fmt.Sprintf("%s", edcomp.Code)
-			_ = graph.AddNode("G", nodeName, nodeAttrs)
-		}
-
-		var baseCompNode string
-		var childCompNode string
 		// Add edges between base components and child components
 		for _, r := range relationships {
 			baseedcomp, _ := c.eduprogcompService.FindById(r.BaseCompId)
 			childedcomp, _ := c.eduprogcompService.FindById(r.ChildCompId)
 
 			if baseedcomp.Type == "ОК" {
-				baseCompNode = fmt.Sprintf("%s%s", baseedcomp.Type, baseedcomp.Code)
+				nodeName = fmt.Sprintf("%s%s", baseedcomp.Type, baseedcomp.Code)
 			} else if baseedcomp.Type == "ВБ" {
-				baseCompNode = fmt.Sprintf("Блок%s", baseedcomp.BlockNum)
+				nodeName = fmt.Sprintf("Блок%s", baseedcomp.BlockNum)
 			}
-			if childedcomp.Type == "ОК" {
-				childCompNode = fmt.Sprintf("%s%s", childedcomp.Type, childedcomp.Code)
-			} else if childedcomp.Type == "ВБ" {
-				childCompNode = fmt.Sprintf("Блок%s", childedcomp.BlockNum)
+			baseCompNode, err := graph.Node(nodeName)
+			if err != nil {
+				log.Fatal(err)
 			}
 
-			//baseCompNode := fmt.Sprintf("%s", baseedcomp.Code)
-			//childCompNode := fmt.Sprintf("%s", childedcomp.Code)
-			_ = graph.AddEdge(baseCompNode, childCompNode, true, nil)
-		}
-		graphStr := graph.String()
-		file, err := os.Create("graph.dot")
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-		defer func(file *os.File) {
-			err := file.Close()
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
+			if childedcomp.Type == "ОК" {
+				nodeName = fmt.Sprintf("%s%s", childedcomp.Type, childedcomp.Code)
+			} else if childedcomp.Type == "ВБ" {
+				nodeName = fmt.Sprintf("Блок%s", childedcomp.BlockNum)
 			}
-		}(file)
-		if _, err := file.WriteString(graphStr); err != nil {
-			panic(err)
+			childCompNode, err := graph.Node(nodeName)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			_, err = graph.CreateEdge("", baseCompNode, childCompNode)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
+
+		if err := g.RenderFilename(graph, graphviz.PNG, "graph.png"); err != nil {
+			log.Fatal(err)
+		}
+
 		cmd := exec.Command("dot", "-Tpng", "-o", "graph.png", "graph.dot")
 		if err := cmd.Run(); err != nil {
 			log.Printf("EduprogController: %s", err)
