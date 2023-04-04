@@ -12,7 +12,6 @@ import (
 	"mime"
 	"net/http"
 	"os"
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
@@ -726,12 +725,12 @@ func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
 			log.Fatal(err)
 		}
 
-		cmd := exec.Command("dot", "-Tpng", "-o", "graph.png", "graph.dot")
-		if err := cmd.Run(); err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
+		//cmd := exec.Command("dot", "-Tpng", "-o", "graph.png", "graph.dot")
+		//if err := cmd.Run(); err != nil {
+		//	log.Printf("EduprogController: %s", err)
+		//	controllers.InternalServerError(w, err)
+		//	return
+		//}
 		//filename := fmt.Sprintf("%s.png", eduprog.Name)
 		filename := "graph.png"
 		header := make(http.Header)
