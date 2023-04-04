@@ -673,13 +673,22 @@ func (c EduprogController) ExportEducompRelationsToJpg() http.HandlerFunc {
 				nodeName = fmt.Sprintf("Блок%s", baseedcomp.BlockNum)
 			}
 			_, err = graph.CreateNode(nodeName)
-
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
 			if childedcomp.Type == "ОК" {
 				nodeName = fmt.Sprintf("%s%s", childedcomp.Type, childedcomp.Code)
 			} else if childedcomp.Type == "ВБ" {
 				nodeName = fmt.Sprintf("Блок%s", childedcomp.BlockNum)
 			}
 			_, err = graph.CreateNode(nodeName)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
 		}
 
 		// Add edges between base components and child components
