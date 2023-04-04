@@ -214,10 +214,11 @@ func (c EduprogController) FindById() http.HandlerFunc {
 
 		comps.Mandatory = sortByCode(comps.Mandatory)
 
-		mandBlocks := c.eduprogcompService.GetVBBlocksDomain(comps)
+		//mandBlocks := c.eduprogcompService.GetVBBlocksDomain(comps)
 
 		var eduprogDto resources.EduprogDto
-		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, mandBlocks))
+		//controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, mandBlocks))
+		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
 	}
 }
 
