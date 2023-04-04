@@ -52,7 +52,7 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 
 		//Code generation logic
 
-		if eduprogcomp.Type == "ОК" {
+		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
 			var maxCode uint64 = 0
 			eduprogcomp.Category = MANDATORY
 			for i := range comps.Mandatory {
@@ -69,7 +69,7 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
 			eduprogcomp.BlockName = ""
 			eduprogcomp.BlockNum = ""
-		} else if eduprogcomp.Type == "ВБ" {
+		} else if eduprogcomp.Type == "ВБ" { //if educomp type is "VB"
 			var maxCode uint64 = 0
 			eduprogcomp.Category = BLOC
 			for i := range comps.Selective {
