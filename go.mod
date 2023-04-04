@@ -3,6 +3,7 @@ module github.com/GrassBusinessLabs/eduprog-go-back
 go 1.19
 
 require (
+	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/jwtauth/v5 v5.1.0
@@ -11,11 +12,11 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/lestrrat-go/jwx/v2 v2.0.8
 	github.com/upper/db/v4 v4.6.0
+	github.com/xuri/excelize/v2 v2.7.0
 	golang.org/x/crypto v0.7.0
 )
 
 require (
-	github.com/awalterschulze/gographviz v2.0.3+incompatible // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -48,7 +49,6 @@ require (
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/segmentio/fasthash v1.0.3 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
-	github.com/xuri/excelize/v2 v2.7.0 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/image v0.6.0 // indirect
