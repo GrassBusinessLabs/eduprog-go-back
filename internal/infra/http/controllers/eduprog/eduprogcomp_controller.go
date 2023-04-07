@@ -264,6 +264,12 @@ func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
 		}
 
 		vbBlock, err := c.eduprogcompService.FindByBlockNum(id, eduprogcomp.BlockNum)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
 		var result []domain.Eduprogcomp
 		for i := range vbBlock {
 			edcompById, err := c.eduprogcompService.FindById(vbBlock[i].Id)
