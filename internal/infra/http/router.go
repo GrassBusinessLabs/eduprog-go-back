@@ -183,6 +183,10 @@ func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 			"/getVB/{epcId}",
 			ec.GetVBBlocksInfo(),
 		)
+		apiRouter.Put(
+			"/updVB/{epcId}",
+			ec.UpdateVBName(),
+		)
 		apiRouter.Delete(
 			"/{epcId}",
 			ec.Delete(),

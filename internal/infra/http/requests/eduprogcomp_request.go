@@ -26,6 +26,11 @@ type UpdateEduprogcompRequest struct {
 	EduprogId   uint64  `json:"eduprog_id" validate:"number"`
 }
 
+type UpdateBlockName struct {
+	BlockNum  string `json:"block_num"`
+	BlockName string `json:"block_name"`
+}
+
 func (r CreateEduprogcompRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcomp{
 
@@ -50,5 +55,12 @@ func (r UpdateEduprogcompRequest) ToDomainModel() (interface{}, error) {
 		BlockName:   r.BlockName,
 		Category:    r.Category,
 		EduprogId:   r.EduprogId,
+	}, nil
+}
+
+func (r UpdateBlockName) ToDomainModel() (interface{}, error) {
+	return domain.Eduprogcomp{
+		BlockNum:  r.BlockNum,
+		BlockName: r.BlockName,
 	}, nil
 }

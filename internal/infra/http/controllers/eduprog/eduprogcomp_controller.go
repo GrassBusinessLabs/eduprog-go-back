@@ -247,6 +247,47 @@ func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
 	}
 }
 
+func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcomp, err := requests.Bind(r, requests.UpdateBlockName{}, domain.Eduprogcomp{})
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		vbBlock, err := c.eduprogcompService.FindByBlockNum(id, eduprogcomp.BlockNum)
+		var result []domain.Eduprogcomp
+		for i := range vbBlock {
+			edcompById, err := c.eduprogcompService.FindById(vbBlock[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			edcompById.BlockName = eduprogcomp.BlockName
+			updEduprogcomp, err := c.eduprogcompService.Update(edcompById, edcompById.Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+
+			result = append(result, updEduprogcomp)
+		}
+
+		var eduprogcompsDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(result))
+	}
+}
+
 func (c EduprogcompController) ShowListByEduprogId() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
