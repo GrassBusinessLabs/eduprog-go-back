@@ -401,10 +401,20 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			}
 
 			if edcode+65 <= 90 {
-				_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%d", string(rune(edcode+65)), competency.Code+1), "·")
+				if competency.Type == "ЗК" {
+					_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%d", string(rune(edcode+65)), competency.Code+1), "·")
+				} else if competency.Type == "ФК" {
+					_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%d", string(rune(edcode+65)), competency.Code+uint64(competenicesZKLen)+1), "·")
+				}
+
 			} else if edcode+65 > 90 && edcode+65 <= 116 {
 				bufLetter = string(rune(65))
-				_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), competency.Code+1), "·")
+
+				if competency.Type == "ЗК" {
+					_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), competency.Code+1), "·")
+				} else if competency.Type == "ФК" {
+					_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), competency.Code+uint64(competenicesZKLen)+1), "·")
+				}
 			}
 
 		}
@@ -497,7 +507,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			_ = xlsx.MergeCell(SheetName3, "A2", "Z2")
 			_ = xlsx.SetCellStyle(SheetName3, "A2", "Z2", styleError)
 			_ = xlsx.SetCellValue(SheetName3, "A2", "Помилка: у освітньої програми відсутні ПР")
-		} else {
+		} else if competenicesPRLen > 0 {
 			for i := 2; i < competenicesPRLen+2; i++ {
 
 				//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
