@@ -6,7 +6,7 @@ import (
 
 type CreateEduprogcompRequest struct {
 	Name        string  `json:"name" validate:"required,gte=1,max=50"`
-	Credits     float64 `json:"credits" validate:"required,number"`
+	Credits     float64 `json:"credits" validate:"required,number,gt=0"`
 	ControlType string  `json:"control_type" validate:"required,gte=1,max=50"`
 	Type        string  `json:"type" validate:"required,gte=1,max=50"`
 	BlockNum    string  `json:"block_num"`
@@ -17,7 +17,7 @@ type CreateEduprogcompRequest struct {
 
 type UpdateEduprogcompRequest struct {
 	Name        string  `json:"name" validate:"gte=1,max=50"`
-	Credits     float64 `json:"credits" validate:"number"`
+	Credits     float64 `json:"credits" validate:"number,gt=0"`
 	ControlType string  `json:"control_type" validate:"gte=1,max=50"`
 	Type        string  `json:"type" validate:"gte=1,max=50"`
 	BlockNum    string  `json:"block_num"`
