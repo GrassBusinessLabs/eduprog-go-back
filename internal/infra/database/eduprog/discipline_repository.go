@@ -38,6 +38,7 @@ func NewDisciplineRepository(dbSession db.Session) DisciplineRepository {
 func (r disciplineRepository) Save(discipline domain.Discipline) (domain.Discipline, error) {
 	e := r.mapDomainToModel(discipline)
 	e.CreatedDate, e.UpdatedDate = time.Now(), time.Now()
+	e.Rows = 1
 	err := r.coll.InsertReturning(&e)
 	if err != nil {
 		return domain.Discipline{}, err

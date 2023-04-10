@@ -237,6 +237,10 @@ func DisciplineRouter(r chi.Router, d eduprog.DisciplineController) {
 			"/{epId}",
 			d.Update(),
 		)
+		apiRouter.Put(
+			"/addRow/{epId}",
+			d.AddRow(),
+		)
 		apiRouter.Get(
 			"/getByEdId/{epId}",
 			d.ShowDisciplinesByEduprogId(),

@@ -72,6 +72,35 @@ func (c DisciplineController) Update() http.HandlerFunc {
 	}
 }
 
+func (c DisciplineController) AddRow() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("DisciplineController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		discipline, err := c.disciplineService.FindById(id)
+		if err != nil {
+			log.Printf("DisciplineController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		discipline.Rows = discipline.Rows + 1
+		discipline, err = c.disciplineService.Update(discipline, id)
+		if err != nil {
+			log.Printf("DisciplineController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var disciplineDto resources.DisciplineDto
+		controllers.Success(w, disciplineDto.DomainToDto(discipline))
+	}
+}
+
 func (c DisciplineController) ShowDisciplinesByEduprogId() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
