@@ -114,6 +114,16 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 				{Type: "left", Color: "#000000", Style: 1},
 			},
 		})
+		styleError, _ := xlsx.NewStyle(&excelize.Style{
+			Font:      &excelize.Font{Size: 16, Bold: true, Family: "Times New Roman", Color: "#FF0000"},
+			Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+			Border: []excelize.Border{{Type: "left", Color: "#000000", Style: 2},
+				{Type: "top", Color: "#000000", Style: 1},
+				{Type: "bottom", Color: "#000000", Style: 1},
+				{Type: "right", Color: "#000000", Style: 1},
+				{Type: "left", Color: "#000000", Style: 1},
+			},
+		})
 		_ = xlsx.SetCellStyle(SheetName1, "A1", "D3", style)
 		_ = xlsx.MergeCell(SheetName1, "A3", "D3")
 		_ = xlsx.SetColWidth(SheetName1, "A", "A", 10)
@@ -330,29 +340,37 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			}
 
 		}
-
 		competenicesZKLen := len(eduprogcompetenciesZK)
-
-		for i := 2; i < competenicesZKLen+2; i++ {
-
-			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
-			_ = xlsx.SetRowHeight(SheetName2, i, 15)
-			_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcompetenciesZK[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesZK[i-2].Code, 10),
-			})
-
-		}
 		competenicesFKLen := len(eduprogcompetenciesFK)
-		for i := competenicesZKLen + 2; i < competenicesZKLen+competenicesFKLen+2; i++ {
+		if competenicesZKLen == 0 {
+			_ = xlsx.MergeCell(SheetName2, fmt.Sprintf("A%d", competenicesFKLen+2), fmt.Sprintf("Z%d", competenicesFKLen+2))
+			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", competenicesFKLen+2), fmt.Sprintf("Z%d", competenicesFKLen+2), styleError)
+			_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("A%d", competenicesFKLen+2), "Помилка: у освітньої програми відсутні ЗК")
+		} else if competenicesZKLen > 0 {
+			for i := 2; i < competenicesZKLen+2; i++ {
 
-			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
-			_ = xlsx.SetRowHeight(SheetName2, i, 15)
-			_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcompetenciesFK[i-competenicesZKLen-2].Type + " " + strconv.FormatUint(eduprogcompetenciesFK[i-competenicesZKLen-2].Code, 10),
-			})
+				//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
+				_ = xlsx.SetRowHeight(SheetName2, i, 15)
+				_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
+					eduprogcompetenciesZK[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesZK[i-2].Code, 10),
+				})
+			}
+		}
 
+		if competenicesFKLen == 0 {
+			_ = xlsx.MergeCell(SheetName2, fmt.Sprintf("A%d", competenicesZKLen+competenicesFKLen+2), fmt.Sprintf("Z%d", competenicesZKLen+competenicesFKLen+2))
+			_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", competenicesZKLen+competenicesFKLen+2), fmt.Sprintf("Z%d", competenicesZKLen+competenicesFKLen+2), styleError)
+			_ = xlsx.SetCellValue(SheetName2, fmt.Sprintf("A%d", competenicesZKLen+competenicesFKLen+2), "Помилка: у освітньої програми відсутні ФК")
+		} else if competenicesFKLen > 0 {
+			for i := competenicesZKLen + 2; i < competenicesZKLen+competenicesFKLen+2; i++ {
+				//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName2, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
+				_ = xlsx.SetRowHeight(SheetName2, i, 15)
+				_ = xlsx.SetSheetRow(SheetName2, fmt.Sprintf("A%d", i), &[]interface{}{
+					eduprogcompetenciesFK[i-competenicesZKLen-2].Type + " " + strconv.FormatUint(eduprogcompetenciesFK[i-competenicesZKLen-2].Code, 10),
+				})
+			}
 		}
 
 		_ = xlsx.SetCellStyle(SheetName2, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesZKLen+competenicesFKLen+1), styleDot)
@@ -475,51 +493,57 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		}
 
 		competenicesPRLen := len(eduprogcompetenciesPR)
-		for i := 2; i < competenicesPRLen+2; i++ {
+		if competenicesPRLen == 0 {
+			_ = xlsx.MergeCell(SheetName3, "A2", "Z2")
+			_ = xlsx.SetCellStyle(SheetName3, "A2", "Z2", styleError)
+			_ = xlsx.SetCellValue(SheetName3, "A2", "Помилка: у освітньої програми відсутні ПР")
+		} else {
+			for i := 2; i < competenicesPRLen+2; i++ {
 
-			//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
-			_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
-			_ = xlsx.SetRowHeight(SheetName3, i, 15)
-			_ = xlsx.SetSheetRow(SheetName3, fmt.Sprintf("A%d", i), &[]interface{}{
-				eduprogcompetenciesPR[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesPR[i-2].Code, 10),
-			})
+				//_ = xlsx.SetCellStyle(SheetName, fmt.Sprintf("A%d", i), fmt.Sprintf("D%d", i), style)
+				_ = xlsx.SetCellStyle(SheetName3, fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), styleBold)
+				_ = xlsx.SetRowHeight(SheetName3, i, 15)
+				_ = xlsx.SetSheetRow(SheetName3, fmt.Sprintf("A%d", i), &[]interface{}{
+					eduprogcompetenciesPR[i-2].Type + " " + strconv.FormatUint(eduprogcompetenciesPR[i-2].Code, 10),
+				})
 
-		}
+			}
 
-		_ = xlsx.SetCellStyle(SheetName3, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesPRLen+1), styleDot)
+			_ = xlsx.SetCellStyle(SheetName3, "B2", fmt.Sprintf("%s%d", lastLetter, competenicesPRLen+1), styleDot)
 
-		resultsMatrix, _ := c.resultsMatrixService.ShowByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for i := 0; i < len(resultsMatrix); i++ {
-			eduprogcomp, _ := c.eduprogcompService.FindById(resultsMatrix[i].ComponentId)
+			resultsMatrix, _ := c.resultsMatrixService.ShowByEduprogId(id)
 			if err != nil {
 				log.Printf("EduprogController: %s", err)
 				controllers.InternalServerError(w, err)
 				return
 			}
-			result, _ := c.eduprogresultsService.FindById(resultsMatrix[i].EduprogresultId)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-			edcode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
-			if eduprogcomp.Type == "ВБ" {
-				edcode = edcode + uint64(len(eduprogcomps.Mandatory))
-			}
 
-			if edcode+65 <= 90 {
-				_ = xlsx.SetCellValue(SheetName3, fmt.Sprintf("%s%d", string(rune(edcode+65)), result.Code+1), "·")
-			} else if edcode+65 > 90 && edcode+65 <= 116 {
-				bufLetter = string(rune(65))
-				_ = xlsx.SetCellValue(SheetName3, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), result.Code+1), "·")
-			}
+			for i := 0; i < len(resultsMatrix); i++ {
+				eduprogcomp, _ := c.eduprogcompService.FindById(resultsMatrix[i].ComponentId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				result, _ := c.eduprogcompetenciesService.FindById(resultsMatrix[i].EduprogresultId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				edcode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
+				if eduprogcomp.Type == "ВБ" {
+					edcode = edcode + uint64(len(eduprogcomps.Mandatory))
+				}
 
+				if edcode+65 <= 90 {
+					_ = xlsx.SetCellValue(SheetName3, fmt.Sprintf("%s%d", string(rune(edcode+65)), result.Code+1), "·")
+				} else if edcode+65 > 90 && edcode+65 <= 116 {
+					bufLetter = string(rune(65))
+					_ = xlsx.SetCellValue(SheetName3, fmt.Sprintf("%s%s%d", bufLetter, string(rune(edcode+65-26)), result.Code+1), "·")
+				}
+
+			}
 		}
 
 		_ = xlsx.SaveAs(fmt.Sprintf("./%s.xlsx", eduprog.Name))

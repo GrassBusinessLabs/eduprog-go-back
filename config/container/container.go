@@ -39,7 +39,6 @@ type Services struct {
 	app.CompetenciesBaseService
 	app.EduprogcompetenciesService
 	app.CompetenciesMatrixService
-	app.EduprogresultsService
 	app.ResultsMatrixService
 	app.SpecialtiesService
 }
@@ -55,7 +54,6 @@ type Controllers struct {
 	eduprog.CompetenciesBaseController
 	eduprog.EduprogcompetenciesController
 	eduprog.CompetenciesMatrixController
-	eduprog.EduprogresultsController
 	eduprog.ResultsMatrixController
 	eduprog.SpecialtyController
 }
@@ -74,7 +72,6 @@ func New(conf config.Configuration) Container {
 	competencyBaseRepository := eduprog2.NewCompetenciesBaseRepository(sess)
 	competencyMatrixRepository := eduprog2.NewCompetenciesMatrixRepository(sess)
 	eduprogcompetenciesRepository := eduprog2.NewEduprogcompetenciesRepository(sess)
-	eduprogresultsRepository := eduprog2.NewEduprogresultsRepository(sess)
 	resultsMatrixRepository := eduprog2.NewResultsMatrixRepository(sess)
 	specialtiesRepository := eduprog2.NewSpecialtiesRepository(sess)
 
@@ -88,21 +85,19 @@ func New(conf config.Configuration) Container {
 	competencyBaseService := app.NewCompetenciesBaseService(competencyBaseRepository)
 	competencyMatrixService := app.NewCompetenciesMatrixService(competencyMatrixRepository)
 	eduprogcompetenciesService := app.NewEduprogcompetenciesService(eduprogcompetenciesRepository)
-	eduprogresultsService := app.NewEduprogresultsService(eduprogresultsRepository)
 	resultMatrixService := app.NewResultsMatrixService(resultsMatrixRepository)
 	specialtiesService := app.NewSpecialtiesService(specialtiesRepository)
 
 	authController := auth.NewAuthController(authService, userService)
 	userController := auth.NewUserController(userService)
-	eduprogController := eduprog.NewEduprogController(eduprogService, eduprogcompService, eduprogcompetenciesService, competencyMatrixService, eduprogresultsService, resultMatrixService, specialtiesService, educompRelationsService)
+	eduprogController := eduprog.NewEduprogController(eduprogService, eduprogcompService, eduprogcompetenciesService, competencyMatrixService, resultMatrixService, specialtiesService, educompRelationsService)
 	eduprogcompController := eduprog.NewEduprogcompController(eduprogcompService, eduprogService, eduprogController)
-	eduprogschemeController := eduprog.NewEduprogschemeController(eduprogschemeService, eduprogcompService)
+	eduprogschemeController := eduprog.NewEduprogschemeController(eduprogschemeService, eduprogcompService, disciplineService)
 	disciplineController := eduprog.NewDisciplineController(disciplineService)
 	educompRelationsController := eduprog.NewEducompRelationsController(educompRelationsService, eduprogschemeService, eduprogcompService)
 	competencyBaseController := eduprog.NewCompetenciesBaseController(competencyBaseService)
 	competencyMatrixController := eduprog.NewCompetenciesMatrixController(competencyMatrixService)
 	eduprogcompetenciesController := eduprog.NewEduprogcompetenciesController(eduprogcompetenciesService, competencyBaseService, eduprogService)
-	eduprogresultsController := eduprog.NewEduprogresultsController(eduprogresultsService)
 	resultsMatrixController := eduprog.NewResultsMatrixController(resultMatrixService)
 	specialtiesController := eduprog.NewSpecialtiesController(specialtiesService)
 
@@ -123,7 +118,6 @@ func New(conf config.Configuration) Container {
 			competencyBaseService,
 			eduprogcompetenciesService,
 			competencyMatrixService,
-			eduprogresultsService,
 			resultMatrixService,
 			specialtiesService,
 		},
@@ -138,7 +132,6 @@ func New(conf config.Configuration) Container {
 			competencyBaseController,
 			eduprogcompetenciesController,
 			competencyMatrixController,
-			eduprogresultsController,
 			resultsMatrixController,
 			specialtiesController,
 		},

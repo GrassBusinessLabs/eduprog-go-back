@@ -57,7 +57,6 @@ func Router(cont container.Container) http.Handler {
 				CompetenciesBaseRouter(apiRouter, cont.CompetenciesBaseController)
 				EduprogcompetenciesRouter(apiRouter, cont.EduprogcompetenciesController)
 				CompetenciesMatrixRouter(apiRouter, cont.CompetenciesMatrixController)
-				EduprogresultsRouter(apiRouter, cont.EduprogresultsController)
 				ResultsMatrixRouter(apiRouter, cont.ResultsMatrixController)
 				SpecialtiesRouter(apiRouter, cont.SpecialtyController)
 				apiRouter.Handle("/*", NotFoundJSON())
@@ -367,28 +366,6 @@ func CompetenciesMatrixRouter(r chi.Router, cmc eduprog.CompetenciesMatrixContro
 		)
 	})
 
-}
-
-func EduprogresultsRouter(r chi.Router, erc eduprog.EduprogresultsController) {
-
-	r.Route("/eduprogs/results", func(apiRouter chi.Router) {
-		apiRouter.Post(
-			"/add",
-			erc.AddEduprogresultToEduprog(),
-		)
-		apiRouter.Get(
-			"/byEduprogId/{edId}",
-			erc.ShowEduprogResultsByEduprogId(),
-		)
-		apiRouter.Get(
-			"/{resId}",
-			erc.FindById(),
-		)
-		apiRouter.Delete(
-			"/{resId}",
-			erc.Delete(),
-		)
-	})
 }
 
 func ResultsMatrixRouter(r chi.Router, rmc eduprog.ResultsMatrixController) {

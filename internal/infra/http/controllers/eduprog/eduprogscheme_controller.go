@@ -2,6 +2,7 @@ package eduprog
 
 import (
 	"errors"
+	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -16,12 +17,14 @@ import (
 type EduprogschemeController struct {
 	eduprogschemeService app.EduprogschemeService
 	eduprogcompService   app.EduprogcompService
+	disciplineService    app.DisciplineService
 }
 
-func NewEduprogschemeController(ess app.EduprogschemeService, ecs app.EduprogcompService) EduprogschemeController {
+func NewEduprogschemeController(ess app.EduprogschemeService, ecs app.EduprogcompService, ds app.DisciplineService) EduprogschemeController {
 	return EduprogschemeController{
 		eduprogschemeService: ess,
 		eduprogcompService:   ecs,
+		disciplineService:    ds,
 	}
 }
 
@@ -49,6 +52,13 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			return
 		}
 
+		discipline, err := c.disciplineService.FindById(eduprogscheme.DisciplineId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
 		totalCompCredits := eduprogscheme.CreditsPerSemester
 
 		for i := range eduprogschemes {
@@ -62,9 +72,15 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			}
 		}
 
+		if discipline.Rows < eduprogscheme.Row || eduprogscheme.Row == 0 {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, errors.New(fmt.Sprintf("max row num for this discipline is %d, and it cant be zero", discipline.Rows)))
+			return
+		}
+
 		if totalCompCredits > eduprogcomp.Credits {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, errors.New("too much credits per semester, free credits to use left: "))
+			controllers.BadRequest(w, errors.New("too much credits per semester"))
 			return
 		}
 
@@ -103,10 +119,49 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 			return
 		}
 
+		eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
+			return
+		}
+
+		discipline, err := c.disciplineService.FindById(eduprogscheme.DisciplineId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		totalCompCredits := eduprogscheme.CreditsPerSemester
+
+		for i := range eduprogschemes {
+			if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
+				totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
+				if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
+					log.Printf("EduprogschemeController: %s", err)
+					controllers.BadRequest(w, errors.New("this component already exists in this semester"))
+					return
+				}
+			}
+		}
+
+		if discipline.Rows < eduprogscheme.Row || eduprogscheme.Row == 0 {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, errors.New(fmt.Sprintf("max row num for this discipline is %d, and it cant be zero", discipline.Rows)))
+			return
+		}
+
+		if totalCompCredits > eduprogcomp.Credits {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, errors.New("too much credits per semester"))
 			return
 		}
 

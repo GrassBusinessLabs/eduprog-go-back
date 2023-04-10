@@ -158,13 +158,15 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			return
 		}
 
-		//Free credits check
 		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
+
+		//Free credits check
+
 		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
@@ -179,15 +181,15 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		}
 
 		if eduprogcomp.Type == "ОК" {
-			if eduprogcomp.Credits+(creditsDto.MandatoryCredits-eduprogcompById.Credits) > creditsDto.MandatoryCreditsForLevel {
+			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New("too much credits"))
 				return
 			}
 		} else if eduprogcomp.Type == "ВБ" {
-			if eduprogcomp.Credits+(creditsDto.SelectiveCredits-eduprogcompById.Credits) > creditsDto.SelectiveCreditsForLevel {
+			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits {
 				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits"))
+				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
 				return
 			}
 		} else {
