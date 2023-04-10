@@ -368,17 +368,48 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 			return
 		}
 
-		for i := range eduprogcomps {
-			if eduprogcomps[i].Type == eduprogcomp.Type {
+		if eduprogcomp.Type == "ОК" {
+			for i := range eduprogcomps {
+				if eduprogcomps[i].Type == eduprogcomp.Type {
+					educompsCode, err := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
+					if err != nil {
+						log.Printf("EduprogcompController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+					educompCode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
+					if err != nil {
+						log.Printf("EduprogcompController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+					if educompsCode > educompCode {
+						eduprogcomps[i].Code = strconv.FormatUint(educompsCode-1, 10)
+						_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
+						if err != nil {
+							log.Printf("EduprogcompController: %s", err)
+							controllers.InternalServerError(w, err)
+							return
+						}
+					}
+				}
+			}
+		} else if eduprogcomp.Type == "ВБ" {
+			for i := range eduprogcomps {
 				educompsCode, err := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
 				if err != nil {
-					panic(err)
+					log.Printf("EduprogcompController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
 				}
 				educompCode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
 				if err != nil {
-					panic(err)
+					log.Printf("EduprogcompController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
 				}
-				if educompsCode > educompCode {
+
+				if educompsCode > educompCode && eduprogcomp.BlockNum == eduprogcomps[i].BlockNum {
 					eduprogcomps[i].Code = strconv.FormatUint(educompsCode-1, 10)
 					_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
 					if err != nil {
@@ -388,7 +419,6 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 					}
 				}
 			}
-
 		}
 
 		controllers.Ok(w)
