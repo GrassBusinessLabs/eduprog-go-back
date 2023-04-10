@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS public.discipline(
     id serial PRIMARY KEY,
     "name" varchar(50),
+    "rows" integer,
     eduprog_id integer REFERENCES eduprog(id),
     created_date TIMESTAMP DEFAULT now(),
     updated_date TIMESTAMP DEFAULT now()

@@ -6,6 +6,7 @@ type Eduprogscheme struct { //eduprogschemeElement
 	Id                 uint64
 	SemesterNum        uint64
 	DisciplineId       uint64
+	Row                uint64
 	EduprogId          uint64
 	EduprogcompId      uint64
 	Eduprogcomp        Eduprogcomp

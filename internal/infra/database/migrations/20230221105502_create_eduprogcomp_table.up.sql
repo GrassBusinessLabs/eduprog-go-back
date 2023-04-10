@@ -10,6 +10,5 @@ CREATE TABLE IF NOT EXISTS public.eduprogcomp(
     "category" varchar(50),
     eduprog_id integer REFERENCES eduprog(id) ON DELETE CASCADE,
     created_date TIMESTAMP DEFAULT now(),
-    updated_date TIMESTAMP DEFAULT now(),
-    deleted_date TIMESTAMP NULL
+    updated_date TIMESTAMP DEFAULT now()
     );

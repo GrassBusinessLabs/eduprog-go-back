@@ -7,6 +7,7 @@ import (
 type DisciplineDto struct {
 	Id        uint64 `json:"id"`
 	Name      string `json:"name"`
+	Rows      uint64 `json:"rows"`
 	EduprogId uint64 `json:"eduprog_id"`
 }
 
@@ -14,6 +15,7 @@ func (d DisciplineDto) DomainToDto(discipline domain.Discipline) DisciplineDto {
 	return DisciplineDto{
 		Id:        discipline.Id,
 		Name:      discipline.Name,
+		Rows:      discipline.Rows,
 		EduprogId: discipline.EduprogId,
 	}
 }

@@ -9,3 +9,6 @@ ALTER TABLE public.educomp_relations
 
 ALTER TABLE public.educomp_relations
     ADD FOREIGN KEY (child_comp_id) REFERENCES public.eduprogcomp(id) ON DELETE CASCADE;
+
+ALTER TABLE public.educomp_relations
+    ADD CONSTRAINT PK_Relation PRIMARY KEY (base_comp_id,child_comp_id);

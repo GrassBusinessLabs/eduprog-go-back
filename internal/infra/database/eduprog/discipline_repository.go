@@ -11,6 +11,7 @@ const DisciplineTableName = "discipline"
 type discipline struct {
 	Id          uint64    `db:"id,omitempty"`
 	Name        string    `db:"name"`
+	Rows        uint64    `db:"rows"`
 	EduprogId   uint64    `db:"eduprog_id"`
 	CreatedDate time.Time `db:"created_date,omitempty"`
 	UpdatedDate time.Time `db:"updated_date,omitempty"`
@@ -84,6 +85,7 @@ func (r disciplineRepository) mapDomainToModel(d domain.Discipline) discipline {
 	return discipline{
 		Id:          d.Id,
 		Name:        d.Name,
+		Rows:        d.Rows,
 		EduprogId:   d.EduprogId,
 		CreatedDate: d.CreatedDate,
 		UpdatedDate: d.UpdatedDate,
@@ -94,6 +96,7 @@ func (r disciplineRepository) mapModelToDomain(m discipline) domain.Discipline {
 	return domain.Discipline{
 		Id:          m.Id,
 		Name:        m.Name,
+		Rows:        m.Rows,
 		EduprogId:   m.EduprogId,
 		CreatedDate: m.CreatedDate,
 		UpdatedDate: m.UpdatedDate,

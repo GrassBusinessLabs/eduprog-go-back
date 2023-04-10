@@ -12,6 +12,7 @@ type eduprogscheme struct {
 	Id                 uint64    `db:"id,omitempty"`
 	SemesterNum        uint64    `db:"semester_num"`
 	DisciplineId       uint64    `db:"discipline_id"`
+	Row                uint64    `db:"row"`
 	EduprogId          uint64    `db:"eduprog_id"`
 	EduprogcompId      uint64    `db:"eduprogcomp_id"`
 	CreditsPerSemester float64   `db:"credits_per_semester"`
@@ -101,6 +102,7 @@ func (r eduprogschemeRepository) mapDomainToModel(d domain.Eduprogscheme) edupro
 		Id:                 d.Id,
 		SemesterNum:        d.SemesterNum,
 		DisciplineId:       d.DisciplineId,
+		Row:                d.Row,
 		EduprogId:          d.EduprogId,
 		EduprogcompId:      d.EduprogcompId,
 		CreditsPerSemester: d.CreditsPerSemester,
@@ -114,6 +116,7 @@ func (r eduprogschemeRepository) mapModelToDomain(m eduprogscheme) domain.Edupro
 		Id:                 m.Id,
 		SemesterNum:        m.SemesterNum,
 		DisciplineId:       m.DisciplineId,
+		Row:                m.Row,
 		EduprogId:          m.EduprogId,
 		EduprogcompId:      m.EduprogcompId,
 		CreditsPerSemester: m.CreditsPerSemester,
