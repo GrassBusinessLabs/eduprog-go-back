@@ -74,7 +74,7 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 
 		if discipline.Rows < eduprogscheme.Row || eduprogscheme.Row == 0 {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, errors.New(fmt.Sprintf("max row num for this discipline is %d, and it cant be zero", discipline.Rows)))
+			controllers.BadRequest(w, fmt.Errorf("max row num for this discipline is %d, and it cant be zero", discipline.Rows))
 			return
 		}
 
@@ -155,7 +155,7 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 
 		if discipline.Rows < eduprogscheme.Row || eduprogscheme.Row == 0 {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, errors.New(fmt.Sprintf("max row num for this discipline is %d, and it cant be zero", discipline.Rows)))
+			controllers.BadRequest(w, fmt.Errorf("max row num for this discipline is %d, and it cant be zero", discipline.Rows))
 			return
 		}
 
