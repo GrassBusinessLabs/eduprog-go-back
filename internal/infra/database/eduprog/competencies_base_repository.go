@@ -1,18 +1,27 @@
 package eduprog
 
 import (
+	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/upper/db/v4"
 )
 
 const CompetenciesBaseTableName = "competencies_base"
 
+const (
+	ENTRY  OPPLevel = "ENTRY"
+	FIRST  OPPLevel = "FIRST"
+	SECOND OPPLevel = "SECOND"
+	THIRD  OPPLevel = "THIRD"
+)
+
 type competencies_base struct {
-	Id         uint64 `db:"id,omitempty"`
-	Type       string `db:"type"`
-	Code       uint64 `db:"code"`
-	Definition string `db:"definition"`
-	Specialty  string `db:"specialty"`
+	Id             uint64 `db:"id,omitempty"`
+	Type           string `db:"type"`
+	Code           uint64 `db:"code"`
+	Definition     string `db:"definition"`
+	Specialty      string `db:"specialty"`
+	EducationLevel string `db:"education_level"`
 }
 
 type CompetenciesBaseRepository interface {
@@ -36,6 +45,17 @@ func NewCompetenciesBaseRepository(dbSession db.Session) CompetenciesBaseReposit
 
 func (r competenciesBaseRepository) CreateCompetency(competency domain.CompetenciesBase) (domain.CompetenciesBase, error) {
 	cb := r.mapDomainToModel(competency)
+	if competency.EducationLevel == string(ENTRY) {
+		competency.EducationLevel = string(EntryLevel)
+	} else if competency.EducationLevel == string(FIRST) {
+		competency.EducationLevel = string(FirstLevel)
+	} else if competency.EducationLevel == string(SECOND) {
+		competency.EducationLevel = string(SecondLevel)
+	} else if competency.EducationLevel == string(THIRD) {
+		competency.EducationLevel = string(ThirdLevel)
+	} else {
+		return domain.CompetenciesBase{}, fmt.Errorf("incorrect education level insert. Use defined key word as 'ENTRY', 'FIRST', 'SECOND', 'THIRD'")
+	}
 	err := r.coll.InsertReturning(&cb)
 	if err != nil {
 		return domain.CompetenciesBase{}, err
@@ -46,6 +66,18 @@ func (r competenciesBaseRepository) CreateCompetency(competency domain.Competenc
 
 func (r competenciesBaseRepository) UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error) {
 	e := r.mapDomainToModel(competency)
+
+	if competency.EducationLevel == string(ENTRY) {
+		competency.EducationLevel = string(EntryLevel)
+	} else if competency.EducationLevel == string(FIRST) {
+		competency.EducationLevel = string(FirstLevel)
+	} else if competency.EducationLevel == string(SECOND) {
+		competency.EducationLevel = string(SecondLevel)
+	} else if competency.EducationLevel == string(THIRD) {
+		competency.EducationLevel = string(ThirdLevel)
+	} else {
+		return domain.CompetenciesBase{}, fmt.Errorf("incorrect education level insert. Use defined key word as 'ENTRY', 'FIRST', 'SECOND', 'THIRD'")
+	}
 
 	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
 	if err != nil {
@@ -99,21 +131,23 @@ func (r competenciesBaseRepository) Delete(id uint64) error {
 // nolint
 func (r competenciesBaseRepository) mapDomainToModel(d domain.CompetenciesBase) competencies_base {
 	return competencies_base{
-		Id:         d.Id,
-		Type:       d.Type,
-		Code:       d.Code,
-		Definition: d.Definition,
-		Specialty:  d.Specialty,
+		Id:             d.Id,
+		Type:           d.Type,
+		Code:           d.Code,
+		Definition:     d.Definition,
+		Specialty:      d.Specialty,
+		EducationLevel: d.EducationLevel,
 	}
 }
 
 func (r competenciesBaseRepository) mapModelToDomain(m competencies_base) domain.CompetenciesBase {
 	return domain.CompetenciesBase{
-		Id:         m.Id,
-		Type:       m.Type,
-		Code:       m.Code,
-		Definition: m.Definition,
-		Specialty:  m.Specialty,
+		Id:             m.Id,
+		Type:           m.Type,
+		Code:           m.Code,
+		Definition:     m.Definition,
+		Specialty:      m.Specialty,
+		EducationLevel: m.EducationLevel,
 	}
 }
 

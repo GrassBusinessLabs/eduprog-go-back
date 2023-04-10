@@ -181,15 +181,15 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		}
 
 		if eduprogcomp.Type == "ОК" {
-			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
+			if eduprogcomp.Credits+(creditsDto.MandatoryCredits-eduprogcompById.Credits) > creditsDto.MandatoryCreditsForLevel {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New("too much credits"))
 				return
 			}
 		} else if eduprogcomp.Type == "ВБ" {
-			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits {
+			if eduprogcomp.Credits+(creditsDto.SelectiveCredits-eduprogcompById.Credits) > creditsDto.SelectiveCreditsForLevel {
 				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
+				controllers.BadRequest(w, errors.New("too much credits"))
 				return
 			}
 		} else {

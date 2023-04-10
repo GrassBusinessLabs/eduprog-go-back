@@ -3,20 +3,22 @@ package resources
 import "github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 
 type CompetenciesBaseDto struct {
-	Id         uint64 `json:"id"`
-	Type       string `json:"type"`
-	Code       uint64 `json:"code"`
-	Definition string `json:"definition"`
-	Specialty  string `json:"specialty"`
+	Id             uint64 `json:"id"`
+	Type           string `json:"type"`
+	Code           uint64 `json:"code"`
+	Definition     string `json:"definition"`
+	Specialty      string `json:"specialty"`
+	EducationLevel string `json:"education_level"`
 }
 
 func (d CompetenciesBaseDto) DomainToDto(competency domain.CompetenciesBase) CompetenciesBaseDto {
 	return CompetenciesBaseDto{
-		Id:         competency.Id,
-		Type:       competency.Type,
-		Code:       competency.Code,
-		Definition: competency.Definition,
-		Specialty:  competency.Specialty,
+		Id:             competency.Id,
+		Type:           competency.Type,
+		Code:           competency.Code,
+		Definition:     competency.Definition,
+		Specialty:      competency.Specialty,
+		EducationLevel: competency.EducationLevel,
 	}
 }
 
