@@ -166,7 +166,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
 			eduprogcomp.Category = MANDATORY
 			for i := range comps.Mandatory {
-				if comps.Mandatory[i].Name == eduprogcomp.Name {
+				if comps.Mandatory[i].Name == eduprogcomp.Name && comps.Mandatory[i].Id != eduprogcomp.Id {
 					log.Printf("EduprogcompController: %s", err)
 					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
 					return
@@ -177,7 +177,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		} else if eduprogcomp.Type == "ВБ" { //if educomp type is "VB"
 			eduprogcomp.Category = BLOC
 			for i := range comps.Selective {
-				if comps.Selective[i].Name == eduprogcomp.Name {
+				if comps.Selective[i].Name == eduprogcomp.Name && comps.Selective[i].Id != eduprogcomp.Id {
 					log.Printf("EduprogcompController: %s", err)
 					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
 					return
