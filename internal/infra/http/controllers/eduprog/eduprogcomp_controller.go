@@ -16,7 +16,7 @@ import (
 const (
 	MANDATORY = "MANDATORY"
 	BLOC      = "BLOC" // ВБ
-	LIST      = "LIST" // ВП
+	//	LIST      = "LIST" // ВП
 )
 
 type EduprogcompController struct {
@@ -86,8 +86,6 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 				}
 			}
 			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
-		} else if eduprogcomp.Type == "ВП" {
-			eduprogcomp.Category = LIST
 		}
 
 		//Free credits check
@@ -165,6 +163,28 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			return
 		}
 
+		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
+			eduprogcomp.Category = MANDATORY
+			for i := range comps.Mandatory {
+				if comps.Mandatory[i].Name == eduprogcomp.Name {
+					log.Printf("EduprogcompController: %s", err)
+					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+					return
+				}
+			}
+			eduprogcomp.BlockName = ""
+			eduprogcomp.BlockNum = ""
+		} else if eduprogcomp.Type == "ВБ" { //if educomp type is "VB"
+			eduprogcomp.Category = BLOC
+			for i := range comps.Selective {
+				if comps.Selective[i].Name == eduprogcomp.Name {
+					log.Printf("EduprogcompController: %s", err)
+					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+					return
+				}
+			}
+		}
+
 		//Free credits check
 
 		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
@@ -212,41 +232,126 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 	}
 }
 
-func (c EduprogcompController) ShowList() http.HandlerFunc {
+func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		eduprogcomps, err := c.eduprogcompService.ShowList()
+		educompId, err := strconv.ParseUint(r.URL.Query().Get("edcompId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
-
-		var eduprogcompsDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(eduprogcomps))
-	}
-}
-
-func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
+		putAfterId, err := strconv.ParseUint(r.URL.Query().Get("putAfterId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		educompById, err := c.eduprogcompService.FindById(educompId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 
-		blockInfo := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
+		var targetEducompById domain.Eduprogcomp
 
-		var eduprogcompsDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(blockInfo))
+		if putAfterId != 0 {
+			targetEducompById, err = c.eduprogcompService.FindById(putAfterId)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		} else {
+			targetEducompById.Code = "0"
+			targetEducompById.Type = educompById.Type
+		}
+
+		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(educompById.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		if educompById.Type == "ОК" && targetEducompById.Type == "ОК" {
+			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEducompById.Code)
+		} else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {
+			if educompById.BlockNum == targetEducompById.BlockNum {
+				eduprogcomps.Selective = moveElement(eduprogcomps.Selective, educompById.Code, targetEducompById.Code)
+			}
+		}
+
+		for i := range eduprogcomps.Mandatory {
+			_, _ = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+		for i := range eduprogcomps.Selective {
+			_, _ = c.eduprogcompService.Update(eduprogcomps.Selective[i], eduprogcomps.Selective[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		var eduprogcompDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps))
 	}
+}
+
+func moveElement(slice []domain.Eduprogcomp, code string, afterCode string) []domain.Eduprogcomp {
+	// Find the index of the element with the given code.
+	var index int = -1
+	for i, elem := range slice {
+		if elem.Code == code {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		// Element with given code not found, return the original slice.
+		return slice
+	}
+
+	// Remove the element with the given code from the slice.
+	elem := slice[index]
+	slice = append(slice[:index], slice[index+1:]...)
+
+	// Find the index of the element with the given afterCode.
+	var afterIndex int = -1
+	for i, elem := range slice {
+		if elem.Code == afterCode {
+			afterIndex = i
+			break
+		}
+	}
+
+	// Determine the index to insert the element.
+	var insertIndex int
+	if afterIndex == -1 {
+		// Element with given afterCode not found, insert at the beginning.
+		insertIndex = 0
+	} else {
+		// Insert the element after the element with the given afterCode.
+		insertIndex = afterIndex + 1
+	}
+
+	// Insert the element at the determined index.
+	slice = append(slice[:insertIndex], append([]domain.Eduprogcomp{elem}, slice[insertIndex:]...)...)
+
+	// Reassign codes to ensure they are sequential starting from 1.
+	for i, elem := range slice {
+		elem.Code = strconv.Itoa(i + 1)
+		slice[i] = elem
+	}
+
+	// Return the updated slice.
+	return slice
 }
 
 func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
@@ -293,6 +398,43 @@ func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
 
 		var eduprogcompsDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(result))
+	}
+}
+
+func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		blockInfo := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
+
+		var eduprogcompsDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(blockInfo))
+	}
+}
+
+func (c EduprogcompController) ShowList() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogcomps, err := c.eduprogcompService.ShowList()
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogcompsDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(eduprogcomps))
 	}
 }
 

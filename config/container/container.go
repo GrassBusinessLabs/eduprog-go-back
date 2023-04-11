@@ -95,7 +95,7 @@ func New(conf config.Configuration) Container {
 	eduprogschemeController := eduprog.NewEduprogschemeController(eduprogschemeService, eduprogcompService, disciplineService)
 	disciplineController := eduprog.NewDisciplineController(disciplineService)
 	educompRelationsController := eduprog.NewEducompRelationsController(educompRelationsService, eduprogschemeService, eduprogcompService)
-	competencyBaseController := eduprog.NewCompetenciesBaseController(competencyBaseService)
+	competencyBaseController := eduprog.NewCompetenciesBaseController(competencyBaseService, eduprogService)
 	competencyMatrixController := eduprog.NewCompetenciesMatrixController(competencyMatrixService)
 	eduprogcompetenciesController := eduprog.NewEduprogcompetenciesController(eduprogcompetenciesService, competencyBaseService, eduprogService)
 	resultsMatrixController := eduprog.NewResultsMatrixController(resultMatrixService)

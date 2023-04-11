@@ -11,6 +11,7 @@ type CompetenciesBaseService interface {
 	UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error)
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
 	ShowCompetenciesByType(ttype string, specialty string) ([]domain.CompetenciesBase, error)
+	ShowCompetenciesByEduprogData(ttype string, specialty string, edLevel string) ([]domain.CompetenciesBase, error)
 	FindById(id uint64) (domain.CompetenciesBase, error)
 	Delete(id uint64) error
 }
@@ -54,6 +55,15 @@ func (s competenciesBaseService) ShowAllCompetencies() ([]domain.CompetenciesBas
 
 func (s competenciesBaseService) ShowCompetenciesByType(ttype string, specialty string) ([]domain.CompetenciesBase, error) {
 	e, err := s.competenciesBaseRepo.ShowCompetenciesByType(ttype, specialty)
+	if err != nil {
+		log.Printf("CompetenciesBaseService: %s", err)
+		return []domain.CompetenciesBase{}, err
+	}
+	return e, nil
+}
+
+func (s competenciesBaseService) ShowCompetenciesByEduprogData(ttype string, specialty string, edLevel string) ([]domain.CompetenciesBase, error) {
+	e, err := s.competenciesBaseRepo.ShowCompetenciesByEduprogData(ttype, specialty, edLevel)
 	if err != nil {
 		log.Printf("CompetenciesBaseService: %s", err)
 		return []domain.CompetenciesBase{}, err

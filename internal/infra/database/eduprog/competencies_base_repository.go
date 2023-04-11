@@ -29,6 +29,7 @@ type CompetenciesBaseRepository interface {
 	UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error)
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
 	ShowCompetenciesByType(ttype string, specialty string) ([]domain.CompetenciesBase, error)
+	ShowCompetenciesByEduprogData(ttype string, specialty string, edLevel string) ([]domain.CompetenciesBase, error)
 	FindById(id uint64) (domain.CompetenciesBase, error)
 	Delete(id uint64) error
 }
@@ -107,6 +108,23 @@ func (r competenciesBaseRepository) ShowCompetenciesByType(ttype string, special
 		ttype = "ПР"
 	}
 	err := r.coll.Find(db.Cond{"type": ttype, "specialty": specialty}).OrderBy("code").All(&c)
+	if err != nil {
+		return []domain.CompetenciesBase{}, err
+	}
+
+	return r.mapModelToDomainCollection(c), nil
+}
+
+func (r competenciesBaseRepository) ShowCompetenciesByEduprogData(ttype string, specialty string, edLevel string) ([]domain.CompetenciesBase, error) {
+	var c []competencies_base
+	if ttype == "ZK" {
+		ttype = "ЗК"
+	} else if ttype == "FK" {
+		ttype = "ФК"
+	} else if ttype == "PR" {
+		ttype = "ПР"
+	}
+	err := r.coll.Find(db.Cond{"type": ttype, "specialty": specialty, "education_level": edLevel}).OrderBy("code").All(&c)
 	if err != nil {
 		return []domain.CompetenciesBase{}, err
 	}

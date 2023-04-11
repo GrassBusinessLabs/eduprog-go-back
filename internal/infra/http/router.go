@@ -166,6 +166,10 @@ func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 			"/{epcId}",
 			ec.Update(),
 		)
+		apiRouter.Put(
+			"/replace",
+			ec.ReplaceComp(),
+		)
 		apiRouter.Get(
 			"/",
 			ec.ShowList(),
@@ -296,6 +300,10 @@ func CompetenciesBaseRouter(r chi.Router, cbc eduprog.CompetenciesBaseController
 		apiRouter.Get(
 			"/byType",
 			cbc.ShowCompetenciesByType(),
+		)
+		apiRouter.Get(
+			"/{edId}/byType",
+			cbc.ShowCompetenciesByEduprogData(),
 		)
 		apiRouter.Get(
 			"/{cbId}",

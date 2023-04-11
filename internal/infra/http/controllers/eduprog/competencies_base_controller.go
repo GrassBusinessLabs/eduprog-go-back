@@ -15,11 +15,13 @@ import (
 
 type CompetenciesBaseController struct {
 	competenciesBaseService app.CompetenciesBaseService
+	eduprogService          app.EduprogService
 }
 
-func NewCompetenciesBaseController(cbs app.CompetenciesBaseService) CompetenciesBaseController {
+func NewCompetenciesBaseController(cbs app.CompetenciesBaseService, es app.EduprogService) CompetenciesBaseController {
 	return CompetenciesBaseController{
 		competenciesBaseService: cbs,
+		eduprogService:          es,
 	}
 }
 
@@ -154,7 +156,7 @@ func (c CompetenciesBaseController) ShowCompetenciesByType() http.HandlerFunc {
 			return
 		}
 		if specialty < 11 || specialty > 293 {
-			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
+			controllers.InternalServerError(w, errors.New("only ZK, FK or PR"))
 			return
 		}
 
@@ -167,6 +169,41 @@ func (c CompetenciesBaseController) ShowCompetenciesByType() http.HandlerFunc {
 
 		var competenciesDto resources.CompetenciesBaseDto
 		controllers.Success(w, competenciesDto.DomainToDtoCollection(competencies))
+	}
+}
+
+func (c CompetenciesBaseController) ShowCompetenciesByEduprogData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("CompetenciesBaseController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		ttype := r.URL.Query().Get("type")
+		if ttype != "ZK" && ttype != "FK" && ttype != "PR" {
+			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
+			return
+		}
+
+		eduprog, err := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("CompetenciesBaseController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		competencies, err := c.competenciesBaseService.ShowCompetenciesByEduprogData(ttype, eduprog.SpecialtyCode, eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("CompetenciesBaseController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var competenciesDto resources.CompetenciesBaseDto
+		controllers.Success(w, competenciesDto.DomainToDtoCollection(competencies))
+
 	}
 }
 

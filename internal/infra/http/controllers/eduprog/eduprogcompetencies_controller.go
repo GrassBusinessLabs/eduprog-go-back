@@ -205,7 +205,7 @@ func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
 			}
 		}
 
-		baseCompetencies, err := c.competenciesBaseService.ShowCompetenciesByType(ttype, eduprog.SpecialtyCode)
+		baseCompetencies, err := c.competenciesBaseService.ShowCompetenciesByEduprogData(ttype, eduprog.SpecialtyCode, eduprog.EducationLevel)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
