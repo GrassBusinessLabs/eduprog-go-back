@@ -33,7 +33,7 @@ type OPPLevelStruct struct {
 
 type Components struct {
 	Mandatory []Eduprogcomp
-	Selective []Eduprogcomp
+	Selective []BlockInfo
 }
 
 func (e Eduprog) GetEduprogId() uint64 {

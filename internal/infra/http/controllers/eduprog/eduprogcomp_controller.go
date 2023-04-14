@@ -72,17 +72,20 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 			var maxCode uint64 = 0
 			eduprogcomp.Category = BLOC
 			for i := range comps.Selective {
-				if comps.Selective[i].Name == eduprogcomp.Name {
-					log.Printf("EduprogcompController: %s", err)
-					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-					return
-				}
-				if comps.Selective[i].BlockNum == eduprogcomp.BlockNum {
-					temp, _ := strconv.ParseUint(comps.Selective[i].Code, 10, 64)
-					if i == 0 || temp > maxCode {
-						maxCode = temp
+				for _, comp := range comps.Selective[i].CompsInBlock {
+					if comp.Name == eduprogcomp.Name {
+						log.Printf("EduprogcompController: %s", err)
+						controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+						return
+					}
+					if comp.BlockNum == eduprogcomp.BlockNum {
+						temp, _ := strconv.ParseUint(comp.Code, 10, 64)
+						if i == 0 || temp > maxCode {
+							maxCode = temp
+						}
 					}
 				}
+
 			}
 			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
 		}
@@ -154,6 +157,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			controllers.BadRequest(w, err)
 			return
 		}
+		eduprogcomp.Id = eduprogcompById.Id
 
 		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
 		if err != nil {
@@ -176,10 +180,12 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		} else if eduprogcomp.Type == "ВБ" { //if educomp type is "VB"
 			eduprogcomp.Category = BLOC
 			for i := range comps.Selective {
-				if comps.Selective[i].Name == eduprogcomp.Name && comps.Selective[i].Id == eduprogcomp.Id {
-					log.Printf("EduprogcompController: %s", err)
-					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-					return
+				for _, comp := range comps.Selective[i].CompsInBlock {
+					if comp.Name == eduprogcomp.Name && (comp.Id > eduprogcomp.Id || comp.Id < eduprogcomp.Id) {
+						log.Printf("EduprogcompController: %s", err)
+						controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
+						return
+					}
 				}
 			}
 		}
@@ -277,9 +283,9 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 		if educompById.Type == "ОК" && targetEducompById.Type == "ОК" {
 			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEducompById.Code)
 		} else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {
-			if educompById.BlockNum == targetEducompById.BlockNum {
-				eduprogcomps.Selective = moveElement(eduprogcomps.Selective, educompById.Code, targetEducompById.Code)
-			}
+			//if educompById.BlockNum == targetEducompById.BlockNum {
+			//	eduprogcomps.Selective = moveElement(eduprogcomps.Selective, educompById.Code, targetEducompById.Code)
+			//}
 		}
 
 		for i := range eduprogcomps.Mandatory {
@@ -290,19 +296,17 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 				return
 			}
 		}
-		for i := range eduprogcomps.Selective {
-			_, _ = c.eduprogcompService.Update(eduprogcomps.Selective[i], eduprogcomps.Selective[i].Id)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		selBlocks := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
+		//for i := range eduprogcomps.Selective {
+		//	_, _ = c.eduprogcompService.Update(eduprogcomps.Selective[i], eduprogcomps.Selective[i].Id)
+		//	if err != nil {
+		//		log.Printf("EduprogcompController: %s", err)
+		//		controllers.InternalServerError(w, err)
+		//		return
+		//	}
+		//}
 
 		var eduprogcompDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, selBlocks))
+		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, eduprogcomps.Selective))
 	}
 }
 
@@ -374,9 +378,8 @@ func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
 
 		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(id)
 
-		blocksList := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
-		for i := range blocksList {
-			if eduprogcomp.BlockName == blocksList[i].BlockName && eduprogcomp.BlockNum != blocksList[i].BlockNum {
+		for i := range eduprogcomps.Selective {
+			if eduprogcomp.BlockName == eduprogcomps.Selective[i].BlockName && eduprogcomp.BlockNum != eduprogcomps.Selective[i].BlockNum {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.BadRequest(w, errors.New(`block with this name already exists`))
 				return
@@ -430,10 +433,8 @@ func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
 			return
 		}
 
-		blockInfo := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
-
 		var eduprogcompsDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(blockInfo))
+		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(eduprogcomps.Selective))
 	}
 }
 
@@ -516,63 +517,36 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 
-		if eduprogcomp.Type == "ОК" {
-			for i := range eduprogcomps {
-				if eduprogcomps[i].Type == eduprogcomp.Type {
-					educompsCode, err := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
-					if err != nil {
-						log.Printf("EduprogcompController: %s", err)
-						controllers.InternalServerError(w, err)
-						return
-					}
-					educompCode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
-					if err != nil {
-						log.Printf("EduprogcompController: %s", err)
-						controllers.InternalServerError(w, err)
-						return
-					}
-					if educompsCode > educompCode {
-						eduprogcomps[i].Code = strconv.FormatUint(educompsCode-1, 10)
-						_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
-						if err != nil {
-							log.Printf("EduprogcompController: %s", err)
-							controllers.InternalServerError(w, err)
-							return
-						}
-					}
-				}
-			}
-		} else if eduprogcomp.Type == "ВБ" {
-			for i := range eduprogcomps {
-				educompsCode, err := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
-				if err != nil {
-					log.Printf("EduprogcompController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				educompCode, _ := strconv.ParseUint(eduprogcomp.Code, 10, 64)
-				if err != nil {
-					log.Printf("EduprogcompController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
+		for i, elem := range eduprogcomps.Mandatory {
+			elem.Code = strconv.Itoa(i + 1)
+			eduprogcomps.Mandatory[i] = elem
+		}
 
-				if educompsCode > educompCode && eduprogcomp.BlockNum == eduprogcomps[i].BlockNum {
-					eduprogcomps[i].Code = strconv.FormatUint(educompsCode-1, 10)
-					_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
-					if err != nil {
-						log.Printf("EduprogcompController: %s", err)
-						controllers.InternalServerError(w, err)
-						return
-					}
-				}
+		for i, elem := range eduprogcomps.Selective {
+			elem.BlockNum = strconv.Itoa(i + 1)
+			eduprogcomps.Selective[i] = elem
+		}
+
+		for i := range eduprogcomps.Mandatory {
+			_, _ = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		for i := range eduprogcomps.Selective {
+			for _, comp := range eduprogcomps.Selective[i].CompsInBlock {
+				comp.BlockNum = eduprogcomps.Selective[i].BlockNum
+				_, _ = c.eduprogcompService.Update(comp, comp.Id)
 			}
 		}
 

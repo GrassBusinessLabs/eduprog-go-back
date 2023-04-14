@@ -3,6 +3,9 @@ package eduprog
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/upper/db/v4"
+	"reflect"
+	"sort"
+	"strconv"
 	"time"
 )
 
@@ -139,7 +142,7 @@ func (r eduprogcompRepository) SortComponentsByMnS(eduprog_id uint64) (domain.Co
 	}
 
 	components.Mandatory = r.mapModelToDomainCollection(mandeduprogcomp_slice)
-	components.Selective = r.mapModelToDomainCollection(seleduprogcomp_slice)
+	components.Selective = r.GetVBBlocksDomain(r.mapModelToDomainCollection(seleduprogcomp_slice))
 
 	return components, err
 }
@@ -189,5 +192,72 @@ func (r eduprogcompRepository) mapModelToDomainCollection(m []eduprogcomp) []dom
 		result[i] = r.mapModelToDomain(m[i])
 	}
 
+	return result
+}
+
+func (s eduprogcompRepository) GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo {
+	var blockInfo []domain.BlockInfo
+	for i := range eduprogcomps {
+		var temp domain.BlockInfo
+		temp.BlockNum = eduprogcomps[i].BlockNum
+		temp.BlockName = eduprogcomps[i].BlockName
+		blockInfo = append(blockInfo, temp)
+	}
+	blockInfo = RemoveDuplicatesByField(blockInfo, "BlockNum")
+	for i := range blockInfo {
+		for i2 := range eduprogcomps {
+			if blockInfo[i].BlockNum == eduprogcomps[i2].BlockNum {
+				blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps[i2])
+			}
+		}
+		blockInfo[i].CompsInBlock = sortByCode(blockInfo[i].CompsInBlock)
+	}
+
+	sortBlocks(blockInfo)
+	for i := range blockInfo {
+		for i2, elem := range blockInfo[i].CompsInBlock {
+			elem.Code = strconv.Itoa(i2 + 1)
+			blockInfo[i].CompsInBlock[i2] = elem
+		}
+
+	}
+	return blockInfo
+}
+
+func sortBlocks(blocks []domain.BlockInfo) {
+	sort.Slice(blocks, func(i, j int) bool {
+		blockNumI, errI := strconv.Atoi(blocks[i].BlockNum)
+		blockNumJ, errJ := strconv.Atoi(blocks[j].BlockNum)
+		if errI != nil || errJ != nil {
+			// handle error cases where blockNum is not an integer
+			return false
+		}
+		return blockNumI < blockNumJ
+	})
+}
+
+func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
+	sort.Slice(eduprogcomps, func(i, j int) bool {
+		// Parse the Code field as integers and compare them
+		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
+		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
+		if errI != nil || errJ != nil {
+			return eduprogcomps[i].Code < eduprogcomps[j].Code
+		}
+		return codeI < codeJ
+	})
+	return eduprogcomps
+}
+
+func RemoveDuplicatesByField(mySlice []domain.BlockInfo, fieldName string) []domain.BlockInfo {
+	unique := make(map[string]bool)
+	result := make([]domain.BlockInfo, 0)
+	for _, v := range mySlice {
+		fieldValue := reflect.ValueOf(v).FieldByName(fieldName).String()
+		if !unique[fieldValue] {
+			unique[fieldValue] = true
+			result = append(result, v)
+		}
+	}
 	return result
 }

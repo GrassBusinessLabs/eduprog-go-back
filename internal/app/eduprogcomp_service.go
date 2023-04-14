@@ -19,7 +19,7 @@ type EduprogcompService interface {
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
 	Delete(id uint64) error
-	GetVBBlocksDomain(eduprogcomps domain.Components) []domain.BlockInfo
+	GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo
 }
 
 type eduprogcompService struct {
@@ -32,19 +32,19 @@ func NewEduprogcompService(er eduprog.EduprogcompRepository) EduprogcompService 
 	}
 }
 
-func (s eduprogcompService) GetVBBlocksDomain(eduprogcomps domain.Components) []domain.BlockInfo {
+func (s eduprogcompService) GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo {
 	var blockInfo []domain.BlockInfo
-	for i := range eduprogcomps.Selective {
+	for i := range eduprogcomps {
 		var temp domain.BlockInfo
-		temp.BlockNum = eduprogcomps.Selective[i].BlockNum
-		temp.BlockName = eduprogcomps.Selective[i].BlockName
+		temp.BlockNum = eduprogcomps[i].BlockNum
+		temp.BlockName = eduprogcomps[i].BlockName
 		blockInfo = append(blockInfo, temp)
 	}
 	blockInfo = RemoveDuplicatesByField(blockInfo, "BlockNum")
 	for i := range blockInfo {
-		for i2 := range eduprogcomps.Selective {
-			if blockInfo[i].BlockNum == eduprogcomps.Selective[i2].BlockNum {
-				blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps.Selective[i2])
+		for i2 := range eduprogcomps {
+			if blockInfo[i].BlockNum == eduprogcomps[i2].BlockNum {
+				blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps[i])
 			}
 		}
 		blockInfo[i].CompsInBlock = sortByCode(blockInfo[i].CompsInBlock)

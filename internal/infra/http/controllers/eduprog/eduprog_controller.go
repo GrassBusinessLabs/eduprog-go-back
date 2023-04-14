@@ -212,10 +212,8 @@ func (c EduprogController) FindById() http.HandlerFunc {
 
 		comps.Mandatory = sortByCode(comps.Mandatory)
 
-		mandBlocks := c.eduprogcompService.GetVBBlocksDomain(comps)
-
 		var eduprogDto resources.EduprogDto
-		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, mandBlocks))
+		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, comps.Selective))
 		//controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
 	}
 }
@@ -295,8 +293,11 @@ func (c EduprogController) GetCreditsInfo(comps domain.Components, edLevel strin
 		return creditsDto, err
 	}
 
-	for _, comp := range comps.Selective {
-		creditsDto.SelectiveCredits += comp.Credits
+	for i := range comps.Selective {
+		for _, comp := range comps.Selective[i].CompsInBlock {
+			creditsDto.SelectiveCredits += comp.Credits
+		}
+
 	}
 	for _, comp := range comps.Mandatory {
 		creditsDto.MandatoryCredits += comp.Credits
