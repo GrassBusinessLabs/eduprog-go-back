@@ -282,11 +282,12 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 		}
 		if educompById.Type == "ОК" && targetEducompById.Type == "ОК" {
 			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEducompById.Code)
-		} else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {
-			//if educompById.BlockNum == targetEducompById.BlockNum {
-			//	eduprogcomps.Selective = moveElement(eduprogcomps.Selective, educompById.Code, targetEducompById.Code)
-			//}
 		}
+		//else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {
+		//	if educompById.BlockNum == targetEducompById.BlockNum {
+		//		eduprogcomps.Selective = moveElement(eduprogcomps.Selective, educompById.Code, targetEducompById.Code)
+		//	}
+		//}
 
 		for i := range eduprogcomps.Mandatory {
 			_, _ = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
