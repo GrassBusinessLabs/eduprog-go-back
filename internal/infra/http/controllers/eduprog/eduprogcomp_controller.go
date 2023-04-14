@@ -51,7 +51,6 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		}
 
 		//Code generation logic
-
 		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
 			var maxCode uint64 = 0
 			eduprogcomp.Category = MANDATORY
@@ -240,6 +239,7 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			controllers.BadRequest(w, err)
 			return
 		}
+
 		putAfterId, err := strconv.ParseUint(r.URL.Query().Get("putAfterId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
@@ -299,8 +299,10 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			}
 		}
 
+		selBlocks := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
+
 		var eduprogcompDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps))
+		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, selBlocks))
 	}
 }
 
@@ -368,6 +370,17 @@ func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
+		}
+
+		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(id)
+
+		blocksList := c.eduprogcompService.GetVBBlocksDomain(eduprogcomps)
+		for i := range blocksList {
+			if eduprogcomp.BlockName == blocksList[i].BlockName && eduprogcomp.BlockNum != blocksList[i].BlockNum {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.BadRequest(w, errors.New(`block with this name already exists`))
+				return
+			}
 		}
 
 		vbBlock, err := c.eduprogcompService.FindByBlockNum(id, eduprogcomp.BlockNum)

@@ -34,8 +34,8 @@ type EduprogWithoutCompsDto struct {
 
 type ComponentsDto struct {
 	Mandatory []EduprogcompDto `json:"mandatory"`
-	//Selective []BlockInfoDto   `json:"selective"`
-	Selective []EduprogcompDto `json:"selective"`
+	Selective []BlockInfoDto   `json:"selective"`
+	//Selective []EduprogcompDto `json:"selective"`
 }
 
 type CreditsDto struct {
@@ -78,7 +78,7 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogWithoutCompsDto {
 	}
 }
 
-func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Components) EduprogDto {
+func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Components, selBlocks []domain.BlockInfo) EduprogDto {
 	var compDto EduprogcompDto
 	return EduprogDto{
 		Id:             eduprog.Id,
@@ -90,22 +90,22 @@ func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Com
 		KFCode:         eduprog.KFCode,
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
-		Components:     compDto.DomainToDtoWCompCollection(comp),
+		Components:     compDto.DomainToDtoWCompCollection(comp, selBlocks),
 		UpdatedDate:    eduprog.UpdatedDate,
 	}
 }
 
-func (d EduprogcompDto) DomainToDtoWCompCollection(comps domain.Components) ComponentsDto {
+func (d EduprogcompDto) DomainToDtoWCompCollection(comps domain.Components, selBlocks []domain.BlockInfo) ComponentsDto {
 	mandatory := make([]EduprogcompDto, len(comps.Mandatory))
-	selective := make([]EduprogcompDto, len(comps.Selective))
+	selective := make([]BlockInfoDto, len(selBlocks))
 
 	for i := range comps.Mandatory {
 		mandatory[i] = d.DomainToDto(comps.Mandatory[i])
 	}
 
-	for i := range comps.Selective {
-		selective[i] = d.DomainToDto(comps.Selective[i])
-		//selective[i] = d.BlockInfoToDto(mandBlocks[i])
+	for i := range selBlocks {
+		//selective[i] = d.DomainToDto(comps.Selective[i])
+		selective[i] = d.BlockInfoToDto(selBlocks[i])
 	}
 
 	return ComponentsDto{
