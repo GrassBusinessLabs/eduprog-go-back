@@ -232,6 +232,19 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			return
 		}
 
+		if eduprogcomp.Type == "ВБ" {
+			for i, elem := range comps.Selective {
+				elem.BlockNum = strconv.Itoa(i + 1)
+				comps.Selective[i] = elem
+			}
+			for i := range comps.Selective {
+				for _, comp := range comps.Selective[i].CompsInBlock {
+					comp.BlockNum = comps.Selective[i].BlockNum
+					_, _ = c.eduprogcompService.Update(comp, comp.Id)
+				}
+			}
+		}
+
 		var eduprogcompDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompDto.DomainToDto(eduprogcomp))
 	}
@@ -312,7 +325,6 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 }
 
 func moveElement(slice []domain.Eduprogcomp, code string, afterCode string) []domain.Eduprogcomp {
-	// Find the index of the element with the given code.
 	var index int = -1
 	for i, elem := range slice {
 		if elem.Code == code {
@@ -325,11 +337,9 @@ func moveElement(slice []domain.Eduprogcomp, code string, afterCode string) []do
 		return slice
 	}
 
-	// Remove the element with the given code from the slice.
 	elem := slice[index]
 	slice = append(slice[:index], slice[index+1:]...)
 
-	// Find the index of the element with the given afterCode.
 	var afterIndex int = -1
 	for i, elem := range slice {
 		if elem.Code == afterCode {
@@ -338,26 +348,20 @@ func moveElement(slice []domain.Eduprogcomp, code string, afterCode string) []do
 		}
 	}
 
-	// Determine the index to insert the element.
 	var insertIndex int
 	if afterIndex == -1 {
-		// Element with given afterCode not found, insert at the beginning.
 		insertIndex = 0
 	} else {
-		// Insert the element after the element with the given afterCode.
 		insertIndex = afterIndex + 1
 	}
 
-	// Insert the element at the determined index.
 	slice = append(slice[:insertIndex], append([]domain.Eduprogcomp{elem}, slice[insertIndex:]...)...)
 
-	// Reassign codes to ensure they are sequential starting from 1.
 	for i, elem := range slice {
 		elem.Code = strconv.Itoa(i + 1)
 		slice[i] = elem
 	}
 
-	// Return the updated slice.
 	return slice
 }
 
