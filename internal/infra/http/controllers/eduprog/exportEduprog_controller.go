@@ -172,14 +172,11 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 		_ = xlsx.SetCellStyle(SheetName1, fmt.Sprintf("A%d", mandLen+5), fmt.Sprintf("D%d", mandLen+5), styleBold)
 
 		blocksInfo := eduprogcomps.Selective
-		selLen := len(eduprogcomps.Selective)
 		var selective []domain.Eduprogcomp
 		for i := range eduprogcomps.Selective {
-			for _, eduprogcomp := range eduprogcomps.Selective[i].CompsInBlock {
-				selective = append(selective, eduprogcomp)
-			}
+			selective = append(selective, eduprogcomps.Selective[i].CompsInBlock...)
 		}
-		selLen = len(selective)
+		selLen := len(selective)
 		blocksInfoLen := len(blocksInfo)
 		var temp = 0
 		for i := mandLen + 6; i < blocksInfoLen+selLen+mandLen+6; i++ {
