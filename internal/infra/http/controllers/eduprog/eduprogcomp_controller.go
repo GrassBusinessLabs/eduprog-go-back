@@ -238,20 +238,36 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 		}
 
 		if eduprogcomp.Type == "ВБ" {
-			for i, elem := range comps.Selective {
-				elem.BlockNum = strconv.Itoa(i + 1)
-				comps.Selective[i] = elem
-			}
 			for i := range comps.Selective {
-				for _, comp := range comps.Selective[i].CompsInBlock {
+				for i2, comp := range comps.Selective[i].CompsInBlock {
 					if comp.Id == eduprogcomp.Id {
-						comp.BlockNum = eduprogcomp.BlockNum
-						comp.BlockName = eduprogcomp.BlockName
-						comp.Code = strconv.Itoa(maxCode)
+						comps.Selective[i].CompsInBlock[i2].BlockNum = eduprogcomp.BlockNum
+						comps.Selective[i].CompsInBlock[i2].BlockName = eduprogcomp.BlockName
+						comps.Selective[i].CompsInBlock[i2].Name = eduprogcomp.Name
+						comps.Selective[i].CompsInBlock[i2].ControlType = eduprogcomp.ControlType
+						comps.Selective[i].CompsInBlock[i2].Credits = eduprogcomp.Credits
+						comps.Selective[i].CompsInBlock[i2].Type = eduprogcomp.Type
+						comps.Selective[i].CompsInBlock[i2].Code = strconv.Itoa(maxCode)
 					} else {
-						comp.BlockNum = comps.Selective[i].BlockNum
-						comp.BlockName = comps.Selective[i].BlockName
+						comps.Selective[i].CompsInBlock[i2].BlockNum = comps.Selective[i].BlockNum
+						comps.Selective[i].CompsInBlock[i2].BlockName = comps.Selective[i].BlockName
 					}
+					_, _ = c.eduprogcompService.Update(comps.Selective[i].CompsInBlock[i2], comps.Selective[i].CompsInBlock[i2].Id)
+				}
+			}
+			eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			for i, elem := range eduprogcomps.Selective {
+				elem.BlockNum = strconv.Itoa(i + 1)
+				eduprogcomps.Selective[i] = elem
+			}
+			for i := range eduprogcomps.Selective {
+				for _, comp := range eduprogcomps.Selective[i].CompsInBlock {
+					comp.BlockNum = eduprogcomps.Selective[i].BlockNum
 					_, _ = c.eduprogcompService.Update(comp, comp.Id)
 				}
 			}
