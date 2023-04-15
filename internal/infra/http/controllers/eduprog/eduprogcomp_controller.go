@@ -166,6 +166,8 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			return
 		}
 
+		maxCode := 1
+
 		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
 			eduprogcomp.Category = MANDATORY
 			for i := range comps.Mandatory {
@@ -185,6 +187,9 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 						log.Printf("EduprogcompController: %s", err)
 						controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
 						return
+					}
+					if comp.BlockNum == eduprogcomp.BlockNum {
+						maxCode++
 					}
 				}
 			}
@@ -239,7 +244,14 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			}
 			for i := range comps.Selective {
 				for _, comp := range comps.Selective[i].CompsInBlock {
-					comp.BlockNum = comps.Selective[i].BlockNum
+					if comp.Id == eduprogcomp.Id {
+						comp.BlockNum = eduprogcomp.BlockNum
+						comp.BlockName = eduprogcomp.BlockName
+						comp.Code = strconv.Itoa(maxCode)
+					} else {
+						comp.BlockNum = comps.Selective[i].BlockNum
+						comp.BlockName = comps.Selective[i].BlockName
+					}
 					_, _ = c.eduprogcompService.Update(comp, comp.Id)
 				}
 			}
