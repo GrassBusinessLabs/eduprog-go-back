@@ -17,6 +17,8 @@ type EduprogDto struct {
 	UserId         uint64        `json:"user_id"`
 	Components     ComponentsDto `json:"components"`
 	UpdatedDate    time.Time     `json:"updated_date"`
+	ApprovalYear   int           `json:"approval_year"`
+	//ChildOf        uint64        `json:"child_of"`
 }
 
 type EduprogWithoutCompsDto struct {
@@ -30,6 +32,8 @@ type EduprogWithoutCompsDto struct {
 	KnowledgeField string    `json:"knowledge_field"`
 	UserId         uint64    `json:"user_id"`
 	UpdatedDate    time.Time `json:"updated_date"`
+	ApprovalYear   int       `json:"approval_year"`
+	//ChildOf        uint64    `json:"child_of"`
 }
 
 type ComponentsDto struct {
@@ -75,6 +79,8 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogWithoutCompsDto {
 		KnowledgeField: eduprog.KnowledgeField,
 		UserId:         eduprog.UserId,
 		UpdatedDate:    eduprog.UpdatedDate,
+		ApprovalYear:   eduprog.ApprovalYear,
+		//ChildOf:        eduprog.ChildOf,
 	}
 }
 
@@ -92,6 +98,8 @@ func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Com
 		UserId:         eduprog.UserId,
 		Components:     compDto.DomainToDtoWCompCollection(comp, selBlocks),
 		UpdatedDate:    eduprog.UpdatedDate,
+		ApprovalYear:   eduprog.ApprovalYear,
+		//ChildOf:        eduprog.ChildOf,
 	}
 }
 

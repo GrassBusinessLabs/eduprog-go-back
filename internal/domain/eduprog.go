@@ -16,6 +16,8 @@ type Eduprog struct {
 	CreatedDate    time.Time
 	UpdatedDate    time.Time
 	DeletedDate    *time.Time
+	ApprovalYear   int
+	//ChildOf        uint64
 }
 
 type Eduprogs struct {

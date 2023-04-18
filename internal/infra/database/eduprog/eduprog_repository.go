@@ -30,6 +30,8 @@ type eduprog struct {
 	CreatedDate    time.Time  `db:"created_date,omitempty"`
 	UpdatedDate    time.Time  `db:"updated_date,omitempty"`
 	DeletedDate    *time.Time `db:"deleted_date,omitempty"`
+	ApprovalYear   int        `db:"approval_year"`
+	//ChildOf        uint64     `db:"child_of"`
 }
 
 type EduprogRepository interface {
@@ -179,6 +181,8 @@ func (r eduprogRepository) mapDomainToModel(d domain.Eduprog) eduprog {
 		CreatedDate:    d.CreatedDate,
 		UpdatedDate:    d.UpdatedDate,
 		DeletedDate:    d.DeletedDate,
+		ApprovalYear:   d.ApprovalYear,
+		//ChildOf:        d.ChildOf,
 	}
 }
 
@@ -196,5 +200,7 @@ func (r eduprogRepository) mapModelToDomain(m eduprog) domain.Eduprog {
 		CreatedDate:    m.CreatedDate,
 		UpdatedDate:    m.UpdatedDate,
 		DeletedDate:    m.DeletedDate,
+		ApprovalYear:   m.ApprovalYear,
+		//	ChildOf:        m.ChildOf,
 	}
 }
