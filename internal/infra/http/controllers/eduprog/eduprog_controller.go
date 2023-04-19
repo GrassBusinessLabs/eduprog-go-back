@@ -52,7 +52,7 @@ func (c EduprogController) Save() http.HandlerFunc {
 			return
 		}
 
-		maxYear := time.Now().Year() + 5
+		maxYear := time.Now().Year() + 10
 		if eduprog.ApprovalYear <= 1990 || eduprog.ApprovalYear > maxYear {
 			log.Printf("EduprogController: %s", err)
 			controllers.BadRequest(w, fmt.Errorf("approval year cant be less then 1990 and greater than %d", maxYear))
