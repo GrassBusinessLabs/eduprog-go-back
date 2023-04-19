@@ -20,6 +20,12 @@ type UpdateEduprogRequest struct {
 	//ChildOf        uint64 `json:"child_of"`
 }
 
+type DuplicateEduprogRequest struct {
+	Name         string `json:"name" validate:"required,gte=1,max=50"`
+	ApprovalYear int    `json:"approval_year" validate:"number,required"`
+	//ChildOf        uint64 `json:"child_of"`
+}
+
 func (r CreateEduprogRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprog{
 		Name:           r.Name,
@@ -37,6 +43,13 @@ func (r UpdateEduprogRequest) ToDomainModel() (interface{}, error) {
 		SpecialtyCode:  r.SpecialityCode,
 		ApprovalYear:   r.ApprovalYear,
 		//ChildOf:        r.ChildOf,
+	}, nil
+}
+
+func (r DuplicateEduprogRequest) ToDomainModel() (interface{}, error) {
+	return domain.Eduprog{
+		Name:         r.Name,
+		ApprovalYear: r.ApprovalYear,
 	}, nil
 }
 

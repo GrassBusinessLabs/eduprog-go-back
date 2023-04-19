@@ -113,6 +113,13 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 			return
 		}
 
+		eduprogAdditionalData, err := requests.Bind(r, requests.DuplicateEduprogRequest{}, domain.Eduprog{})
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
 		eduprog, err := c.eduprogService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
@@ -121,7 +128,8 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 		}
 
 		eduprog.ChildOf = eduprog.Id
-		eduprog.Name = eduprog.Name + " [КОПІЯ]"
+		eduprog.Name = eduprogAdditionalData.Name
+		eduprog.ApprovalYear = eduprogAdditionalData.ApprovalYear
 		eduprog, err = c.eduprogService.Save(eduprog)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
