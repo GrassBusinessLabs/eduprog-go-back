@@ -113,6 +113,11 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 		eduprog.ChildOf = eduprog.Id
 		eduprog.Name = eduprog.Name + " [КОПІЯ]"
 		eduprog, err = c.eduprogService.Save(eduprog)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
 
 		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
@@ -229,6 +234,11 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 		}
 
 		copiedCompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(eduprog.Id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
 
 		for _, matrix := range competenciesMatrix {
 			matrix.EduprogId = eduprog.Id
