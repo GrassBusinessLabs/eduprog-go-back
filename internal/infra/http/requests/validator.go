@@ -2,10 +2,9 @@ package requests
 
 import (
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
 	"log"
 	"net/http"
-
-	"github.com/go-playground/validator/v10"
 )
 
 var v = validator.New()

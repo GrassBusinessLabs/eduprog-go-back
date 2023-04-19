@@ -8,7 +8,7 @@ type CreateEduprogRequest struct {
 	Name           string `json:"name" validate:"required,gte=1,max=50"`
 	EducationLevel string `json:"education_level" validate:"required,gte=1,max=50"`
 	SpecialityCode string `json:"speciality_code" validate:"required,gte=1,max=3"`
-	ApprovalYear   int    `json:"approval_year" validate:"number"`
+	ApprovalYear   int    `json:"approval_year" validate:"required,number"`
 	//ChildOf        uint64 `json:"child_of"`
 }
 

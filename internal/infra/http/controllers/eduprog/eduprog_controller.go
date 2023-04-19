@@ -2,6 +2,7 @@ package eduprog
 
 import (
 	"errors"
+	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"time"
 )
 
 type EduprogController struct {
@@ -49,6 +51,14 @@ func (c EduprogController) Save() http.HandlerFunc {
 			controllers.BadRequest(w, err)
 			return
 		}
+
+		maxYear := time.Now().Year() + 5
+		if eduprog.ApprovalYear <= 1990 || eduprog.ApprovalYear > maxYear {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, fmt.Errorf("approval year cant be less then 1990 and greater than %d", maxYear))
+			return
+		}
+
 		u := r.Context().Value(controllers.UserKey).(domain.User)
 		eduprog.UserId = u.Id
 
