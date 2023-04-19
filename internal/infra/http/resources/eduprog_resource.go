@@ -18,7 +18,7 @@ type EduprogDto struct {
 	Components     ComponentsDto `json:"components"`
 	UpdatedDate    time.Time     `json:"updated_date"`
 	ApprovalYear   int           `json:"approval_year"`
-	//ChildOf        uint64        `json:"child_of"`
+	ChildOf        uint64        `json:"child_of"`
 }
 
 type EduprogWithoutCompsDto struct {
@@ -33,7 +33,7 @@ type EduprogWithoutCompsDto struct {
 	UserId         uint64    `json:"user_id"`
 	UpdatedDate    time.Time `json:"updated_date"`
 	ApprovalYear   int       `json:"approval_year"`
-	//ChildOf        uint64    `json:"child_of"`
+	ChildOf        uint64    `json:"child_of"`
 }
 
 type ComponentsDto struct {
@@ -80,7 +80,7 @@ func (d EduprogDto) DomainToDto(eduprog domain.Eduprog) EduprogWithoutCompsDto {
 		UserId:         eduprog.UserId,
 		UpdatedDate:    eduprog.UpdatedDate,
 		ApprovalYear:   eduprog.ApprovalYear,
-		//ChildOf:        eduprog.ChildOf,
+		ChildOf:        eduprog.ChildOf,
 	}
 }
 
@@ -99,7 +99,7 @@ func (d EduprogDto) DomainToDtoWithComps(eduprog domain.Eduprog, comp domain.Com
 		Components:     compDto.DomainToDtoWCompCollection(comp, selBlocks),
 		UpdatedDate:    eduprog.UpdatedDate,
 		ApprovalYear:   eduprog.ApprovalYear,
-		//ChildOf:        eduprog.ChildOf,
+		ChildOf:        eduprog.ChildOf,
 	}
 }
 

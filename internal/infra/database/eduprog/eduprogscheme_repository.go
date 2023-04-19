@@ -41,6 +41,7 @@ func NewEduprogschemeRepository(dbSession db.Session) EduprogschemeRepository {
 
 func (r eduprogschemeRepository) SetComponentToEdprogscheme(eduprogscheme domain.Eduprogscheme) (domain.Eduprogscheme, error) {
 	es := r.mapDomainToModel(eduprogscheme)
+	es.Id = 0
 	es.CreatedDate, es.UpdatedDate = time.Now(), time.Now()
 
 	err := r.coll.InsertReturning(&es)

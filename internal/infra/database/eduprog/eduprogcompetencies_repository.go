@@ -37,6 +37,7 @@ func NewEduprogcompetenciesRepository(dbSession db.Session) EduprogcompetenciesR
 
 func (r eduprogcompetenciesRepository) AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error) {
 	ec := r.mapDomainToModel(eduprogcompetency)
+	ec.Id = 0
 	err := r.coll.InsertReturning(&ec)
 	if err != nil {
 		return domain.Eduprogcompetencies{}, err

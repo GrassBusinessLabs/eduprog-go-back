@@ -22,9 +22,11 @@ type EduprogController struct {
 	resultsMatrixService       app.ResultsMatrixService
 	specialtiesService         app.SpecialtiesService
 	educompRelationsService    app.EducompRelationsService
+	disciplineService          app.DisciplineService
+	eduprogschemeService       app.EduprogschemeService
 }
 
-func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, rms app.ResultsMatrixService, ss app.SpecialtiesService, errs app.EducompRelationsService) EduprogController {
+func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, rms app.ResultsMatrixService, ss app.SpecialtiesService, errs app.EducompRelationsService, ds app.DisciplineService, edss app.EduprogschemeService) EduprogController {
 	return EduprogController{
 		eduprogService:             es,
 		eduprogcompService:         ecs,
@@ -33,6 +35,8 @@ func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epc
 		resultsMatrixService:       rms,
 		specialtiesService:         ss,
 		educompRelationsService:    errs,
+		disciplineService:          ds,
+		eduprogschemeService:       edss,
 	}
 }
 
@@ -83,6 +87,266 @@ func (c EduprogController) Save() http.HandlerFunc {
 			log.Printf("EduprogController: %s", err)
 			controllers.BadRequest(w, err)
 			return
+		}
+
+		var eduprogDto resources.EduprogDto
+		controllers.Created(w, eduprogDto.DomainToDto(eduprog))
+	}
+}
+
+func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprog, err := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprog.ChildOf = eduprog.Id
+		eduprog.Name = eduprog.Name + " [КОПІЯ]"
+		eduprog, err = c.eduprogService.Save(eduprog)
+
+		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for _, eduprogcomp := range eduprogcomps {
+			eduprogcomp.EduprogId = eduprog.Id
+			_, err = c.eduprogcompService.Save(eduprogcomp)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		eduprogcompetenices, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for _, eduprogcompetency := range eduprogcompetenices {
+			eduprogcompetency.EduprogId = eduprog.Id
+			_, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		disciplines, err := c.disciplineService.ShowDisciplinesByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for _, discipline := range disciplines {
+			discipline.EduprogId = eduprog.Id
+			_, err = c.disciplineService.Save(discipline)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		copiedDisciplines, err := c.disciplineService.ShowDisciplinesByEduprogId(eduprog.Id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		copiedEduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(eduprog.Id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for _, schemeElement := range eduprogscheme {
+			schemeElement.EduprogId = eduprog.Id
+
+			for _, copiedDiscipline := range copiedDisciplines {
+				schemeDiscipline, err := c.disciplineService.FindById(schemeElement.DisciplineId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if copiedDiscipline.Name == schemeDiscipline.Name {
+					schemeElement.DisciplineId = copiedDiscipline.Id
+				}
+			}
+
+			for _, copiedEduprogcomp := range copiedEduprogcomps {
+				schemeComp, err := c.eduprogcompService.FindById(schemeElement.EduprogcompId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if copiedEduprogcomp.Name == schemeComp.Name {
+					schemeElement.EduprogcompId = copiedEduprogcomp.Id
+				}
+			}
+
+			_, err = c.eduprogschemeService.SetComponentToEdprogscheme(schemeElement)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		competenciesMatrix, err := c.competenciesMatrixService.ShowByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		copiedCompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(eduprog.Id)
+
+		for _, matrix := range competenciesMatrix {
+			matrix.EduprogId = eduprog.Id
+
+			for _, eduprogcomp := range copiedEduprogcomps {
+				matrixComp, err := c.eduprogcompService.FindById(matrix.ComponentId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if matrixComp.Name == eduprogcomp.Name {
+					matrix.ComponentId = eduprogcomp.Id
+				}
+			}
+
+			for _, copiedCompetency := range copiedCompetencies {
+				matrixCompetency, err := c.eduprogcompetenciesService.FindById(matrix.CompetencyId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if matrixCompetency.CompetencyId == copiedCompetency.CompetencyId {
+					matrix.CompetencyId = copiedCompetency.Id
+				}
+			}
+
+			_, err = c.competenciesMatrixService.CreateRelation(matrix)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		resultsMatrix, err := c.resultsMatrixService.ShowByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for _, matrix := range resultsMatrix {
+			matrix.EduprogId = eduprog.Id
+
+			for _, eduprogcomp := range copiedEduprogcomps {
+				matrixComp, err := c.eduprogcompService.FindById(matrix.ComponentId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if matrixComp.Name == eduprogcomp.Name {
+					matrix.ComponentId = eduprogcomp.Id
+				}
+			}
+
+			for _, copiedCompetency := range copiedCompetencies {
+				matrixCompetency, err := c.eduprogcompetenciesService.FindById(matrix.EduprogresultId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if matrixCompetency.CompetencyId == copiedCompetency.CompetencyId {
+					matrix.EduprogresultId = copiedCompetency.Id
+				}
+			}
+
+			_, err = c.resultsMatrixService.CreateRelation(matrix)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		educompRelations, err := c.educompRelationsService.ShowByEduprogId(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		for _, relation := range educompRelations {
+			relation.EduprogId = eduprog.Id
+
+			for _, eduprogcomp := range copiedEduprogcomps {
+				baseComp, err := c.eduprogcompService.FindById(relation.BaseCompId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if baseComp.Name == eduprogcomp.Name {
+					relation.BaseCompId = eduprogcomp.Id
+				}
+			}
+
+			for _, eduprogcomp := range copiedEduprogcomps {
+				childComp, err := c.eduprogcompService.FindById(relation.ChildCompId)
+				if err != nil {
+					log.Printf("EduprogController: %s", err)
+					controllers.InternalServerError(w, err)
+					return
+				}
+				if childComp.Name == eduprogcomp.Name {
+					relation.ChildCompId = eduprogcomp.Id
+				}
+			}
+
+			_, err = c.educompRelationsService.CreateRelation(relation)
+			if err != nil {
+				log.Printf("EduprogController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
 		}
 
 		var eduprogDto resources.EduprogDto

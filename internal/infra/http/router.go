@@ -120,6 +120,10 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 			"/create",
 			ec.Save(),
 		)
+		apiRouter.Post(
+			"/copy/{epId}",
+			ec.CreateDuplicateOf(),
+		)
 		apiRouter.Put(
 			"/{epId}",
 			ec.Update(),

@@ -54,6 +54,7 @@ func NewEduprogcompRepository(dbSession db.Session) EduprogcompRepository {
 
 func (r eduprogcompRepository) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
 	e := r.mapDomainToModel(eduprogcomp)
+	e.Id = 0
 	e.CreatedDate, e.UpdatedDate = time.Now(), time.Now()
 
 	err := r.coll.InsertReturning(&e)
@@ -195,7 +196,7 @@ func (r eduprogcompRepository) mapModelToDomainCollection(m []eduprogcomp) []dom
 	return result
 }
 
-func (s eduprogcompRepository) GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo {
+func (r eduprogcompRepository) GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo {
 	var blockInfo []domain.BlockInfo
 	for i := range eduprogcomps {
 		var temp domain.BlockInfo

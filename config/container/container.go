@@ -90,7 +90,17 @@ func New(conf config.Configuration) Container {
 
 	authController := auth.NewAuthController(authService, userService)
 	userController := auth.NewUserController(userService)
-	eduprogController := eduprog.NewEduprogController(eduprogService, eduprogcompService, eduprogcompetenciesService, competencyMatrixService, resultMatrixService, specialtiesService, educompRelationsService)
+	eduprogController := eduprog.NewEduprogController(
+		eduprogService,
+		eduprogcompService,
+		eduprogcompetenciesService,
+		competencyMatrixService,
+		resultMatrixService,
+		specialtiesService,
+		educompRelationsService,
+		disciplineService,
+		eduprogschemeService,
+	)
 	eduprogcompController := eduprog.NewEduprogcompController(eduprogcompService, eduprogService, eduprogController)
 	eduprogschemeController := eduprog.NewEduprogschemeController(eduprogschemeService, eduprogcompService, disciplineService)
 	disciplineController := eduprog.NewDisciplineController(disciplineService)
