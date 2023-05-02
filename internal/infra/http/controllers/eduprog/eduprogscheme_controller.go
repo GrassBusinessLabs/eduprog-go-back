@@ -284,14 +284,23 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			return
 		}
 
-		var escIds []uint64
-		for i := range eduprogscheme {
-			escIds = append(escIds, eduprogscheme[i].EduprogcompId)
-		}
+		//var escIds []uint64
+		//for i := range eduprogscheme {
+		//	escIds = append(escIds, eduprogscheme[i].EduprogcompId)
+		//}
+
 		for i := range eduprogcomps {
-			for i2 := range escIds {
-				if eduprogcomps[i].Id == escIds[i2] {
-					remove(eduprogcomps, uint64(i))
+			for i2 := range eduprogscheme {
+				if eduprogcomps[i].Id == eduprogscheme[i2].EduprogcompId {
+					totalCompCredits := 0.0
+					for i3 := range eduprogscheme {
+						if eduprogcomps[i].Id == eduprogscheme[i3].EduprogcompId {
+							totalCompCredits += eduprogscheme[i3].CreditsPerSemester
+						}
+					}
+					if totalCompCredits >= eduprogcomps[i].Credits {
+						remove(eduprogcomps, uint64(i))
+					}
 				}
 			}
 		}
