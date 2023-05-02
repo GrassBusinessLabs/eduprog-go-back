@@ -290,12 +290,14 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 		//}
 
 		for i := range eduprogcomps {
+			eduprogcomps[i].FreeCredits = eduprogcomps[i].Credits
 			for i2 := range eduprogscheme {
 				if eduprogcomps[i].Id == eduprogscheme[i2].EduprogcompId {
 					totalCompCredits := 0.0
 					for i3 := range eduprogscheme {
 						if eduprogcomps[i].Id == eduprogscheme[i3].EduprogcompId {
 							totalCompCredits += eduprogscheme[i3].CreditsPerSemester
+							eduprogcomps[i].FreeCredits = eduprogcomps[i].Credits - totalCompCredits
 						}
 					}
 					if totalCompCredits >= eduprogcomps[i].Credits {
@@ -307,8 +309,8 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 
 		uniqes := unique(eduprogcomps)
 
-		var eduprogcompDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompDto.DomainToDtoCollection(uniqes))
+		var eduprogcompDto resources.EduprogcompDtoWithFreeCredits
+		controllers.Success(w, eduprogcompDto.DomainToDtoCollectionWithFreeCredits(uniqes))
 	}
 }
 

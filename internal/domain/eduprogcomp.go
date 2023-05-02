@@ -7,6 +7,7 @@ type Eduprogcomp struct {
 	Code        string
 	Name        string
 	Credits     float64
+	FreeCredits float64
 	ControlType string
 	Type        string
 	BlockNum    string

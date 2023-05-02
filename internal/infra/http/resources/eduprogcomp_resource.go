@@ -17,6 +17,20 @@ type EduprogcompDto struct {
 	EduprogId   uint64  `json:"eduprog_id"`
 }
 
+type EduprogcompDtoWithFreeCredits struct {
+	Id          uint64  `json:"id"`
+	Code        string  `json:"code"`
+	Name        string  `json:"name"`
+	Credits     float64 `json:"credits"`
+	FreeCredits float64 `json:"free_credits"`
+	ControlType string  `json:"control_type"`
+	Type        string  `json:"type"`
+	BlockNum    string  `json:"block_num"`
+	BlockName   string  `json:"block_name"`
+	Category    string  `json:"category"`
+	EduprogId   uint64  `json:"eduprog_id"`
+}
+
 type BlockInfoDto struct {
 	BlockNum     string           `json:"block_num"`
 	BlockName    string           `json:"block_name"`
@@ -62,6 +76,32 @@ func (d EduprogcompDto) DomainToDtoCollection(eduprogcomps []domain.Eduprogcomp)
 
 	for i := range eduprogcomps {
 		result[i] = d.DomainToDto(eduprogcomps[i])
+	}
+
+	return result
+}
+
+func (d EduprogcompDtoWithFreeCredits) EduprogcompWithFreeCreditsToDto(eduprogcomp domain.Eduprogcomp) EduprogcompDtoWithFreeCredits {
+	return EduprogcompDtoWithFreeCredits{
+		Id:          eduprogcomp.Id,
+		Code:        eduprogcomp.Code,
+		Name:        eduprogcomp.Name,
+		Credits:     eduprogcomp.Credits,
+		FreeCredits: eduprogcomp.FreeCredits,
+		ControlType: eduprogcomp.ControlType,
+		Type:        eduprogcomp.Type,
+		BlockNum:    eduprogcomp.BlockNum,
+		BlockName:   eduprogcomp.BlockName,
+		Category:    eduprogcomp.Category,
+		EduprogId:   eduprogcomp.EduprogId,
+	}
+}
+
+func (d EduprogcompDtoWithFreeCredits) DomainToDtoCollectionWithFreeCredits(eduprogcomps []domain.Eduprogcomp) []EduprogcompDtoWithFreeCredits {
+	result := make([]EduprogcompDtoWithFreeCredits, len(eduprogcomps))
+
+	for i := range eduprogcomps {
+		result[i] = d.EduprogcompWithFreeCreditsToDto(eduprogcomps[i])
 	}
 
 	return result
