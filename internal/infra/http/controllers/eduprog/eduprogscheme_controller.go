@@ -270,7 +270,7 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.ShowList()
+		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.InternalServerError(w, err)
