@@ -289,9 +289,12 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 		//	escIds = append(escIds, eduprogscheme[i].EduprogcompId)
 		//}
 
-		for i := range eduprogcomps {
+		for i := 0; i < len(eduprogcomps); i++ {
 			eduprogcomps[i].FreeCredits = eduprogcomps[i].Credits
 			for i2 := range eduprogscheme {
+				if i == -1 {
+					i++
+				}
 				if eduprogcomps[i].Id == eduprogscheme[i2].EduprogcompId {
 					totalCompCredits := 0.0
 					for i3 := range eduprogscheme {
@@ -301,7 +304,8 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 						}
 					}
 					if totalCompCredits >= eduprogcomps[i].Credits {
-						remove(eduprogcomps, uint64(i))
+						eduprogcomps = deleteElementByIndex(eduprogcomps, i)
+						i--
 					}
 				}
 			}
@@ -334,9 +338,22 @@ func (c EduprogschemeController) Delete() http.HandlerFunc {
 	}
 }
 
-func remove(s []domain.Eduprogcomp, i uint64) []domain.Eduprogcomp {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
+//func remove(s []domain.Eduprogcomp, i uint64) []domain.Eduprogcomp {
+//	s[i] = s[len(s)-1]
+//	return s[:len(s)-1]
+//}
+
+func deleteElementByIndex(slice []domain.Eduprogcomp, index int) []domain.Eduprogcomp {
+	if len(slice) == 1 && index == 0 {
+		return []domain.Eduprogcomp{}
+	}
+
+	result := make([]domain.Eduprogcomp, index)
+	copy(result, slice[:index])
+
+	result = append(result, slice[index+1:]...)
+
+	return result
 }
 
 func unique(compSlice []domain.Eduprogcomp) []domain.Eduprogcomp {
