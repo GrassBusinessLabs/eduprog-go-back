@@ -300,8 +300,13 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
+		var targetEdcompCode string
+		if putAfterId == 0 {
+			targetEdcompCode = strconv.FormatInt(putAfterId, 10)
+		} else {
+			targetEdcompCode = strconv.FormatInt(putAfterId+1, 10)
+		}
 
-		var targetEdcompCode string = strconv.FormatInt(putAfterId, 10)
 		//var targetEducompById domain.Eduprogcomp
 		//
 		//if putAfterId != 0 {
@@ -322,7 +327,7 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
-		if educompById.Type == "ОК" {
+		if educompById.Type == "ОК" && educompById.Code != targetEdcompCode {
 			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEdcompCode)
 		}
 		//else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {
