@@ -287,7 +287,7 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			return
 		}
 
-		putAfterId, err := strconv.ParseUint(r.URL.Query().Get("putAfterId"), 10, 64)
+		putAfterId, err := strconv.ParseInt(r.URL.Query().Get("putAfter"), 10, 64) // Now its just code (OK)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
@@ -301,19 +301,20 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			return
 		}
 
-		var targetEducompById domain.Eduprogcomp
-
-		if putAfterId != 0 {
-			targetEducompById, err = c.eduprogcompService.FindById(putAfterId)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		} else {
-			targetEducompById.Code = "0"
-			targetEducompById.Type = educompById.Type
-		}
+		var targetEdcompCode string = strconv.FormatInt(putAfterId, 10)
+		//var targetEducompById domain.Eduprogcomp
+		//
+		//if putAfterId != 0 {
+		//	targetEducompById, err = c.eduprogcompService.FindById(putAfterId)
+		//	if err != nil {
+		//		log.Printf("EduprogcompController: %s", err)
+		//		controllers.InternalServerError(w, err)
+		//		return
+		//	}
+		//} else {
+		//	targetEducompById.Code = "0"
+		//	targetEducompById.Type = educompById.Type
+		//}
 
 		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(educompById.EduprogId)
 		if err != nil {
@@ -321,8 +322,8 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
-		if educompById.Type == "ОК" && targetEducompById.Type == "ОК" {
-			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEducompById.Code)
+		if educompById.Type == "ОК" {
+			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEdcompCode)
 		}
 		//else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {
 		//	if educompById.BlockNum == targetEducompById.BlockNum {
