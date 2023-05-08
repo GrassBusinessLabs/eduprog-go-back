@@ -399,6 +399,66 @@ func moveElement(slice []domain.Eduprogcomp, code string, afterCode string) []do
 	return slice
 }
 
+func (c EduprogcompController) UpdateMandatoryComps() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogcomps, err := requests.Bind(r, requests.SendEduprogcompSliceRequest{}, []domain.Eduprogcomp{})
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		for i, elem := range eduprogcomps {
+			elem.Code = strconv.Itoa(i + 1)
+			eduprogcomps[i] = elem
+		}
+
+		for i := range eduprogcomps {
+			_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
+		var eduprogcompDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompDto.DomainToDtoCollection(eduprogcomps))
+	}
+}
+
+//func moveAfterCode(s []domain.Eduprogcomp, putAfterCode int, chosenEduprog domain.Eduprogcomp) []domain.Eduprogcomp {
+//	var insertIndex int = -1
+//	for i, eduprog := range s {
+//		if eduprog.Code == strconv.Itoa(putAfterCode) {
+//			// found the position to move after
+//			insertIndex = i + 1
+//			continue
+//		}
+//	}
+//	for i, eduprog := range s {
+//		if eduprog.Id == chosenEduprog.Id {
+//			// found the chosen eduprog to move
+//			if insertIndex != -1 {
+//				// remove chosen eduprog from the slice
+//				s = append(s[:i], s[i+1:]...)
+//				// insert chosen eduprog after the position
+//				if i < insertIndex {
+//					// shift insertIndex since we removed an element before it
+//					insertIndex--
+//				}
+//				s = append(s[:insertIndex], append([]domain.Eduprogcomp{chosenEduprog}, s[insertIndex:]...)...)
+//				return s
+//			} else {
+//				// the putAfterCode was not found
+//				return s
+//			}
+//		}
+//	}
+//	// the chosen eduprog was not found
+//	return s
+//}
+
 func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)

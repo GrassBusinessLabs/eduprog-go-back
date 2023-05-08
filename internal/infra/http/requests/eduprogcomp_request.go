@@ -64,3 +64,47 @@ func (r UpdateBlockName) ToDomainModel() (interface{}, error) {
 		BlockName: r.BlockName,
 	}, nil
 }
+
+type SendEduprogcompRequest struct {
+	Id          uint64  `json:"id"`
+	Code        string  `json:"code"`
+	Name        string  `json:"name" validate:"gte=1,max=50"`
+	Credits     float64 `json:"credits" validate:"number,gt=0"`
+	ControlType string  `json:"control_type" validate:"gte=1,max=50"`
+	Type        string  `json:"type" validate:"gte=1,max=50"`
+	BlockNum    string  `json:"block_num"`
+	BlockName   string  `json:"block_name"`
+	Category    string  `json:"category"`
+	EduprogId   uint64  `json:"eduprog_id" validate:"number"`
+}
+
+func (r SendEduprogcompRequest) ToDomainModel() (interface{}, error) {
+	return domain.Eduprogcomp{
+		Id:          r.Id,
+		Code:        r.Code,
+		Name:        r.Name,
+		Credits:     r.Credits,
+		ControlType: r.ControlType,
+		Type:        r.Type,
+		BlockNum:    r.BlockNum,
+		BlockName:   r.BlockName,
+		Category:    r.Category,
+		EduprogId:   r.EduprogId,
+	}, nil
+}
+
+type SendEduprogcompSliceRequest struct {
+	Eduprogcomps []SendEduprogcompRequest `json:"eduprogcomps" validate:"required,dive"`
+}
+
+func (r SendEduprogcompSliceRequest) ToDomainModel() (interface{}, error) {
+	var eduprogcomps []domain.Eduprogcomp
+	for _, eduprogcompReq := range r.Eduprogcomps {
+		eduprogcomp, err := eduprogcompReq.ToDomainModel()
+		if err != nil {
+			return nil, err
+		}
+		eduprogcomps = append(eduprogcomps, eduprogcomp.(domain.Eduprogcomp))
+	}
+	return eduprogcomps, nil
+}
