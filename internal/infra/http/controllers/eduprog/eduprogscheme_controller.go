@@ -112,19 +112,12 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 			return
 		}
 
-		eduprogscheme, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(eduprogscheme, id)
-		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
-		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
+		//eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
+		//if err != nil {
+		//	log.Printf("EduprogschemeController: %s", err)
+		//	controllers.BadRequest(w, err)
+		//	return
+		//}
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
@@ -142,16 +135,16 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 
 		totalCompCredits := eduprogscheme.CreditsPerSemester
 
-		for i := range eduprogschemes {
-			if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
-				totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
-				if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
-					log.Printf("EduprogschemeController: %s", err)
-					controllers.BadRequest(w, errors.New("this component already exists in this semester"))
-					return
-				}
-			}
-		}
+		//for i := range eduprogschemes {
+		//	if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
+		//		totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
+		//		if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
+		//			log.Printf("EduprogschemeController: %s", err)
+		//			controllers.BadRequest(w, errors.New("this component already exists in this semester"))
+		//			return
+		//		}
+		//	}
+		//}
 
 		if discipline.Rows < eduprogscheme.Row || eduprogscheme.Row == 0 {
 			log.Printf("EduprogschemeController: %s", err)
@@ -162,6 +155,14 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 		if totalCompCredits > eduprogcomp.Credits {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.BadRequest(w, errors.New("too much credits per semester"))
+			return
+		}
+
+		eduprogscheme.Id = id
+		eduprogscheme, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(eduprogscheme, id)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
@@ -295,7 +296,10 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 				if i == -1 {
 					i++
 				}
-				if eduprogcomps[i].Id == eduprogscheme[i2].EduprogcompId {
+				if len(eduprogcomps) == 0 {
+					break
+				}
+				if eduprogcomps[i].Id == eduprogscheme[i2].EduprogcompId { // there is an error
 					totalCompCredits := 0.0
 					for i3 := range eduprogscheme {
 						if eduprogcomps[i].Id == eduprogscheme[i3].EduprogcompId {
@@ -308,6 +312,14 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 						i--
 					}
 				}
+			}
+		}
+
+		var empty []domain.Eduprogcomp
+
+		if len(eduprogcomps) == 1 {
+			if eduprogcomps[0].FreeCredits == 0 {
+				eduprogcomps = empty
 			}
 		}
 

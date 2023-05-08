@@ -327,7 +327,7 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
-		if educompById.Type == "ОК" && educompById.Code != targetEdcompCode {
+		if educompById.Type == "ОК" && targetEdcompCode != educompById.Code {
 			eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEdcompCode)
 		}
 		//else if educompById.Type == "ВБ" && targetEducompById.Type == "ВБ" {

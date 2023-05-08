@@ -39,7 +39,7 @@ func (r disciplineRepository) Save(discipline domain.Discipline) (domain.Discipl
 	e := r.mapDomainToModel(discipline)
 	e.Id = 0
 	e.CreatedDate, e.UpdatedDate = time.Now(), time.Now()
-	e.Rows = 1
+	e.Rows = 50
 	err := r.coll.InsertReturning(&e)
 	if err != nil {
 		return domain.Discipline{}, err
