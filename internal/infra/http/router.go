@@ -174,7 +174,7 @@ func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 			"/replace",
 			ec.ReplaceComp(),
 		)
-		apiRouter.Get(
+		apiRouter.Put(
 			"/sendSlice",
 			ec.UpdateMandatoryComps(),
 		)

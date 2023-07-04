@@ -68,14 +68,18 @@ func (r UpdateBlockName) ToDomainModel() (interface{}, error) {
 type SendEduprogcompRequest struct {
 	Id          uint64  `json:"id"`
 	Code        string  `json:"code"`
-	Name        string  `json:"name" validate:"gte=1,max=50"`
-	Credits     float64 `json:"credits" validate:"number,gt=0"`
-	ControlType string  `json:"control_type" validate:"gte=1,max=50"`
-	Type        string  `json:"type" validate:"gte=1,max=50"`
+	Name        string  `json:"name" `
+	Credits     float64 `json:"credits" `
+	ControlType string  `json:"control_type" `
+	Type        string  `json:"type" `
 	BlockNum    string  `json:"block_num"`
 	BlockName   string  `json:"block_name"`
 	Category    string  `json:"category"`
-	EduprogId   uint64  `json:"eduprog_id" validate:"number"`
+	EduprogId   uint64  `json:"eduprog_id" `
+}
+
+type SendEduprogcompSliceRequest struct {
+	Eduprogcomps []SendEduprogcompRequest `json:"eduprogcomps" validate:"required,dive"`
 }
 
 func (r SendEduprogcompRequest) ToDomainModel() (interface{}, error) {
@@ -91,10 +95,6 @@ func (r SendEduprogcompRequest) ToDomainModel() (interface{}, error) {
 		Category:    r.Category,
 		EduprogId:   r.EduprogId,
 	}, nil
-}
-
-type SendEduprogcompSliceRequest struct {
-	Eduprogcomps []SendEduprogcompRequest `json:"eduprogcomps" validate:"required,dive"`
 }
 
 func (r SendEduprogcompSliceRequest) ToDomainModel() (interface{}, error) {
