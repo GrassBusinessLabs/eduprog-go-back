@@ -278,16 +278,6 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 	}
 }
 
-func moveElement(slice []domain.Eduprogcomp, fromIndex, toIndex int) []domain.Eduprogcomp {
-	element := slice[fromIndex]
-
-	slice = append(slice[:fromIndex], slice[fromIndex+1:]...)
-
-	slice = append(slice[:toIndex], append([]domain.Eduprogcomp{element}, slice[toIndex:]...)...)
-
-	return slice
-}
-
 func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		educompId, err := strconv.ParseUint(r.URL.Query().Get("edcompId"), 10, 64)
@@ -338,32 +328,6 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 				return
 			}
 		}
-
-		//var targetEdcompCode string
-		//if putAfterId == 0 {
-		//	targetEdcompCode = strconv.FormatInt(putAfterId, 10)
-		//} else {
-		//	targetEdcompCode = strconv.FormatInt(putAfterId+1, 10)
-		//}
-		//
-		//eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(educompById.EduprogId)
-		//if err != nil {
-		//	log.Printf("EduprogcompController: %s", err)
-		//	controllers.InternalServerError(w, err)
-		//	return
-		//}
-		//if educompById.Type == "ОК" && targetEdcompCode != educompById.Code {
-		//	eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, educompById.Code, targetEdcompCode)
-		//}
-		//
-		//for i := range eduprogcomps.Mandatory {
-		//	_, _ = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
-		//	if err != nil {
-		//		log.Printf("EduprogcompController: %s", err)
-		//		controllers.InternalServerError(w, err)
-		//		return
-		//	}
-		//}
 
 		var eduprogcompDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, eduprogcomps.Selective))
@@ -594,43 +558,12 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 	}
 }
 
-//func moveElement(slice []domain.Eduprogcomp, code string, afterCode string) []domain.Eduprogcomp {
-//	var index int = -1
-//	for i, elem := range slice {
-//		if elem.Code == code {
-//			index = i
-//			break
-//		}
-//	}
-//	if index == -1 {
-//		// Element with given code not found, return the original slice.
-//		return slice
-//	}
-//
-//	elem := slice[index]
-//	slice = append(slice[:index], slice[index+1:]...)
-//
-//	var afterIndex int = -1
-//	for i, elem := range slice {
-//		if elem.Code == afterCode {
-//			afterIndex = i
-//			break
-//		}
-//	}
-//
-//	var insertIndex int
-//	if afterIndex == -1 {
-//		insertIndex = 0
-//	} else {
-//		insertIndex = afterIndex + 1
-//	}
-//
-//	slice = append(slice[:insertIndex], append([]domain.Eduprogcomp{elem}, slice[insertIndex:]...)...)
-//
-//	for i, elem := range slice {
-//		elem.Code = strconv.Itoa(i + 1)
-//		slice[i] = elem
-//	}
-//
-//	return slice
-//}
+func moveElement(slice []domain.Eduprogcomp, fromIndex, toIndex int) []domain.Eduprogcomp {
+	element := slice[fromIndex]
+
+	slice = append(slice[:fromIndex], slice[fromIndex+1:]...)
+
+	slice = append(slice[:toIndex], append([]domain.Eduprogcomp{element}, slice[toIndex:]...)...)
+
+	return slice
+}
