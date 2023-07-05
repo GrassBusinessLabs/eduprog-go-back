@@ -329,6 +329,16 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 
 		eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, fromIndex-1, int(putAfterCode))
 
+		for i := range eduprogcomps.Mandatory {
+			eduprogcomps.Mandatory[i].Code = strconv.Itoa(i + 1)
+			_, err = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+		}
+
 		//var targetEdcompCode string
 		//if putAfterId == 0 {
 		//	targetEdcompCode = strconv.FormatInt(putAfterId, 10)
