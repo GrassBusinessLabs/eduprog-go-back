@@ -302,6 +302,8 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			}
 		}
 
+		result = sortByCode(result)
+
 		var eduprogcompDto resources.EduprogcompDtoWithFreeCredits
 		controllers.Success(w, eduprogcompDto.DomainToDtoCollectionWithFreeCredits(result))
 	}
