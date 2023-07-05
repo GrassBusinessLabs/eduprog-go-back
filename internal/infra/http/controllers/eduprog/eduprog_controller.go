@@ -104,6 +104,227 @@ func (c EduprogController) Save() http.HandlerFunc {
 	}
 }
 
+func (c EduprogController) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprog, err := requests.Bind(r, requests.UpdateEduprogRequest{}, domain.Eduprog{})
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		u := r.Context().Value(controllers.UserKey).(domain.User)
+		eduprog.UserId = u.Id
+
+		levelData, err := c.eduprogService.GetOPPLevelData(eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; use method LevelsList"))
+			return
+		}
+		eduprog.EducationLevel = levelData.Level
+		eduprog.Stage = levelData.Stage
+
+		allSpecialties, err := c.specialtiesService.ShowAllSpecialties()
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		check := false
+		for i := range allSpecialties {
+			if allSpecialties[i].Code == eduprog.SpecialtyCode {
+				check = true
+				eduprog.Speciality = allSpecialties[i].Name
+				eduprog.KFCode = allSpecialties[i].KFCode
+				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
+			}
+		}
+		if !check {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
+			return
+		}
+
+		eduprog.Id = id
+		eduprog, err = c.eduprogService.Update(eduprog, id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogDto resources.EduprogDto
+		controllers.Success(w, eduprogDto.DomainToDto(eduprog))
+	}
+}
+
+func (c EduprogController) GetOPPLevelsList() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		levels, err := c.eduprogService.GetOPPLevelsList()
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogDto resources.EduprogDto
+		controllers.Success(w, eduprogDto.OPPLevelDomainToDtoCollection(levels))
+	}
+}
+
+func (c EduprogController) ShowList() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogs, err := c.eduprogService.ShowList()
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		//comps, err := c.eduprogcompService.SortComponentsByMnS()
+		//if err != nil {
+		//	log.Printf("EduprogController: %s", err)
+		//	InternalServerError(w, err)
+		//	return
+		//}
+
+		var eduprogsDto resources.EduprogDto
+		controllers.Success(w, eduprogsDto.DomainToDtoCollection(eduprogs))
+	}
+}
+
+func (c EduprogController) FindById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprog, err := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		comps.Mandatory = sortByCode(comps.Mandatory)
+
+		var eduprogDto resources.EduprogDto
+		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, comps.Selective))
+		//controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
+	}
+}
+
+func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
+	sort.Slice(eduprogcomps, func(i, j int) bool {
+		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
+		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
+		if errI != nil || errJ != nil {
+			return eduprogcomps[i].Code < eduprogcomps[j].Code
+		}
+		return codeI < codeJ
+	})
+	return eduprogcomps
+}
+
+func (c EduprogController) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		err = c.eduprogService.Delete(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		controllers.Ok(w)
+	}
+}
+
+func (c EduprogController) CreditsInfo() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprog, err := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		creditsDto, err := c.GetCreditsInfo(comps, eduprog.EducationLevel)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		controllers.Success(w, creditsDto)
+	}
+}
+
+func (c EduprogController) GetCreditsInfo(comps domain.Components, edLevel string) (resources.CreditsDto, error) {
+	var creditsDto resources.CreditsDto
+
+	levelData, err := c.eduprogService.GetOPPLevelData(edLevel)
+	if err != nil {
+		log.Printf("EduprogController: %s", err)
+		return creditsDto, err
+	}
+
+	for i := range comps.Selective {
+		for _, comp := range comps.Selective[i].CompsInBlock {
+			creditsDto.SelectiveCredits += comp.Credits
+		}
+
+	}
+	for _, comp := range comps.Mandatory {
+		creditsDto.MandatoryCredits += comp.Credits
+	}
+	creditsDto.MandatoryCreditsForLevel = levelData.MandatoryCredits
+	creditsDto.SelectiveCreditsForLevel = levelData.SelectiveCredits
+	creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
+	creditsDto.TotalFreeCredits = (creditsDto.MandatoryCreditsForLevel + creditsDto.SelectiveCreditsForLevel) - creditsDto.TotalCredits
+	creditsDto.MandatoryFreeCredits = creditsDto.MandatoryCreditsForLevel - creditsDto.MandatoryCredits
+	creditsDto.SelectiveFreeCredits = creditsDto.SelectiveCreditsForLevel - creditsDto.SelectiveCredits
+
+	return creditsDto, nil
+}
+
 func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
@@ -380,226 +601,4 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 		var eduprogDto resources.EduprogDto
 		controllers.Created(w, eduprogDto.DomainToDto(eduprog))
 	}
-}
-
-func (c EduprogController) Update() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		eduprog, err := requests.Bind(r, requests.UpdateEduprogRequest{}, domain.Eduprog{})
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		u := r.Context().Value(controllers.UserKey).(domain.User)
-		eduprog.UserId = u.Id
-
-		levelData, err := c.eduprogService.GetOPPLevelData(eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; use method LevelsList"))
-			return
-		}
-		eduprog.EducationLevel = levelData.Level
-		eduprog.Stage = levelData.Stage
-
-		allSpecialties, err := c.specialtiesService.ShowAllSpecialties()
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-		check := false
-		for i := range allSpecialties {
-			if allSpecialties[i].Code == eduprog.SpecialtyCode {
-				check = true
-				eduprog.Speciality = allSpecialties[i].Name
-				eduprog.KFCode = allSpecialties[i].KFCode
-				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
-			}
-		}
-		if !check {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
-			return
-		}
-
-		eduprog.Id = id
-		eduprog, err = c.eduprogService.Update(eduprog, id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		var eduprogDto resources.EduprogDto
-		controllers.Success(w, eduprogDto.DomainToDto(eduprog))
-	}
-}
-
-func (c EduprogController) GetOPPLevelsList() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		levels, err := c.eduprogService.GetOPPLevelsList()
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		var eduprogDto resources.EduprogDto
-		controllers.Success(w, eduprogDto.OPPLevelDomainToDtoCollection(levels))
-	}
-}
-
-func (c EduprogController) ShowList() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		eduprogs, err := c.eduprogService.ShowList()
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		//comps, err := c.eduprogcompService.SortComponentsByMnS()
-		//if err != nil {
-		//	log.Printf("EduprogController: %s", err)
-		//	InternalServerError(w, err)
-		//	return
-		//}
-
-		var eduprogsDto resources.EduprogDto
-		controllers.Success(w, eduprogsDto.DomainToDtoCollection(eduprogs))
-	}
-}
-
-func (c EduprogController) FindById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		eduprog, err := c.eduprogService.FindById(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		comps.Mandatory = sortByCode(comps.Mandatory)
-
-		var eduprogDto resources.EduprogDto
-		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, comps.Selective))
-		//controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
-	}
-}
-
-func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
-	sort.Slice(eduprogcomps, func(i, j int) bool {
-		// Parse the Code field as integers and compare them
-		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
-		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
-		if errI != nil || errJ != nil {
-			return eduprogcomps[i].Code < eduprogcomps[j].Code
-		}
-		return codeI < codeJ
-	})
-	return eduprogcomps
-}
-
-func (c EduprogController) CreditsInfo() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		eduprog, err := c.eduprogService.FindById(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		creditsDto, err := c.GetCreditsInfo(comps, eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		controllers.Success(w, creditsDto)
-	}
-}
-
-func (c EduprogController) Delete() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		err = c.eduprogService.Delete(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-		controllers.Ok(w)
-	}
-}
-
-func (c EduprogController) GetCreditsInfo(comps domain.Components, edLevel string) (resources.CreditsDto, error) {
-	var creditsDto resources.CreditsDto
-
-	levelData, err := c.eduprogService.GetOPPLevelData(edLevel)
-	if err != nil {
-		log.Printf("EduprogController: %s", err)
-		return creditsDto, err
-	}
-
-	for i := range comps.Selective {
-		for _, comp := range comps.Selective[i].CompsInBlock {
-			creditsDto.SelectiveCredits += comp.Credits
-		}
-
-	}
-	for _, comp := range comps.Mandatory {
-		creditsDto.MandatoryCredits += comp.Credits
-	}
-	creditsDto.MandatoryCreditsForLevel = levelData.MandatoryCredits
-	creditsDto.SelectiveCreditsForLevel = levelData.SelectiveCredits
-	creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
-	creditsDto.TotalFreeCredits = (creditsDto.MandatoryCreditsForLevel + creditsDto.SelectiveCreditsForLevel) - creditsDto.TotalCredits
-	creditsDto.MandatoryFreeCredits = creditsDto.MandatoryCreditsForLevel - creditsDto.MandatoryCredits
-	creditsDto.SelectiveFreeCredits = creditsDto.SelectiveCreditsForLevel - creditsDto.SelectiveCredits
-
-	return creditsDto, nil
 }
