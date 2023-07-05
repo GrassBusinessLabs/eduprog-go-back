@@ -20,6 +20,7 @@ WORKDIR /app
 
 COPY --from=build /app/build /app
 COPY internal/infra/database/migrations /app/migrations
+COPY opp_template.docx /app
 RUN chmod +x /app/eduprog && chown -R nobody:nogroup .
 
 EXPOSE 8080
