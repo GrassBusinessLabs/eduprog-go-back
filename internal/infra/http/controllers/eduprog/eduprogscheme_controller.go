@@ -112,12 +112,12 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 			return
 		}
 
-		eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
-		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
+		//eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
+		//if err != nil {
+		//	log.Printf("EduprogschemeController: %s", err)
+		//	controllers.BadRequest(w, err)
+		//	return
+		//}
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
@@ -135,16 +135,16 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 
 		totalCompCredits := eduprogscheme.CreditsPerSemester
 
-		for i := range eduprogschemes {
-			if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
-				//totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
-				if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
-					log.Printf("EduprogschemeController: %s", err)
-					controllers.BadRequest(w, errors.New("this component already exists in this semester"))
-					return
-				}
-			}
-		}
+		//for i := range eduprogschemes {
+		//	if eduprogschemes[i].EduprogcompId == eduprogscheme.EduprogcompId {
+		//		//totalCompCredits = totalCompCredits + eduprogschemes[i].CreditsPerSemester
+		//		if eduprogschemes[i].SemesterNum == eduprogscheme.SemesterNum {
+		//			log.Printf("EduprogschemeController: %s", err)
+		//			controllers.BadRequest(w, errors.New("this component already exists in this semester"))
+		//			return
+		//		}
+		//	}
+		//}
 
 		if discipline.Rows < eduprogscheme.Row || eduprogscheme.Row == 0 {
 			log.Printf("EduprogschemeController: %s", err)
