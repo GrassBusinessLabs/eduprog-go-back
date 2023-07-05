@@ -18,6 +18,7 @@ type EduprogcompService interface {
 	FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
+	ShowListByEduprogIdWithType(eduprog_id uint64, _type string) ([]domain.Eduprogcomp, error)
 	Delete(id uint64) error
 	GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo
 }
@@ -117,6 +118,15 @@ func (s eduprogcompService) SortComponentsByMnS(eduprog_id uint64) (domain.Compo
 
 func (s eduprogcompService) ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.ShowListByEduprogId(eduprog_id)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return []domain.Eduprogcomp{}, err
+	}
+	return e, nil
+}
+
+func (s eduprogcompService) ShowListByEduprogIdWithType(eduprogId uint64, _type string) ([]domain.Eduprogcomp, error) {
+	e, err := s.eduprogcompRepo.ShowListByEduprogIdWithType(eduprogId, _type)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
 		return []domain.Eduprogcomp{}, err

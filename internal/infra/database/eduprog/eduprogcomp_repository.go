@@ -38,6 +38,7 @@ type EduprogcompRepository interface {
 	FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error)
 	FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error)
 	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
+	ShowListByEduprogIdWithType(eduprog_id uint64, _type string) ([]domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
 	Delete(id uint64) error
 }
@@ -91,6 +92,17 @@ func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) ([]domain.
 	var eduprogcomps []eduprogcomp
 
 	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).OrderBy("code").All(&eduprogcomps)
+	if err != nil {
+		return []domain.Eduprogcomp{}, err
+	}
+
+	return r.mapModelToDomainCollection(eduprogcomps), nil
+}
+
+func (r eduprogcompRepository) ShowListByEduprogIdWithType(eduprog_id uint64, _type string) ([]domain.Eduprogcomp, error) {
+	var eduprogcomps []eduprogcomp
+
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "type": _type}).OrderBy("code").All(&eduprogcomps)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}

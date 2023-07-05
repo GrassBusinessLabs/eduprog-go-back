@@ -340,12 +340,14 @@ func (c EduprogcompController) UpdateMandatoryComps() http.HandlerFunc {
 			return
 		}
 
-		for i, elem := range eduprogcomps {
-			elem.Code = strconv.Itoa(i + 1)
-			eduprogcomps[i] = elem
-		}
-
 		for i := range eduprogcomps {
+			eduprogcomps[i], err = c.eduprogcompService.FindById(eduprogcomps[i].Id)
+			if err != nil {
+				log.Printf("EduprogcompController: %s", err)
+				controllers.InternalServerError(w, err)
+				return
+			}
+			eduprogcomps[i].Code = strconv.Itoa(i + 1)
 			_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
 			if err != nil {
 				log.Printf("EduprogcompController: %s", err)

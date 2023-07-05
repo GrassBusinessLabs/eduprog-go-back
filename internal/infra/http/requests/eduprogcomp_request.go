@@ -66,16 +66,7 @@ func (r UpdateBlockName) ToDomainModel() (interface{}, error) {
 }
 
 type SendEduprogcompRequest struct {
-	Id          uint64  `json:"id"`
-	Code        string  `json:"code"`
-	Name        string  `json:"name" `
-	Credits     float64 `json:"credits" `
-	ControlType string  `json:"control_type" `
-	Type        string  `json:"type" `
-	BlockNum    string  `json:"block_num"`
-	BlockName   string  `json:"block_name"`
-	Category    string  `json:"category"`
-	EduprogId   uint64  `json:"eduprog_id" `
+	Id uint64 `json:"id"`
 }
 
 type SendEduprogcompSliceRequest struct {
@@ -84,16 +75,7 @@ type SendEduprogcompSliceRequest struct {
 
 func (r SendEduprogcompRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogcomp{
-		Id:          r.Id,
-		Code:        r.Code,
-		Name:        r.Name,
-		Credits:     r.Credits,
-		ControlType: r.ControlType,
-		Type:        r.Type,
-		BlockNum:    r.BlockNum,
-		BlockName:   r.BlockName,
-		Category:    r.Category,
-		EduprogId:   r.EduprogId,
+		Id: r.Id,
 	}, nil
 }
 

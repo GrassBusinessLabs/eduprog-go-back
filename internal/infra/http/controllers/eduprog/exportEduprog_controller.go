@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/goccy/go-graphviz"
 	"github.com/goccy/go-graphviz/cgraph"
+	"github.com/nguyenthenguyen/docx"
 	"github.com/xuri/excelize/v2"
 	"log"
 	"mime"
@@ -23,6 +24,107 @@ const (
 	SheetName2 = "Матриця компетентностей"
 	SheetName3 = "Матриця відповідності ПР"
 )
+
+func (c EduprogController) ExportEduprogToWord() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprog, _ := c.eduprogService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		// Read from docx file
+		d, err := docx.ReadDocxFile("./opp_template.docx")
+		// Or read from memory
+		// r, err := docx.ReadDocxFromMemory(data io.ReaderAt, size int64)
+
+		// Or read from a filesystem object:
+		// r, err := docx.ReadDocxFromFS(file string, fs fs.FS)
+
+		if err != nil {
+			panic(err)
+		}
+		docx1 := d.Editable()
+		// Replace like https://golang.org/pkg/strings/#Replace
+		err = docx1.Replace("oppname", eduprog.Name, -1)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		err = docx1.Replace("level", eduprog.EducationLevel, -1)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		err = docx1.Replace("stupin", eduprog.Stage, -1)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		err = docx1.Replace("specialty", eduprog.SpecialtyCode+" "+eduprog.Speciality, -1)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		err = docx1.Replace("galuz", eduprog.KFCode+" "+eduprog.KnowledgeField, -1)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		err = docx1.Replace("year", strconv.Itoa(eduprog.ApprovalYear), -1)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		err = docx1.WriteToFile(fmt.Sprintf("%s.docx", eduprog.Name))
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		err = d.Close()
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		filename := fmt.Sprintf("%s.docx", eduprog.Name)
+		header := make(http.Header)
+		header.Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
+		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		for k, v := range header {
+			w.Header()[k] = v
+		}
+		f, err := os.Open(filename)
+		if err != nil {
+			log.Printf("EduprogController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		defer func(f *os.File) {
+			_ = f.Close()
+		}(f)
+
+		http.ServeContent(w, r, fmt.Sprintf("%s.docx", eduprog.Name), time.Time{}, f)
+	}
+}
 
 func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

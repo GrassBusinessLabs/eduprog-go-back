@@ -7,14 +7,13 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/config/container"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/auth"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers/eduprog"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 )
 
 func Router(cont container.Container) http.Handler {
@@ -143,6 +142,10 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 		apiRouter.Get(
 			"/credits/{epId}",
 			ec.CreditsInfo(),
+		)
+		apiRouter.Get(
+			"/toWord/{edId}",
+			ec.ExportEduprogToWord(),
 		)
 		apiRouter.Get(
 			"/toExcel/{edId}",
