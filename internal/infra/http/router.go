@@ -144,7 +144,7 @@ func EduprogRouter(r chi.Router, ec eduprog.EduprogController) {
 			ec.CreditsInfo(),
 		)
 		apiRouter.Get(
-			"/expToWord/{edId}",
+			"/expToWord/edId/{edId}",
 			ec.ExportEduprogToWord(),
 		)
 		apiRouter.Get(

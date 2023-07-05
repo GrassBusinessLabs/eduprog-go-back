@@ -91,7 +91,7 @@ func (c EduprogController) ExportEduprogToWord() http.HandlerFunc {
 			return
 		}
 
-		err = docx1.WriteToFile(fmt.Sprintf("%s.docx", eduprog.Name))
+		err = docx1.WriteToFile("OPP.docx")
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -105,7 +105,7 @@ func (c EduprogController) ExportEduprogToWord() http.HandlerFunc {
 			return
 		}
 
-		filename := fmt.Sprintf("%s.docx", eduprog.Name)
+		filename := fmt.Sprintf("OPP.docx")
 		header := make(http.Header)
 		header.Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
 		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -122,7 +122,7 @@ func (c EduprogController) ExportEduprogToWord() http.HandlerFunc {
 			_ = f.Close()
 		}(f)
 
-		http.ServeContent(w, r, fmt.Sprintf("%s.docx", eduprog.Name), time.Time{}, f)
+		http.ServeContent(w, r, "OPP.docx", time.Time{}, f)
 	}
 }
 
