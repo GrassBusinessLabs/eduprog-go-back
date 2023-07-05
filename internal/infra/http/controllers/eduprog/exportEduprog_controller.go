@@ -105,7 +105,7 @@ func (c EduprogController) ExportEduprogToWord() http.HandlerFunc {
 			return
 		}
 
-		filename := fmt.Sprintf("OPP.docx")
+		filename := "OPP.docx"
 		header := make(http.Header)
 		header.Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
 		w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
