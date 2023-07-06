@@ -165,13 +165,14 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
+		comps.Mandatory = sortByCode(comps.Mandatory)
 
-		maxCode := 1
+		maxSelectiveBlocCode := 1
 
 		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
 			eduprogcomp.Category = MANDATORY
 			for i := range comps.Mandatory {
-				if comps.Mandatory[i].Name == eduprogcomp.Name && comps.Mandatory[i].Id == eduprogcomp.Id {
+				if comps.Mandatory[i].Name == eduprogcomp.Name && comps.Mandatory[i].Id != eduprogcomp.Id {
 					log.Printf("EduprogcompController: %s", err)
 					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
 					return
@@ -189,7 +190,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 						return
 					}
 					if comp.BlockNum == eduprogcomp.BlockNum {
-						maxCode++
+						maxSelectiveBlocCode++
 					}
 				}
 			}
@@ -247,7 +248,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 						comps.Selective[i].CompsInBlock[i2].ControlType = eduprogcomp.ControlType
 						comps.Selective[i].CompsInBlock[i2].Credits = eduprogcomp.Credits
 						comps.Selective[i].CompsInBlock[i2].Type = eduprogcomp.Type
-						comps.Selective[i].CompsInBlock[i2].Code = strconv.Itoa(maxCode)
+						comps.Selective[i].CompsInBlock[i2].Code = strconv.Itoa(maxSelectiveBlocCode)
 					} else {
 						comps.Selective[i].CompsInBlock[i2].BlockNum = comps.Selective[i].BlockNum
 						comps.Selective[i].CompsInBlock[i2].BlockName = comps.Selective[i].BlockName
