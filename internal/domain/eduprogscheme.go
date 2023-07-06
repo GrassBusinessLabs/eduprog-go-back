@@ -15,6 +15,11 @@ type Eduprogscheme struct { //eduprogschemeElement
 	UpdatedDate        time.Time
 }
 
+type ExpandEduprogScheme struct {
+	ExpandTo           string
+	CreditsPerSemester float64
+}
+
 func (e Eduprogscheme) GetEduprogschemeId() uint64 {
 	return e.Id
 }

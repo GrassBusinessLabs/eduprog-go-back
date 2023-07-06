@@ -22,6 +22,11 @@ type UpdateComponentInEduprogschemeRequest struct {
 	CreditsPerSemester float64 `json:"credits_per_semester" validate:"number"`
 }
 
+type ExpandComponentInEduprogschemeRequest struct {
+	ExpandTo           string  `json:"expand_to" validate:"required"`
+	CreditsPerSemester float64 `json:"credits_per_semester" validate:"required"`
+}
+
 func (r SetComponentToEdprogschemeRequest) ToDomainModel() (interface{}, error) {
 	return domain.Eduprogscheme{
 		SemesterNum:        r.SemesterNum,
@@ -40,6 +45,13 @@ func (r UpdateComponentInEduprogschemeRequest) ToDomainModel() (interface{}, err
 		Row:                r.Row,
 		EduprogId:          r.EduprogId,
 		EduprogcompId:      r.EduprogcompId,
+		CreditsPerSemester: r.CreditsPerSemester,
+	}, nil
+}
+
+func (r ExpandComponentInEduprogschemeRequest) ToDomainModel() (interface{}, error) {
+	return domain.ExpandEduprogScheme{
+		ExpandTo:           r.ExpandTo,
 		CreditsPerSemester: r.CreditsPerSemester,
 	}, nil
 }

@@ -218,6 +218,10 @@ func EduprogschemeRouter(r chi.Router, esc eduprog.EduprogschemeController) {
 			"/{essId}",
 			esc.UpdateComponentInEduprogscheme(),
 		)
+		apiRouter.Post(
+			"/expand/{essId}",
+			esc.ExpandComponentInEduprogscheme(),
+		)
 		apiRouter.Get(
 			"/{essId}",
 			esc.FindById(),

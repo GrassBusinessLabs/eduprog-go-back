@@ -171,6 +171,201 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 	}
 }
 
+func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseUint(chi.URLParam(r, "essId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		expandRequest, err := requests.Bind(r, requests.ExpandComponentInEduprogschemeRequest{}, domain.ExpandEduprogScheme{})
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		eduprogschemeComponent, err := c.eduprogschemeService.FindById(id)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogschemeComponent.EduprogId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcomp, err := c.eduprogcompService.FindById(eduprogschemeComponent.EduprogcompId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		eduprogcompMaxCredits := eduprogcomp.Credits
+		creditsInScheme := 0.0
+
+		var schemeComponentsList []domain.Eduprogscheme
+
+		for i := range eduprogscheme {
+			if eduprogscheme[i].EduprogcompId == eduprogschemeComponent.EduprogcompId {
+				schemeComponentsList = append(schemeComponentsList, eduprogscheme[i])
+				//creditsInScheme = eduprogscheme[i].CreditsPerSemester - expandRequest.CreditsPerSemester
+			}
+		}
+
+		if creditsInScheme+expandRequest.CreditsPerSemester > eduprogcompMaxCredits {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, errors.New("too much credits"))
+			return
+		}
+
+		var createdSchemeComponent domain.Eduprogscheme
+		var componentWithMaxSemester domain.Eduprogscheme
+		var componentWithMinSemester domain.Eduprogscheme
+
+		if expandRequest.ExpandTo == "LEFT" { // EXPANDING SCHEME COMP TO LEFT (+semester)
+			if len(schemeComponentsList) < 2 {
+				if schemeComponentsList[0].SemesterNum > 1 {
+					createdSchemeComponent = schemeComponentsList[0]
+					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum - 1
+					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - expandRequest.CreditsPerSemester
+					if schemeComponentsList[0].CreditsPerSemester <= 0 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("too much credits"))
+						return
+					}
+
+					_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(schemeComponentsList[0], schemeComponentsList[0].Id)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+				}
+			} else if len(schemeComponentsList) > 1 {
+				var minSemester uint64 = 8
+				for i := range schemeComponentsList {
+					if minSemester > schemeComponentsList[i].SemesterNum {
+						minSemester = schemeComponentsList[i].SemesterNum
+						componentWithMinSemester = schemeComponentsList[i]
+					}
+				}
+				if componentWithMinSemester.SemesterNum > 1 {
+					createdSchemeComponent = componentWithMinSemester
+					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum - 1
+					componentWithMinSemester.CreditsPerSemester = componentWithMinSemester.CreditsPerSemester - expandRequest.CreditsPerSemester
+					if componentWithMinSemester.CreditsPerSemester <= 0 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("too much credits"))
+						return
+					}
+					_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(componentWithMinSemester, componentWithMinSemester.Id)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+				}
+			}
+		} else if expandRequest.ExpandTo == "RIGHT" { // EXPANDING SCHEME COMP TO LEFT (-semester)
+			if len(schemeComponentsList) < 2 {
+				if schemeComponentsList[0].SemesterNum < 8 {
+					createdSchemeComponent = schemeComponentsList[0]
+					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum + 1
+					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - expandRequest.CreditsPerSemester
+					if schemeComponentsList[0].CreditsPerSemester <= 0 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("too much credits"))
+						return
+					}
+
+					_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(schemeComponentsList[0], schemeComponentsList[0].Id)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+				}
+			} else if len(schemeComponentsList) > 1 {
+				var maxSemester uint64 = 0
+				for i := range schemeComponentsList {
+					if maxSemester < schemeComponentsList[i].SemesterNum {
+						maxSemester = schemeComponentsList[i].SemesterNum
+						componentWithMaxSemester = schemeComponentsList[i]
+					}
+				}
+				if componentWithMaxSemester.SemesterNum < 8 {
+					createdSchemeComponent = componentWithMaxSemester
+					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum + 1
+					componentWithMaxSemester.CreditsPerSemester = componentWithMaxSemester.CreditsPerSemester - expandRequest.CreditsPerSemester
+					if componentWithMaxSemester.CreditsPerSemester <= 0 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("too much credits"))
+						return
+					}
+					_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(componentWithMaxSemester, componentWithMaxSemester.Id)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
+					if err != nil {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.InternalServerError(w, err)
+						return
+					}
+				}
+			}
+		}
+
+		eduprogschemeToShow, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcompsToShow, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogschemeDto resources.EduprogschemeDto
+		controllers.Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogschemeToShow, eduprogcompsToShow))
+	}
+}
+
 func (c EduprogschemeController) FindById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseUint(chi.URLParam(r, "essId"), 10, 64)
@@ -183,17 +378,16 @@ func (c EduprogschemeController) FindById() http.HandlerFunc {
 		eduprogscheme, err := c.eduprogschemeService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme.EduprogcompId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
-
 		var eduprogschemeDto resources.EduprogschemeDto
 		controllers.Success(w, eduprogschemeDto.DomainToDto(eduprogscheme, eduprogcomp))
 	}
@@ -218,17 +412,16 @@ func (c EduprogschemeController) FindBySemesterNum() http.HandlerFunc {
 		eduprogscheme, err := c.eduprogschemeService.FindBySemesterNum(uint16(sNum), id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
-
 		var eduprogschemeDto resources.EduprogschemeDto
 		controllers.Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcomp))
 	}
@@ -246,14 +439,14 @@ func (c EduprogschemeController) ShowSchemeByEduprogId() http.HandlerFunc {
 		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
 		eduprogcomp, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.InternalServerError(w, err)
 			return
 		}
 
@@ -331,7 +524,7 @@ func (c EduprogschemeController) Delete() http.HandlerFunc {
 
 func unique(compSlice []domain.Eduprogcomp) []domain.Eduprogcomp {
 	keys := make(map[domain.Eduprogcomp]bool)
-	list := []domain.Eduprogcomp{}
+	var list []domain.Eduprogcomp
 	for _, entry := range compSlice {
 		if _, value := keys[entry]; !value {
 			keys[entry] = true
