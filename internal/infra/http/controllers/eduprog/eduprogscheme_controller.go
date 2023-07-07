@@ -467,8 +467,8 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 		}
 
 		sortOrder := r.URL.Query().Get("order")
-		if sortOrder != "Az" && sortOrder != "Za" && sortOrder != "Code" {
-			controllers.BadRequest(w, errors.New("only Az (alphabetic) or Za (naoborot)"))
+		if sortOrder != "Az" && sortOrder != "Za" && sortOrder != "" {
+			controllers.BadRequest(w, errors.New("order param only Az (alphabetic) or Za (naoborot)"))
 			return
 		}
 
@@ -511,7 +511,7 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			sort.Slice(result, func(i, j int) bool {
 				return result[i].Name > result[j].Name
 			})
-		} else if sortOrder == "Code" {
+		} else {
 			result = sortByCode(result)
 		}
 
