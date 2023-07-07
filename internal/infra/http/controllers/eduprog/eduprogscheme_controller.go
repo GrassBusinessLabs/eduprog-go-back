@@ -9,6 +9,8 @@ import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/requests"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"github.com/go-chi/chi/v5"
+	"sort"
+
 	"log"
 	"net/http"
 	"strconv"
@@ -464,6 +466,12 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			return
 		}
 
+		sortOrder := r.URL.Query().Get("order")
+		if sortOrder != "Az" && sortOrder != "Za" {
+			controllers.BadRequest(w, errors.New("only Az (alphabetic) or Za (naoborot)"))
+			return
+		}
+
 		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(id)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
@@ -495,7 +503,16 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 			}
 		}
 
-		result = sortByCode(result)
+		//result = sortByCode(result)
+		if sortOrder == "Az" {
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].Name < result[j].Name
+			})
+		} else if sortOrder == "Za" {
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].Name > result[j].Name
+			})
+		}
 
 		var eduprogcompDto resources.EduprogcompDtoWithFreeCredits
 		controllers.Success(w, eduprogcompDto.DomainToDtoCollectionWithFreeCredits(result))
