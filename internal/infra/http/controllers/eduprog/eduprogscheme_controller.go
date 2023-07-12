@@ -39,6 +39,11 @@ func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 			controllers.BadRequest(w, err)
 			return
 		}
+		if eduprogscheme.CreditsPerSemester < 3 {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, errors.New("min 3 credits per semester"))
+			return
+		}
 
 		eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
 		if err != nil {
@@ -113,6 +118,11 @@ func (c EduprogschemeController) UpdateComponentInEduprogscheme() http.HandlerFu
 			controllers.BadRequest(w, err)
 			return
 		}
+		if eduprogscheme.CreditsPerSemester < 3 {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, errors.New("min 3 credits per semester"))
+			return
+		}
 
 		//eduprogschemes, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogscheme.EduprogId)
 		//if err != nil {
@@ -182,12 +192,18 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 			return
 		}
 
-		expandRequest, err := requests.Bind(r, requests.ExpandComponentInEduprogschemeRequest{}, domain.ExpandEduprogScheme{})
-		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+		expandTo := r.URL.Query().Get("expandTo")
+		if expandTo != "LEFT" && expandTo != "RIGHT" {
+			controllers.BadRequest(w, errors.New("expandTo param only RIGHT or LEFT"))
 			return
 		}
+
+		//expandRequest, err := requests.Bind(r, requests.ExpandComponentInEduprogschemeRequest{}, domain.ExpandEduprogScheme{})
+		//if err != nil {
+		//	log.Printf("EduprogschemeController: %s", err)
+		//	controllers.BadRequest(w, err)
+		//	return
+		//}
 
 		eduprogschemeComponent, err := c.eduprogschemeService.FindById(id)
 		if err != nil {
@@ -209,8 +225,6 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 			controllers.InternalServerError(w, err)
 			return
 		}
-		eduprogcompMaxCredits := eduprogcomp.Credits
-		creditsInScheme := 0.0
 
 		var schemeComponentsList []domain.Eduprogscheme
 
@@ -221,23 +235,25 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 			}
 		}
 
-		if creditsInScheme+expandRequest.CreditsPerSemester > eduprogcompMaxCredits {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, errors.New("too much credits"))
-			return
-		}
-
 		var createdSchemeComponent domain.Eduprogscheme
 		var componentWithMaxSemester domain.Eduprogscheme
 		var componentWithMinSemester domain.Eduprogscheme
 
-		if expandRequest.ExpandTo == "LEFT" { // EXPANDING SCHEME COMP TO LEFT (+semester)
+		if expandTo == "LEFT" { // EXPANDING SCHEME COMP TO LEFT (+semester)
 			if len(schemeComponentsList) < 2 {
 				if schemeComponentsList[0].SemesterNum > 1 {
+					if (schemeComponentsList[0].CreditsPerSemester / 2) < 3 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("неможливо розтягнути цей компонент, бо має бути мінімум 3 кредити на семестр"))
+						return
+					}
 					createdSchemeComponent = schemeComponentsList[0]
-					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+
+					createdSchemeComponent.CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester / 2
+					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - createdSchemeComponent.CreditsPerSemester
+
 					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum - 1
-					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - expandRequest.CreditsPerSemester
+
 					if schemeComponentsList[0].CreditsPerSemester <= 0 {
 						log.Printf("EduprogschemeController: %s", err)
 						controllers.BadRequest(w, errors.New("too much credits"))
@@ -256,6 +272,10 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 						controllers.InternalServerError(w, err)
 						return
 					}
+				} else if schemeComponentsList[0].SemesterNum == 1 {
+					log.Printf("EduprogschemeController: %s", err)
+					controllers.BadRequest(w, errors.New("cannot expand to left, component is in 1st semester"))
+					return
 				}
 			} else if len(schemeComponentsList) > 1 {
 				var minSemester uint64 = 8
@@ -266,36 +286,59 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 					}
 				}
 				if componentWithMinSemester.SemesterNum > 1 {
+					if (componentWithMinSemester.CreditsPerSemester / 2) < 3 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("неможливо розтягнути цей компонент, бо має бути мінімум 3 кредити на семестр"))
+						return
+					}
+
 					createdSchemeComponent = componentWithMinSemester
-					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+
+					createdSchemeComponent.CreditsPerSemester = componentWithMinSemester.CreditsPerSemester / 2
+					componentWithMinSemester.CreditsPerSemester = componentWithMinSemester.CreditsPerSemester - createdSchemeComponent.CreditsPerSemester
+					//	createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
 					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum - 1
-					componentWithMinSemester.CreditsPerSemester = componentWithMinSemester.CreditsPerSemester - expandRequest.CreditsPerSemester
+					//	componentWithMinSemester.CreditsPerSemester = componentWithMinSemester.CreditsPerSemester - expandRequest.CreditsPerSemester
 					if componentWithMinSemester.CreditsPerSemester <= 0 {
 						log.Printf("EduprogschemeController: %s", err)
 						controllers.BadRequest(w, errors.New("too much credits"))
 						return
 					}
+
 					_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(componentWithMinSemester, componentWithMinSemester.Id)
 					if err != nil {
 						log.Printf("EduprogschemeController: %s", err)
 						controllers.InternalServerError(w, err)
 						return
 					}
+
 					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
 					if err != nil {
 						log.Printf("EduprogschemeController: %s", err)
 						controllers.InternalServerError(w, err)
 						return
 					}
+				} else if componentWithMinSemester.SemesterNum == 1 {
+					log.Printf("EduprogschemeController: %s", err)
+					controllers.BadRequest(w, errors.New("cannot expand to left, component is in 1st semester"))
+					return
 				}
 			}
-		} else if expandRequest.ExpandTo == "RIGHT" { // EXPANDING SCHEME COMP TO LEFT (-semester)
+
+		} else if expandTo == "RIGHT" { // EXPANDING SCHEME COMP TO LEFT (-semester)
 			if len(schemeComponentsList) < 2 {
 				if schemeComponentsList[0].SemesterNum < 8 {
+					if (schemeComponentsList[0].CreditsPerSemester / 2) < 3 {
+						log.Printf("EduprogschemeController: %s", err)
+						controllers.BadRequest(w, errors.New("неможливо розтягнути цей компонент, бо має бути мінімум 3 кредити на семестр"))
+						return
+					}
 					createdSchemeComponent = schemeComponentsList[0]
-					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+					createdSchemeComponent.CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester / 2
+					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - createdSchemeComponent.CreditsPerSemester
+
 					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum + 1
-					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - expandRequest.CreditsPerSemester
+
 					if schemeComponentsList[0].CreditsPerSemester <= 0 {
 						log.Printf("EduprogschemeController: %s", err)
 						controllers.BadRequest(w, errors.New("too much credits"))
@@ -308,6 +351,7 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 						controllers.InternalServerError(w, err)
 						return
 					}
+
 					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
 					if err != nil {
 						log.Printf("EduprogschemeController: %s", err)
@@ -325,9 +369,9 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 				}
 				if componentWithMaxSemester.SemesterNum < 8 {
 					createdSchemeComponent = componentWithMaxSemester
-					createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
+					//		createdSchemeComponent.CreditsPerSemester = expandRequest.CreditsPerSemester
 					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum + 1
-					componentWithMaxSemester.CreditsPerSemester = componentWithMaxSemester.CreditsPerSemester - expandRequest.CreditsPerSemester
+					//		componentWithMaxSemester.CreditsPerSemester = componentWithMaxSemester.CreditsPerSemester - expandRequest.CreditsPerSemester
 					if componentWithMaxSemester.CreditsPerSemester <= 0 {
 						log.Printf("EduprogschemeController: %s", err)
 						controllers.BadRequest(w, errors.New("too much credits"))
