@@ -550,6 +550,7 @@ func (c EduprogschemeController) MoveComponentInEduprogscheme() http.HandlerFunc
 		for i := 0; i < len(schemeComponentsList); i++ {
 			schemeComponentsList[i].SemesterNum = moveCompReq.SemesterNum
 			schemeComponentsList[i].DisciplineId = moveCompReq.DisciplineId
+			schemeComponentsList[i].Row = moveCompReq.Row
 			moveCompReq.SemesterNum++
 		}
 

@@ -30,6 +30,7 @@ type ExpandComponentInEduprogschemeRequest struct {
 type MoveComponentInEduprogschemeRequest struct {
 	SemesterNum  uint64 `json:"semester_num" validate:"number,required"`
 	DisciplineId uint64 `json:"discipline_id" validate:"number,required"`
+	Row          uint64 `json:"row" validate:"number"`
 }
 
 func (r SetComponentToEdprogschemeRequest) ToDomainModel() (interface{}, error) {
@@ -65,5 +66,6 @@ func (r MoveComponentInEduprogschemeRequest) ToDomainModel() (interface{}, error
 	return domain.Eduprogscheme{
 		SemesterNum:  r.SemesterNum,
 		DisciplineId: r.DisciplineId,
+		Row:          r.Row,
 	}, nil
 }
