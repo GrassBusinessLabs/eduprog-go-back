@@ -288,7 +288,7 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 			return
 		}
 
-		putAfterCode, err := strconv.ParseInt(r.URL.Query().Get("putAfter"), 10, 64) // Now its just code (OK)
+		putAfterCode, err := strconv.ParseInt(r.URL.Query().Get("putAfter"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
@@ -329,6 +329,42 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 				return
 			}
 		}
+
+		var eduprogcompDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, eduprogcomps.Selective))
+	}
+}
+
+func (c EduprogcompController) ReplaceCompsBlock() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		firstEducompId, err := strconv.ParseUint(r.URL.Query().Get("firstEducompId"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		//putAfterCode, err := strconv.ParseInt(r.URL.Query().Get("putAfter"), 10, 64)
+		//if err != nil {
+		//	log.Printf("EduprogcompController: %s", err)
+		//	controllers.BadRequest(w, err)
+		//	return
+		//}
+
+		educompById, err := c.eduprogcompService.FindById(firstEducompId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(educompById.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+		eduprogcomps.Mandatory = []domain.Eduprogcomp{}
 
 		var eduprogcompDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, eduprogcomps.Selective))

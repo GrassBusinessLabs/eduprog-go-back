@@ -41,19 +41,13 @@ func (c EduprogController) ExportEduprogToWord() http.HandlerFunc {
 			return
 		}
 
-		// Read from docx file
 		d, err := docx.ReadDocxFile("./opp_template.docx")
-		// Or read from memory
-		// r, err := docx.ReadDocxFromMemory(data io.ReaderAt, size int64)
-
-		// Or read from a filesystem object:
-		// r, err := docx.ReadDocxFromFS(file string, fs fs.FS)
 
 		if err != nil {
 			panic(err)
 		}
 		docx1 := d.Editable()
-		// Replace like https://golang.org/pkg/strings/#Replace
+
 		err = docx1.Replace("oppname", eduprog.Name, -1)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)

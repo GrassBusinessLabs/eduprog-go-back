@@ -156,10 +156,6 @@ func getDbSess(conf config.Configuration) db.Session {
 			Password: conf.DatabasePassword,
 			Database: conf.DatabaseName,
 		})
-	//sess, err := sqlite.Open(
-	//	sqlite.ConnectionURL{
-	//		Database: conf.DatabasePath,
-	//	})
 	if err != nil {
 		log.Fatalf("Unable to create new DB session: %q\n", err)
 	}

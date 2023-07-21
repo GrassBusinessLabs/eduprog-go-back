@@ -39,7 +39,6 @@ type EduprogWithoutCompsDto struct {
 type ComponentsDto struct {
 	Mandatory []EduprogcompDto `json:"mandatory"`
 	Selective []BlockInfoDto   `json:"selective"`
-	//Selective []EduprogcompDto `json:"selective"`
 }
 
 type CreditsDto struct {
@@ -112,7 +111,6 @@ func (d EduprogcompDto) DomainToDtoWCompCollection(comps domain.Components, selB
 	}
 
 	for i := range selBlocks {
-		//selective[i] = d.DomainToDto(comps.Selective[i])
 		selective[i] = d.BlockInfoToDto(selBlocks[i])
 	}
 

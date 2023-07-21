@@ -41,14 +41,6 @@ func (c EducompRelationsController) CreateRelation() http.HandlerFunc {
 			return
 		}
 
-		//baseComp, _ := c.eduprogcompService.FindByWODeleteDate(relation.BaseCompId)
-		//childComp, _ := c.eduprogcompService.FindByWODeleteDate(relation.ChildCompId)
-		//if baseComp.DeletedDate != nil || childComp.DeletedDate != nil {
-		//	log.Printf("EducompRelationsController: %s", err)
-		//	controllers.BadRequest(w, errors.New("Base or child comp dont exist"))
-		//	return
-		//}
-
 		relation, err = c.educompRelationsService.CreateRelation(relation)
 		if err != nil {
 			log.Printf("EducompRelationsController: %s", err)

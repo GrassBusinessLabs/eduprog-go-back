@@ -178,6 +178,10 @@ func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 			ec.ReplaceComp(),
 		)
 		apiRouter.Put(
+			"/blockReplace",
+			ec.ReplaceCompsBlock(),
+		)
+		apiRouter.Put(
 			"/sendSlice",
 			ec.ReplaceCompBySendingSlice(),
 		)
@@ -218,9 +222,17 @@ func EduprogschemeRouter(r chi.Router, esc eduprog.EduprogschemeController) {
 			"/{essId}",
 			esc.UpdateComponentInEduprogscheme(),
 		)
+		apiRouter.Put(
+			"/move/{essId}",
+			esc.MoveComponentInEduprogscheme(),
+		)
 		apiRouter.Post(
 			"/expand/{essId}",
 			esc.ExpandComponentInEduprogscheme(),
+		)
+		apiRouter.Delete(
+			"/shrink/{essId}",
+			esc.ShrinkComponentInEduprogscheme(),
 		)
 		apiRouter.Get(
 			"/{essId}",
@@ -237,6 +249,10 @@ func EduprogschemeRouter(r chi.Router, esc eduprog.EduprogschemeController) {
 		apiRouter.Get(
 			"/freeComps/{sNum}",
 			esc.ShowFreeComponents(),
+		)
+		apiRouter.Delete(
+			"/delFull/{essId}",
+			esc.DeleteFullCompFromScheme(),
 		)
 		apiRouter.Delete(
 			"/{essId}",

@@ -148,7 +148,6 @@ func sortBlocks(blocks []domain.BlockInfo) {
 		blockNumI, errI := strconv.Atoi(blocks[i].BlockNum)
 		blockNumJ, errJ := strconv.Atoi(blocks[j].BlockNum)
 		if errI != nil || errJ != nil {
-			// handle error cases where blockNum is not an integer
 			return false
 		}
 		return blockNumI < blockNumJ
@@ -157,7 +156,6 @@ func sortBlocks(blocks []domain.BlockInfo) {
 
 func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
 	sort.Slice(eduprogcomps, func(i, j int) bool {
-		// Parse the Code field as integers and compare them
 		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
 		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
 		if errI != nil || errJ != nil {

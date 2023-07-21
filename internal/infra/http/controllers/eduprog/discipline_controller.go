@@ -118,12 +118,6 @@ func (c DisciplineController) ShowDisciplinesByEduprogId() http.HandlerFunc {
 			return
 		}
 
-		//comps, err := c.eduprogcompService.SortComponentsByMnS()
-		//if err != nil {
-		//	log.Printf("EduprogController: %s", err)
-		//	InternalServerError(w, err)
-		//	return
-		//}
 		var disciplineDto resources.DisciplineDto
 		controllers.Success(w, disciplineDto.DomainToDtoCollection(disciplines))
 	}

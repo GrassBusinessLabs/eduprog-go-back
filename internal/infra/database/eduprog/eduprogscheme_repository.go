@@ -86,7 +86,7 @@ func (r eduprogschemeRepository) FindBySemesterNum(semester_num uint16, eduprog_
 
 func (r eduprogschemeRepository) ShowSchemeByEduprogId(eduprog_id uint64) ([]domain.Eduprogscheme, error) {
 	var es []eduprogscheme
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "discipline_id >": 0}).OrderBy("-semester_num").All(&es)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "discipline_id >": 0}).OrderBy("semester_num").All(&es)
 	if err != nil {
 		return []domain.Eduprogscheme{}, err
 	}

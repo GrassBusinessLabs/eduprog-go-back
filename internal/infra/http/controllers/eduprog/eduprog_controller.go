@@ -189,13 +189,6 @@ func (c EduprogController) ShowList() http.HandlerFunc {
 			return
 		}
 
-		//comps, err := c.eduprogcompService.SortComponentsByMnS()
-		//if err != nil {
-		//	log.Printf("EduprogController: %s", err)
-		//	InternalServerError(w, err)
-		//	return
-		//}
-
 		var eduprogsDto resources.EduprogDto
 		controllers.Success(w, eduprogsDto.DomainToDtoCollection(eduprogs))
 	}
@@ -228,7 +221,6 @@ func (c EduprogController) FindById() http.HandlerFunc {
 
 		var eduprogDto resources.EduprogDto
 		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, comps.Selective))
-		//controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps))
 	}
 }
 
