@@ -553,7 +553,7 @@ func (c EduprogschemeController) MoveComponentInEduprogscheme() http.HandlerFunc
 			moveCompReq.SemesterNum++
 		}
 
-		if moveCompReq.SemesterNum <= 8 {
+		if moveCompReq.SemesterNum <= 9 {
 			for i := range schemeComponentsList {
 				_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(schemeComponentsList[i], schemeComponentsList[i].Id)
 				if err != nil {
