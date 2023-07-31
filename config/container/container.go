@@ -77,7 +77,8 @@ func New(conf config.Configuration) Container {
 
 	userService := app.NewUserService(userRepository)
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
-	eduprogService := app.NewEduprogService(eduprogRepository)
+	specialtiesService := app.NewSpecialtiesService(specialtiesRepository)
+	eduprogService := app.NewEduprogService(eduprogRepository, specialtiesService)
 	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository)
 	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
 	disciplineService := app.NewDisciplineService(disciplineRepository)
@@ -86,7 +87,6 @@ func New(conf config.Configuration) Container {
 	competencyMatrixService := app.NewCompetenciesMatrixService(competencyMatrixRepository)
 	eduprogcompetenciesService := app.NewEduprogcompetenciesService(eduprogcompetenciesRepository)
 	resultMatrixService := app.NewResultsMatrixService(resultsMatrixRepository)
-	specialtiesService := app.NewSpecialtiesService(specialtiesRepository)
 
 	authController := auth.NewAuthController(authService, userService)
 	userController := auth.NewUserController(userService)

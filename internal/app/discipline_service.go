@@ -8,7 +8,7 @@ import (
 
 type DisciplineService interface {
 	Save(discipline domain.Discipline) (domain.Discipline, error)
-	Update(discipline domain.Discipline, id uint64) (domain.Discipline, error)
+	Update(ref, req domain.Discipline) (domain.Discipline, error)
 	ShowDisciplinesByEduprogId(eduprog_id uint64) ([]domain.Discipline, error)
 	FindById(id uint64) (domain.Discipline, error)
 	Delete(id uint64) error
@@ -33,13 +33,15 @@ func (s disciplineService) Save(discipline domain.Discipline) (domain.Discipline
 	return e, err
 }
 
-func (s disciplineService) Update(discipline domain.Discipline, id uint64) (domain.Discipline, error) {
-	e, err := s.disciplineRepo.Update(discipline, id)
-	if err != nil {
-		log.Printf("DisciplineService: %s", err)
-		return domain.Discipline{}, err
+func (s disciplineService) Update(ref, req domain.Discipline) (domain.Discipline, error) {
+	if req.Name != "" {
+		ref.Name = req.Name
 	}
-	return e, err
+	if req.EduprogId != 0 {
+		ref.EduprogId = req.EduprogId
+	}
+
+	return s.disciplineRepo.Update(ref)
 }
 
 func (s disciplineService) ShowDisciplinesByEduprogId(eduprog_id uint64) ([]domain.Discipline, error) {

@@ -2,7 +2,6 @@ package eduprog
 
 import (
 	"errors"
-	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -13,7 +12,6 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"time"
 )
 
 type EduprogController struct {
@@ -52,50 +50,12 @@ func (c EduprogController) Save() http.HandlerFunc {
 			return
 		}
 
-		maxYear := time.Now().Year() + 10
-		if eduprog.ApprovalYear <= 1990 || eduprog.ApprovalYear > maxYear {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, fmt.Errorf("approval year cant be less then 1990 and greater than %d", maxYear))
-			return
-		}
-
 		u := r.Context().Value(controllers.UserKey).(domain.User)
-		eduprog.UserId = u.Id
 
-		levelData, err := c.eduprogService.GetOPPLevelData(eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; get this value from method `LevelsList`"))
-			return
-		}
-		eduprog.EducationLevel = levelData.Level
-		eduprog.Stage = levelData.Stage
-
-		allSpecialties, err := c.specialtiesService.ShowAllSpecialties()
+		eduprog, err = c.eduprogService.Save(eduprog, u.Id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
-			return
-		}
-		check := false
-		for i := range allSpecialties {
-			if allSpecialties[i].Code == eduprog.SpecialtyCode {
-				check = true
-				eduprog.Speciality = allSpecialties[i].Name
-				eduprog.KFCode = allSpecialties[i].KFCode
-				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
-			}
-		}
-		if !check {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
-			return
-		}
-
-		eduprog, err = c.eduprogService.Save(eduprog)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
 			return
 		}
 
@@ -299,14 +259,27 @@ func (c EduprogController) GetCreditsInfo(comps domain.Components, edLevel strin
 	}
 
 	for i := range comps.Selective {
+		var minFromBlock domain.Eduprogcomp
+		var maxFromBlock domain.Eduprogcomp
+		minFromBlock.Credits = 500
+		maxFromBlock.Credits = 0
 		for _, comp := range comps.Selective[i].CompsInBlock {
 			creditsDto.SelectiveCredits += comp.Credits
+			if comp.Credits < minFromBlock.Credits {
+				minFromBlock = comp
+			}
+			if comp.Credits > minFromBlock.Credits {
+				maxFromBlock = comp
+			}
 		}
-
+		creditsDto.MinCreditsForVB += minFromBlock.Credits
+		creditsDto.MaxCreditsForVB += maxFromBlock.Credits
 	}
+
 	for _, comp := range comps.Mandatory {
 		creditsDto.MandatoryCredits += comp.Credits
 	}
+
 	creditsDto.MandatoryCreditsForLevel = levelData.MandatoryCredits
 	creditsDto.SelectiveCreditsForLevel = levelData.SelectiveCredits
 	creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
@@ -339,11 +312,12 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 			controllers.InternalServerError(w, err)
 			return
 		}
-
+		u := r.Context().Value(controllers.UserKey).(domain.User)
 		eduprog.ChildOf = eduprog.Id
 		eduprog.Name = eduprogAdditionalData.Name
 		eduprog.ApprovalYear = eduprogAdditionalData.ApprovalYear
-		eduprog, err = c.eduprogService.Save(eduprog)
+		eduprog.UserId = u.Id
+		eduprog, err = c.eduprogService.Save(eduprog, u.Id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)

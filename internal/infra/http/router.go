@@ -178,16 +178,16 @@ func EduprogcompRouter(r chi.Router, ec eduprog.EduprogcompController) {
 			ec.ReplaceComp(),
 		)
 		apiRouter.Put(
+			"/replaceVB",
+			ec.ReplaceVB(),
+		)
+		apiRouter.Put(
 			"/blockReplace",
 			ec.ReplaceCompsBlock(),
 		)
 		apiRouter.Put(
 			"/sendSlice",
 			ec.ReplaceCompBySendingSlice(),
-		)
-		apiRouter.Get(
-			"/",
-			ec.ShowList(),
 		)
 		apiRouter.Get(
 			"/byEduprogId/{epcId}",

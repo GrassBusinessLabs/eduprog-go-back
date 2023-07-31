@@ -35,7 +35,6 @@ func NewEduprogcompController(es app.EduprogcompService, eps app.EduprogService,
 
 func (c EduprogcompController) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		eduprogcomp, err := requests.Bind(r, requests.CreateEduprogcompRequest{}, domain.Eduprogcomp{})
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
@@ -231,7 +230,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 
 		eduprogcomp.Id = id
 		eduprogcomp.Code = eduprogcompById.Code
-		eduprogcomp, err = c.eduprogcompService.Update(eduprogcomp, id)
+		eduprogcomp, err = c.eduprogcompService.Update(eduprogcomp)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -253,7 +252,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 						comps.Selective[i].CompsInBlock[i2].BlockNum = comps.Selective[i].BlockNum
 						comps.Selective[i].CompsInBlock[i2].BlockName = comps.Selective[i].BlockName
 					}
-					_, _ = c.eduprogcompService.Update(comps.Selective[i].CompsInBlock[i2], comps.Selective[i].CompsInBlock[i2].Id)
+					_, _ = c.eduprogcompService.Update(comps.Selective[i].CompsInBlock[i2])
 				}
 			}
 			eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
@@ -269,7 +268,7 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			for i := range eduprogcomps.Selective {
 				for _, comp := range eduprogcomps.Selective[i].CompsInBlock {
 					comp.BlockNum = eduprogcomps.Selective[i].BlockNum
-					_, _ = c.eduprogcompService.Update(comp, comp.Id)
+					_, _ = c.eduprogcompService.Update(comp)
 				}
 			}
 		}
@@ -284,50 +283,57 @@ func (c EduprogcompController) ReplaceComp() http.HandlerFunc {
 		educompId, err := strconv.ParseUint(r.URL.Query().Get("edcompId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.BadRequest(w, err)
+			controllers.BadRequest(w, errors.New("problems in parsing 'edcompId' query parameter"))
 			return
 		}
 
-		putAfterCode, err := strconv.ParseInt(r.URL.Query().Get("putAfter"), 10, 64)
+		putAfterCode, err := strconv.ParseUint(r.URL.Query().Get("putAfter"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, errors.New("problems in parsing 'putAfter' query parameter"))
+			return
+		}
+
+		eduprogcomps, err := c.eduprogcompService.ReplaceOK(educompId, putAfterCode)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, errors.New("problems in parsing 'putAfter' query parameter"))
+			return
+		}
+
+		var eduprogcompDto resources.EduprogcompDto
+		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, eduprogcomps.Selective))
+	}
+}
+
+func (c EduprogcompController) ReplaceVB() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		educompId, err := strconv.ParseUint(r.URL.Query().Get("edcompId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		educompById, err := c.eduprogcompService.FindById(educompId)
+		blockNum, err := strconv.ParseUint(r.URL.Query().Get("blockNum"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(educompById.EduprogId)
+		putAfterCode, err := strconv.ParseUint(r.URL.Query().Get("putAfter"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomps.Mandatory = sortByCode(eduprogcomps.Mandatory)
-
-		fromIndex, err := strconv.Atoi(educompById.Code)
+		eduprogcomps, err := c.eduprogcompService.ReplaceVB(educompId, blockNum, putAfterCode)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, err)
 			return
-		}
-
-		eduprogcomps.Mandatory = moveElement(eduprogcomps.Mandatory, fromIndex-1, int(putAfterCode))
-
-		for i := range eduprogcomps.Mandatory {
-			eduprogcomps.Mandatory[i].Code = strconv.Itoa(i + 1)
-			_, err = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
 		}
 
 		var eduprogcompDto resources.EduprogcompDto
@@ -344,27 +350,19 @@ func (c EduprogcompController) ReplaceCompsBlock() http.HandlerFunc {
 			return
 		}
 
-		//putAfterCode, err := strconv.ParseInt(r.URL.Query().Get("putAfter"), 10, 64)
-		//if err != nil {
-		//	log.Printf("EduprogcompController: %s", err)
-		//	controllers.BadRequest(w, err)
-		//	return
-		//}
+		putAfterCode, err := strconv.ParseUint(r.URL.Query().Get("putAfter"), 10, 64)
+		if err != nil {
+			log.Printf("EduprogcompController: %s", err)
+			controllers.BadRequest(w, errors.New("error while parsing 'putAfter' query param"))
+			return
+		}
 
-		educompById, err := c.eduprogcompService.FindById(firstEducompId)
+		eduprogcomps, err := c.eduprogcompService.ReplaceVBBlock(firstEducompId, putAfterCode)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
-
-		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(educompById.EduprogId)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-		eduprogcomps.Mandatory = []domain.Eduprogcomp{}
 
 		var eduprogcompDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompDto.DomainToDtoWCompCollection(eduprogcomps, eduprogcomps.Selective))
@@ -388,7 +386,7 @@ func (c EduprogcompController) ReplaceCompBySendingSlice() http.HandlerFunc {
 				return
 			}
 			eduprogcomps[i].Code = strconv.Itoa(i + 1)
-			_, _ = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i].Id)
+			_, _ = c.eduprogcompService.Update(eduprogcomps[i])
 			if err != nil {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.InternalServerError(w, err)
@@ -403,54 +401,25 @@ func (c EduprogcompController) ReplaceCompBySendingSlice() http.HandlerFunc {
 
 func (c EduprogcompController) UpdateVBName() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
+		eduprogId, err := strconv.ParseUint(chi.URLParam(r, "epcId"), 10, 64)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomp, err := requests.Bind(r, requests.UpdateBlockName{}, domain.Eduprogcomp{})
+		eduprogcompReq, err := requests.Bind(r, requests.UpdateBlockName{}, domain.Eduprogcomp{})
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(id)
-
-		for i := range eduprogcomps.Selective {
-			if eduprogcomp.BlockName == eduprogcomps.Selective[i].BlockName && eduprogcomp.BlockNum != eduprogcomps.Selective[i].BlockNum {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New(`block with this name already exists`))
-				return
-			}
-		}
-
-		vbBlock, err := c.eduprogcompService.FindByBlockNum(id, eduprogcomp.BlockNum)
+		result, err := c.eduprogcompService.UpdateVBName(eduprogId, eduprogcompReq)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, errors.New("problems in parsing 'putAfter' query parameter"))
 			return
-		}
-
-		var result []domain.Eduprogcomp
-		for i := range vbBlock {
-			edcompById, err := c.eduprogcompService.FindById(vbBlock[i].Id)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-			edcompById.BlockName = eduprogcomp.BlockName
-			updEduprogcomp, err := c.eduprogcompService.Update(edcompById, edcompById.Id)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-
-			result = append(result, updEduprogcomp)
 		}
 
 		var eduprogcompsDto resources.EduprogcompDto
@@ -476,20 +445,6 @@ func (c EduprogcompController) GetVBBlocksInfo() http.HandlerFunc {
 
 		var eduprogcompsDto resources.EduprogcompDto
 		controllers.Success(w, eduprogcompsDto.BlockInfoToDtoCollection(eduprogcomps.Selective))
-	}
-}
-
-func (c EduprogcompController) ShowList() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		eduprogcomps, err := c.eduprogcompService.ShowList()
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		var eduprogcompsDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompsDto.DomainToDtoCollection(eduprogcomps))
 	}
 }
 
@@ -544,63 +499,13 @@ func (c EduprogcompController) Delete() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomp, err := c.eduprogcompService.FindById(id)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
 		err = c.eduprogcompService.Delete(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, errors.New("problems in parsing 'putAfter' query parameter"))
 			return
-		}
-
-		eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for i, elem := range eduprogcomps.Mandatory {
-			elem.Code = strconv.Itoa(i + 1)
-			eduprogcomps.Mandatory[i] = elem
-		}
-
-		for i, elem := range eduprogcomps.Selective {
-			elem.BlockNum = strconv.Itoa(i + 1)
-			eduprogcomps.Selective[i] = elem
-		}
-
-		for i := range eduprogcomps.Mandatory {
-			_, _ = c.eduprogcompService.Update(eduprogcomps.Mandatory[i], eduprogcomps.Mandatory[i].Id)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		for i := range eduprogcomps.Selective {
-			for _, comp := range eduprogcomps.Selective[i].CompsInBlock {
-				comp.BlockNum = eduprogcomps.Selective[i].BlockNum
-				_, _ = c.eduprogcompService.Update(comp, comp.Id)
-			}
 		}
 
 		controllers.Ok(w)
 	}
-}
-
-func moveElement(slice []domain.Eduprogcomp, fromIndex, toIndex int) []domain.Eduprogcomp {
-	element := slice[fromIndex]
-
-	slice = append(slice[:fromIndex], slice[fromIndex+1:]...)
-
-	slice = append(slice[:toIndex], append([]domain.Eduprogcomp{element}, slice[toIndex:]...)...)
-
-	return slice
 }

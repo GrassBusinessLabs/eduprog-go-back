@@ -50,6 +50,8 @@ type CreditsDto struct {
 	TotalFreeCredits         float64 `json:"total_free_credits"`
 	MandatoryFreeCredits     float64 `json:"mandatory_free_credits"`
 	SelectiveFreeCredits     float64 `json:"selective_free_credits"`
+	MinCreditsForVB          float64 `json:"min_credits_for_vb"`
+	MaxCreditsForVB          float64 `json:"max_credits_for_vb"`
 }
 
 type OPPLevelStructDto struct {

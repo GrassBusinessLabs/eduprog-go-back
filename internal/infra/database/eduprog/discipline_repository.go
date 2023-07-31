@@ -10,16 +10,16 @@ const DisciplineTableName = "discipline"
 
 type discipline struct {
 	Id          uint64    `db:"id,omitempty"`
-	Name        string    `db:"name"`
-	Rows        uint64    `db:"rows"`
-	EduprogId   uint64    `db:"eduprog_id"`
+	Name        string    `db:"name,omitempty"`
+	Rows        uint64    `db:"rows,omitempty"`
+	EduprogId   uint64    `db:"eduprog_id,omitempty"`
 	CreatedDate time.Time `db:"created_date,omitempty"`
 	UpdatedDate time.Time `db:"updated_date,omitempty"`
 }
 
 type DisciplineRepository interface {
 	Save(discipline domain.Discipline) (domain.Discipline, error)
-	Update(discipline domain.Discipline, id uint64) (domain.Discipline, error)
+	Update(discipline domain.Discipline) (domain.Discipline, error)
 	ShowDisciplinesByEduprogId(eduprog_id uint64) ([]domain.Discipline, error)
 	FindById(id uint64) (domain.Discipline, error)
 	Delete(id uint64) error
@@ -48,10 +48,10 @@ func (r disciplineRepository) Save(discipline domain.Discipline) (domain.Discipl
 	return r.mapModelToDomain(e), nil
 }
 
-func (r disciplineRepository) Update(discipline domain.Discipline, id uint64) (domain.Discipline, error) {
+func (r disciplineRepository) Update(discipline domain.Discipline) (domain.Discipline, error) {
 	e := r.mapDomainToModel(discipline)
 	e.UpdatedDate = time.Now()
-	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	err := r.coll.Find(db.Cond{"id": e.Id}).Update(&e)
 	if err != nil {
 		return domain.Discipline{}, err
 	}

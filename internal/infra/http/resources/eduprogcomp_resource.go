@@ -11,8 +11,8 @@ type EduprogcompDto struct {
 	Credits     float64 `json:"credits"`
 	ControlType string  `json:"control_type"`
 	Type        string  `json:"type"`
-	BlockNum    string  `json:"block_num"`
-	BlockName   string  `json:"block_name"`
+	BlockNum    string  `json:"block_num,omitempty"`
+	BlockName   string  `json:"block_name,omitempty"`
 	Category    string  `json:"category"`
 	EduprogId   uint64  `json:"eduprog_id"`
 }
@@ -25,8 +25,8 @@ type EduprogcompDtoWithFreeCredits struct {
 	FreeCredits float64 `json:"free_credits"`
 	ControlType string  `json:"control_type"`
 	Type        string  `json:"type"`
-	BlockNum    string  `json:"block_num"`
-	BlockName   string  `json:"block_name"`
+	BlockNum    string  `json:"block_num,omitempty"`
+	BlockName   string  `json:"block_name,omitempty"`
 	Category    string  `json:"category"`
 	EduprogId   uint64  `json:"eduprog_id"`
 }

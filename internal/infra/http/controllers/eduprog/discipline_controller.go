@@ -53,14 +53,21 @@ func (c DisciplineController) Update() http.HandlerFunc {
 			return
 		}
 
-		discipline, err := requests.Bind(r, requests.UpdateDisciplineRequest{}, domain.Discipline{})
+		req, err := requests.Bind(r, requests.UpdateDisciplineRequest{}, domain.Discipline{})
 		if err != nil {
 			log.Printf("DisciplineController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		discipline, err = c.disciplineService.Update(discipline, id)
+		ref, err := c.disciplineService.FindById(id)
+		if err != nil {
+			log.Printf("DisciplineController: %s", err)
+			controllers.BadRequest(w, err)
+			return
+		}
+
+		discipline, err := c.disciplineService.Update(ref, req)
 		if err != nil {
 			log.Printf("DisciplineController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -88,8 +95,10 @@ func (c DisciplineController) AddRow() http.HandlerFunc {
 			return
 		}
 
-		discipline.Rows = discipline.Rows + 1
-		discipline, err = c.disciplineService.Update(discipline, id)
+		req := discipline
+		req.Rows = req.Rows + 1
+
+		discipline, err = c.disciplineService.Update(discipline, req)
 		if err != nil {
 			log.Printf("DisciplineController: %s", err)
 			controllers.InternalServerError(w, err)

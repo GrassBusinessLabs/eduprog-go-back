@@ -3,7 +3,6 @@ package eduprog
 import (
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/upper/db/v4"
-	"reflect"
 	"sort"
 	"strconv"
 	"time"
@@ -32,14 +31,12 @@ type eduprogcomp struct {
 
 type EduprogcompRepository interface {
 	Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
-	Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error)
-	ShowList() ([]domain.Eduprogcomp, error)
+	Update(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
-	FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error)
-	FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error)
-	ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error)
-	ShowListByEduprogIdWithType(eduprog_id uint64, _type string) ([]domain.Eduprogcomp, error)
-	SortComponentsByMnS(eduprog_id uint64) (domain.Components, error)
+	FindByBlockNum(eduprogId uint64, blockNum string) ([]domain.Eduprogcomp, error)
+	ShowListByEduprogId(eduprogId uint64) ([]domain.Eduprogcomp, error)
+	ShowListByEduprogIdWithType(eduprogId uint64, _type string) ([]domain.Eduprogcomp, error)
+	SortComponentsByMnS(eduprogId uint64) (domain.Components, error)
 	Delete(id uint64) error
 }
 
@@ -57,30 +54,27 @@ func (r eduprogcompRepository) Save(eduprogcomp domain.Eduprogcomp) (domain.Edup
 	e := r.mapDomainToModel(eduprogcomp)
 	e.Id = 0
 	e.CreatedDate, e.UpdatedDate = time.Now(), time.Now()
-
 	err := r.coll.InsertReturning(&e)
 	if err != nil {
 		return domain.Eduprogcomp{}, err
 	}
-
 	return r.mapModelToDomain(e), nil
 }
 
-func (r eduprogcompRepository) Update(eduprogcomp domain.Eduprogcomp, id uint64) (domain.Eduprogcomp, error) {
+func (r eduprogcompRepository) Update(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
 	e := r.mapDomainToModel(eduprogcomp)
 	e.UpdatedDate = time.Now()
-	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	err := r.coll.Find(db.Cond{"id": eduprogcomp.Id}).Update(&e)
 	if err != nil {
 		return domain.Eduprogcomp{}, err
 	}
-
 	return r.mapModelToDomain(e), nil
 }
 
-func (r eduprogcompRepository) ShowList() ([]domain.Eduprogcomp, error) {
+func (r eduprogcompRepository) ShowListByEduprogId(eduprogId uint64) ([]domain.Eduprogcomp, error) {
 	var eduprogcomps []eduprogcomp
 
-	err := r.coll.Find().All(&eduprogcomps)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId}).OrderBy("code").All(&eduprogcomps)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}
@@ -88,21 +82,10 @@ func (r eduprogcompRepository) ShowList() ([]domain.Eduprogcomp, error) {
 	return r.mapModelToDomainCollection(eduprogcomps), nil
 }
 
-func (r eduprogcompRepository) ShowListByEduprogId(eduprog_id uint64) ([]domain.Eduprogcomp, error) {
+func (r eduprogcompRepository) ShowListByEduprogIdWithType(eduprogId uint64, _type string) ([]domain.Eduprogcomp, error) {
 	var eduprogcomps []eduprogcomp
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).OrderBy("code").All(&eduprogcomps)
-	if err != nil {
-		return []domain.Eduprogcomp{}, err
-	}
-
-	return r.mapModelToDomainCollection(eduprogcomps), nil
-}
-
-func (r eduprogcompRepository) ShowListByEduprogIdWithType(eduprog_id uint64, _type string) ([]domain.Eduprogcomp, error) {
-	var eduprogcomps []eduprogcomp
-
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "type": _type}).OrderBy("code").All(&eduprogcomps)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId, "type": _type}).OrderBy("code").All(&eduprogcomps)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}
@@ -120,19 +103,9 @@ func (r eduprogcompRepository) FindById(id uint64) (domain.Eduprogcomp, error) {
 	return r.mapModelToDomain(e), nil
 }
 
-func (r eduprogcompRepository) FindByWODeleteDate(id uint64) (domain.Eduprogcomp, error) {
-	var e eduprogcomp
-	err := r.coll.Find(db.Cond{"id": id}).One(&e)
-	if err != nil {
-		return domain.Eduprogcomp{}, err
-	}
-
-	return r.mapModelToDomain(e), nil
-}
-
-func (r eduprogcompRepository) FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error) {
+func (r eduprogcompRepository) FindByBlockNum(eduprogId uint64, blockNum string) ([]domain.Eduprogcomp, error) {
 	var e []eduprogcomp
-	err := r.coll.Find(db.Cond{"eduprog_id": id, "block_num": blockNum}).All(&e)
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId, "block_num": blockNum}).All(&e)
 	if err != nil {
 		return []domain.Eduprogcomp{}, err
 	}
@@ -140,22 +113,43 @@ func (r eduprogcompRepository) FindByBlockNum(id uint64, blockNum string) ([]dom
 	return r.mapModelToDomainCollection(e), nil
 }
 
-func (r eduprogcompRepository) SortComponentsByMnS(eduprog_id uint64) (domain.Components, error) {
+func (r eduprogcompRepository) SortComponentsByMnS(eduprogId uint64) (domain.Components, error) {
 	var mandeduprogcomp_slice []eduprogcomp
 	var seleduprogcomp_slice []eduprogcomp
-	var components domain.Components
 
-	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "type": MandCompType}).All(&mandeduprogcomp_slice)
+	var components domain.Components
+	var block domain.BlockInfo
+
+	err := r.coll.Find(db.Cond{"eduprog_id": eduprogId, "type": MandCompType}).All(&mandeduprogcomp_slice)
 	if err != nil {
 		return domain.Components{}, err
 	}
-	err = r.coll.Find(db.Cond{"eduprog_id": eduprog_id, "type": SelectCompType}).All(&seleduprogcomp_slice)
+	err = r.coll.Find(db.Cond{"eduprog_id": eduprogId, "type": SelectCompType}).All(&seleduprogcomp_slice)
 	if err != nil {
 		return domain.Components{}, err
 	}
 
 	components.Mandatory = r.mapModelToDomainCollection(mandeduprogcomp_slice)
-	components.Selective = r.GetVBBlocksDomain(r.mapModelToDomainCollection(seleduprogcomp_slice))
+	selective := r.mapModelToDomainCollection(seleduprogcomp_slice)
+
+	for _, eduprogcomp := range selective {
+		block.BlockName = eduprogcomp.BlockName
+		block.BlockNum = eduprogcomp.BlockNum
+		components.Selective = append(components.Selective, block)
+	}
+	components.Selective = r.uniqueBlocks(components.Selective)
+
+	for i, info := range components.Selective {
+		for _, eduprogcomp := range selective {
+			if eduprogcomp.BlockNum == info.BlockNum {
+				components.Selective[i].CompsInBlock = append(components.Selective[i].CompsInBlock, eduprogcomp)
+			}
+		}
+		r.sortByCode(components.Selective[i].CompsInBlock)
+	}
+
+	r.sortByCode(components.Mandatory)
+	r.sortBlocks(components.Selective)
 
 	return components, err
 }
@@ -208,50 +202,36 @@ func (r eduprogcompRepository) mapModelToDomainCollection(m []eduprogcomp) []dom
 	return result
 }
 
-func (r eduprogcompRepository) GetVBBlocksDomain(eduprogcomps []domain.Eduprogcomp) []domain.BlockInfo {
-	var blockInfo []domain.BlockInfo
-	for i := range eduprogcomps {
-		var temp domain.BlockInfo
-		temp.BlockNum = eduprogcomps[i].BlockNum
-		temp.BlockName = eduprogcomps[i].BlockName
-		blockInfo = append(blockInfo, temp)
-	}
-	blockInfo = RemoveDuplicatesByField(blockInfo, "BlockNum")
-	for i := range blockInfo {
-		for i2 := range eduprogcomps {
-			if blockInfo[i].BlockNum == eduprogcomps[i2].BlockNum {
-				blockInfo[i].CompsInBlock = append(blockInfo[i].CompsInBlock, eduprogcomps[i2])
+func (r eduprogcompRepository) uniqueBlocks(blocks []domain.BlockInfo) []domain.BlockInfo {
+	var unique []domain.BlockInfo
+
+loop:
+	for _, l := range blocks {
+		for i, u := range unique {
+			if l.BlockName == u.BlockName {
+				unique[i] = l
+				continue loop
 			}
 		}
-		blockInfo[i].CompsInBlock = sortByCode(blockInfo[i].CompsInBlock)
+		unique = append(unique, l)
 	}
 
-	sortBlocks(blockInfo)
-	for i := range blockInfo {
-		for i2, elem := range blockInfo[i].CompsInBlock {
-			elem.Code = strconv.Itoa(i2 + 1)
-			blockInfo[i].CompsInBlock[i2] = elem
-		}
-
-	}
-	return blockInfo
+	return unique
 }
 
-func sortBlocks(blocks []domain.BlockInfo) {
+func (r eduprogcompRepository) sortBlocks(blocks []domain.BlockInfo) {
 	sort.Slice(blocks, func(i, j int) bool {
 		blockNumI, errI := strconv.Atoi(blocks[i].BlockNum)
 		blockNumJ, errJ := strconv.Atoi(blocks[j].BlockNum)
 		if errI != nil || errJ != nil {
-			// handle error cases where blockNum is not an integer
 			return false
 		}
 		return blockNumI < blockNumJ
 	})
 }
 
-func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
+func (r eduprogcompRepository) sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
 	sort.Slice(eduprogcomps, func(i, j int) bool {
-		// Parse the Code field as integers and compare them
 		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
 		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
 		if errI != nil || errJ != nil {
@@ -260,17 +240,4 @@ func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
 		return codeI < codeJ
 	})
 	return eduprogcomps
-}
-
-func RemoveDuplicatesByField(mySlice []domain.BlockInfo, fieldName string) []domain.BlockInfo {
-	unique := make(map[string]bool)
-	result := make([]domain.BlockInfo, 0)
-	for _, v := range mySlice {
-		fieldValue := reflect.ValueOf(v).FieldByName(fieldName).String()
-		if !unique[fieldValue] {
-			unique[fieldValue] = true
-			result = append(result, v)
-		}
-	}
-	return result
 }

@@ -8,8 +8,8 @@ type CreateDisciplineRequest struct {
 }
 
 type UpdateDisciplineRequest struct {
-	Name      string `json:"name" validate:"gte=1,max=40"`
-	EduprogId uint64 `json:"eduprog_id" validate:"number"`
+	Name      string `json:"name"`
+	EduprogId uint64 `json:"eduprog_id"`
 }
 
 func (r CreateDisciplineRequest) ToDomainModel() (interface{}, error) {
