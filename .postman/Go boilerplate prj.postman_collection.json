@@ -1,0 +1,2568 @@
+{
+	"info": {
+		"_postman_id": "66872b03-79c0-47a4-841c-85b5077cf744",
+		"name": "Go boilerplate prj",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25231972"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonData = pm.response.json();\r",
+									"pm.environment.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"saf@test.com\",\n    \"password\": \"1234\",\n    \"name\": \"User Name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonData = pm.response.json();\r",
+									"pm.environment.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"saf@test.com\",\n    \"password\": \"1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", null);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-control-request-headers",
+								"value": "authorization,content-type",
+								"type": "text"
+							},
+							{
+								"key": "access-control-request-method",
+								"value": "GET",
+								"type": "text"
+							},
+							{
+								"key": "origin",
+								"value": "http://192.168.0.111:8100",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Password change",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token\", null);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access-control-request-headers",
+								"value": "authorization,content-type",
+								"type": "text"
+							},
+							{
+								"key": "access-control-request-method",
+								"value": "GET",
+								"type": "text"
+							},
+							{
+								"key": "origin",
+								"value": "http://192.168.0.111:8100",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"1234\",\r\n    \"newPassword\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/change-pwd",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"change-pwd"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"tem\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Me",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Access-Control-Request-Method",
+								"value": "GET",
+								"type": "text"
+							},
+							{
+								"key": "Access-Control-Request-Headers",
+								"value": "Content-Type",
+								"type": "text"
+							},
+							{
+								"key": "Origin",
+								"value": "http://foo.example",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Eduprog",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Розробка ПЗ3\",\r\n    \"education_level\": \"Перший (бакалаврський) рівень\",\r\n    \"speciality_code\": \"121\",\r\n    \"approval_year\": 2022\r\n}\r\n\r\n// specialty 121-126 or 141-145\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateDuplicateOf",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"Копія\",\r\n    \"approval_year\": 2025\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/copy/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"copy",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2",
+									"description": "Eduprog id to copy"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Розробка ПЗ\",\r\n    \"education_level\": \"Перший (бакалаврський) рівень\",\r\n    \"speciality_code\": \"121\",\r\n    \"approval_year\": 2023\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowList",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ExportToWord",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/expToWord/edId/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"expToWord",
+								"edId",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "69"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ExportToExcel",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/toExcel/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"toExcel",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "69"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ExportCompRelationsToPng",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/compsToPng/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"compsToPng",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreditsInfoById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/credits/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"credits",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LevelsList",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/levelsList",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"levelsList"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "credits",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/credits/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"credits",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Specialties",
+			"item": [
+				{
+					"name": "For admin",
+					"item": [
+						{
+							"name": "Create",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"code\": \"171\",\r\n    \"name\":\"Електроніка\",\r\n    \"kf_code\":\"17\",\r\n    \"knowledge_field\":\"Електроніка та телекомунікації\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/eduprogs/specialties/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"eduprogs",
+										"specialties",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"code\": \"171\",\r\n    \"name\":\"Електроніка\",\r\n    \"kf_code\":\"17\",\r\n    \"knowledge_field\":\"Електроніка та телекомунікації\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/eduprogs/specialties/upd",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"eduprogs",
+										"specialties",
+										"upd"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/eduprogs/specialties/del?code=171",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"eduprogs",
+										"specialties",
+										"del"
+									],
+									"query": [
+										{
+											"key": "code",
+											"value": "171"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "ShowAllSpec",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/specialties/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"specialties",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowAllKFs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/specialties/allKFs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"specialties",
+								"allKFs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByKnowledgeFieldCode",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/specialties/byKF?kfCode=12",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"specialties",
+								"byKF"
+							],
+							"query": [
+								{
+									"key": "kfCode",
+									"value": "12",
+									"description": "12, 14 or 17"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindByCode",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/specialties/byCode?code=121",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"specialties",
+								"byCode"
+							],
+							"query": [
+								{
+									"key": "code",
+									"value": "121"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Eduprogcomp",
+			"item": [
+				{
+					"name": "CreateOK",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Основи математики 2\",\r\n    \"credits\": 5,\r\n    \"control_type\": \"іспит\",\r\n    \"type\": \"ОК\",\r\n    \"eduprog_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateVB",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Третій блок предметт 1\",\r\n    \"credits\": 5,\r\n    \"control_type\": \"залік\",\r\n    \"type\": \"ВБ\",\r\n    \"block_num\": \"3\",\r\n    \"block_name\": \"Третій блок\",\r\n    \"eduprog_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Вступ \",\r\n    \"credits\": 10,\r\n    \"control_type\": \"залік\",\r\n    \"type\": \"ОК\",\r\n    \"block_num\": \"\",\r\n    \"block_name\": \"\",\r\n    \"eduprog_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReplaceCompAfter",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/replace?edcompId=3&putAfter=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"replace"
+							],
+							"query": [
+								{
+									"key": "edcompId",
+									"value": "3"
+								},
+								{
+									"key": "putAfter",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReplaceComp2 (Slice send)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eduprogcomps\": [\r\n            {\r\n                \"id\": 1\r\n            },\r\n    \r\n            {\r\n                \"id\": 2\r\n            },\r\n            {\r\n                \"id\": 3\r\n            },\r\n            {\r\n                \"id\": 4\r\n            },\r\n            {\r\n                \"id\": 5\r\n            },\r\n            {\r\n                \"id\": 6\r\n            },\r\n            {\r\n                \"id\": 7\r\n            },\r\n            {\r\n                \"id\": 8\r\n            },\r\n            {\r\n                \"id\": 9\r\n            },\r\n            {\r\n                \"id\": 10\r\n            }\r\n        ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/sendSlice",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"sendSlice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReplaceVB",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/replaceVB?edcompId=12&blockNum=1&putAfter=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"replaceVB"
+							],
+							"query": [
+								{
+									"key": "edcompId",
+									"value": "12"
+								},
+								{
+									"key": "blockNum",
+									"value": "1"
+								},
+								{
+									"key": "putAfter",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReplaceBlock",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/blockReplace?firstEducompId=&putAfter=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"blockReplace"
+							],
+							"query": [
+								{
+									"key": "firstEducompId",
+									"value": ""
+								},
+								{
+									"key": "putAfter",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateVBBlockName",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"block_num\": \"3\",\r\n    \"block_name\": \"Третій блок\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/updVB/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"updVB",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "eduprogID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowListByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/byEduprogId/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"byEduprogId",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetVBBlock",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/getVB/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								"getVB",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/comps/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"comps",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "48"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Eduprogscheme",
+			"item": [
+				{
+					"name": "SetComponentToScheme",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"discipline_id\": 1,\r\n    \"row\":1,\r\n    \"semester_num\": 1,\r\n    \"eduprog_id\": 1,\r\n    \"eduprogcomp_id\": 2,\r\n    \"credits_per_semester\": 15\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/setCompToSemester",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"setCompToSemester"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateComponentInScheme",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"discipline_id\": 83,\r\n    \"row\":1,\r\n    \"semester_num\": 1,\r\n    \"eduprog_id\": 69,\r\n    \"eduprogcomp_id\": 344,\r\n    \"credits_per_semester\": 7\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "578",
+									"description": "Eduprogscheme ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MoveSchemeComp",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"discipline_id\": 1,\r\n    \"semester_num\": 5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/move/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"move",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "70"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ExpandSchemecomp",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/expand/:id?expandTo=RIGHT",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"expand",
+								":id"
+							],
+							"query": [
+								{
+									"key": "expandTo",
+									"value": "RIGHT"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "70"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShrinkSchemeComp",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/shrink/:id?shrinkTo=LEFT",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"shrink",
+								":id"
+							],
+							"query": [
+								{
+									"key": "shrinkTo",
+									"value": "LEFT",
+									"description": "Currently only LEFT"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "70"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindBySemesterNum",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/bySemester/:semNum/:edId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"bySemester",
+								":semNum",
+								":edId"
+							],
+							"variable": [
+								{
+									"key": "semNum",
+									"value": "1"
+								},
+								{
+									"key": "edId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/byEduprogId/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"byEduprogId",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowFreeComponentsByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/freeComps/:id?order=Az",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"freeComps",
+								":id"
+							],
+							"query": [
+								{
+									"key": "order",
+									"value": "Az",
+									"description": "Az, Za"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Eduprog id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "35"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteAllComps",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/delFull/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"delFull",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "57"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Discipline",
+			"item": [
+				{
+					"name": "Save",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"вищча математика\",\r\n    \"eduprog_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/disciplines/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"disciplines",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"вища математика\",\r\n    \"eduprog_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/disciplines/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"disciplines",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddRowToDiscipline",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/disciplines/addRow/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"disciplines",
+								"addRow",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowDisciplinesByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/disciplines/getByEdId/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"disciplines",
+								"getByEdId",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/disciplines/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"disciplines",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/disciplines/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"disciplines",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "EducompRelations",
+			"item": [
+				{
+					"name": "CreateRelation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eduprog_id\":1,\r\n    \"base_comp_id\":3,\r\n    \"child_comp_id\":2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/compRelations/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"compRelations",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowRelationsByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/compRelations/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"compRelations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowPossibleRelationsForComp",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/compRelations/posRel/:edId/:compId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"compRelations",
+								"posRel",
+								":edId",
+								":compId"
+							],
+							"variable": [
+								{
+									"key": "edId",
+									"value": "69"
+								},
+								{
+									"key": "compId",
+									"value": "343"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteByBaseId",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/compRelations/:baseId/:childId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"compRelations",
+								":baseId",
+								":childId"
+							],
+							"variable": [
+								{
+									"key": "baseId",
+									"value": "3"
+								},
+								{
+									"key": "childId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Competencies",
+			"item": [
+				{
+					"name": "For admin",
+					"item": [
+						{
+							"name": "Create",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"type\":\"ЗК\",\r\n    \"definition\":\"test\",\r\n    \"specialty\":\"11\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/eduprogs/baseCompetencies/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"eduprogs",
+										"baseCompetencies",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/eduprogs/baseCompetencies/:cbId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"eduprogs",
+										"baseCompetencies",
+										":cbId"
+									],
+									"variable": [
+										{
+											"key": "cbId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/eduprogs/baseCompetencies/:cbId",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"eduprogs",
+										"baseCompetencies",
+										":cbId"
+									],
+									"variable": [
+										{
+											"key": "cbId",
+											"value": "111"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "ShowList",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/baseCompetencies/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"baseCompetencies",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByType",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/baseCompetencies/byType?type=FK&specialty=122",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"baseCompetencies",
+								"byType"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "FK",
+									"description": "ZK, FK, PR"
+								},
+								{
+									"key": "specialty",
+									"value": "122",
+									"description": "поки 121 або 141"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/baseCompetencies/:edId/byType?type=ZK",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"baseCompetencies",
+								":edId",
+								"byType"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "ZK",
+									"description": "ZK, FK or PR"
+								}
+							],
+							"variable": [
+								{
+									"key": "edId",
+									"value": "3",
+									"description": "Eduprog id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/baseCompetencies/:cbId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"baseCompetencies",
+								":cbId"
+							],
+							"variable": [
+								{
+									"key": "cbId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Eduprogcompetencies",
+			"item": [
+				{
+					"name": "AddCompetencyToEduprog",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"competency_id\":18,\r\n    \"eduprog_id\": 12,\r\n    \"definition\":\"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddCustomCompetency",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eduprog_id\": 1,\r\n    \"type\": \"ВФК\", \r\n    \"definition\":\"Здатність застосовувати моделі, методи та програмні засоби для вирішення інтелектуальних задач в комп’ютерних системах\"\r\n}\r\n// ВФК або ВПР",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/addCustom",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								"addCustom"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddAllCompetencies",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/addAll/:id/type?type=ZK",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								"addAll",
+								":id",
+								"type"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "ZK",
+									"description": "ZK, FK, PR"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Додати всі компетентності з бази до ОПП"
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteAllCompetencies",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/delAll/:id/type?type=FK",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								"delAll",
+								":id",
+								"type"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "FK",
+									"description": "ZK, FK, PR"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4",
+									"description": "eduprog ID"
+								}
+							]
+						},
+						"description": "Прибрати всі компетентності з ОПП"
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateCompetency",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"redefinition\": \"Здатність застосовувати койли на герої Shadow Fiend\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5",
+									"description": "competency id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowListByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/byEduprogId/:edId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								"byEduprogId",
+								":edId"
+							],
+							"variable": [
+								{
+									"key": "edId",
+									"value": "2",
+									"description": "eduprog ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByType",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/byEduprogId/:id/byType?type=PR",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								"byEduprogId",
+								":id",
+								"byType"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "PR",
+									"description": "ZK, FK, PR, VFK, VPR"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/:compId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								":compId"
+							],
+							"variable": [
+								{
+									"key": "compId",
+									"value": "160",
+									"description": "competency ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competencies/:compId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competencies",
+								":compId"
+							],
+							"variable": [
+								{
+									"key": "compId",
+									"value": "69",
+									"description": "competency ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CompetencyMatrix",
+			"item": [
+				{
+					"name": "CreateRelation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eduprog_id\":1,\r\n    \"component_id\": 3,\r\n    \"competency_id\":4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competenciesMatrix/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competenciesMatrix",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competenciesMatrix/:edId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competenciesMatrix",
+								":edId"
+							],
+							"variable": [
+								{
+									"key": "edId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/competenciesMatrix/:componentId/:competencyId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"competenciesMatrix",
+								":componentId",
+								":competencyId"
+							],
+							"variable": [
+								{
+									"key": "componentId",
+									"value": "1"
+								},
+								{
+									"key": "competencyId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ResultsMatrix",
+			"item": [
+				{
+					"name": "CreateRelation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eduprog_id\":1,\r\n    \"component_id\": 2,\r\n    \"eduprogresult_id\":35\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/resultsMatrix/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"resultsMatrix",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/resultsMatrix/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"resultsMatrix",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2",
+									"description": "Eduprog id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/resultsMatrix/:compId/:edresId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"resultsMatrix",
+								":compId",
+								":edresId"
+							],
+							"variable": [
+								{
+									"key": "compId",
+									"value": "1",
+									"description": "Component ID"
+								},
+								{
+									"key": "edresId",
+									"value": "1",
+									"description": "Eduprogresult ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Eduprogresults (НЕ ЧІПАТИ)",
+			"item": [
+				{
+					"name": "AddEduprogresultToEduprog",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"eduprog_id\": 1,\r\n    \"definition\": \"Вміння аналізувати проблеми щодо створення програмного забезпечення\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/eduprogs/results/add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"results",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ShowEduprogresultsByEduprogId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/results/byEduprogId/:edId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"results",
+								"byEduprogId",
+								":edId"
+							],
+							"variable": [
+								{
+									"key": "edId",
+									"value": "1",
+									"description": "eduprog id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/results/:resId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"results",
+								":resId"
+							],
+							"variable": [
+								{
+									"key": "resId",
+									"value": "1",
+									"description": "eduprogresult id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/results/:resId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"results",
+								":resId"
+							],
+							"variable": [
+								{
+									"key": "resId",
+									"value": "4",
+									"description": "eduprogresult id"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "DEPRECATED"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "localhost:8080/api/v1"
+		}
+	]
+}
