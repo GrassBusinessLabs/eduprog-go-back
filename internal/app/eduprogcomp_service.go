@@ -131,7 +131,7 @@ func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprog
 }
 
 func (s eduprogcompService) Update(ref, req domain.Eduprogcomp) (domain.Eduprogcomp, error) {
-	if req.Name != "" || req.Name != ref.Name {
+	if req.Name != "" && req.Name != ref.Name {
 		exists, err := s.eduprogcompRepo.CheckName(req)
 		if err != nil {
 			log.Printf("EduprogcompService: %s", err)
