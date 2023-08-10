@@ -13,12 +13,6 @@ import (
 	"strconv"
 )
 
-const (
-	MANDATORY = "MANDATORY"
-	BLOC      = "BLOC" // ВБ
-	//	LIST      = "LIST" // ВП
-)
-
 type EduprogcompController struct {
 	eduprogcompService app.EduprogcompService
 	eduprogService     app.EduprogService
@@ -39,86 +33,6 @@ func (c EduprogcompController) Save() http.HandlerFunc {
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
-			return
-		}
-
-		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		//Code generation logic
-		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
-			var maxCode uint64 = 0
-			eduprogcomp.Category = MANDATORY
-			for i := range comps.Mandatory {
-				if comps.Mandatory[i].Name == eduprogcomp.Name {
-					log.Printf("EduprogcompController: %s", err)
-					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-					return
-				}
-				temp, _ := strconv.ParseUint(comps.Mandatory[i].Code, 10, 64)
-				if i == 0 || temp > maxCode {
-					maxCode = temp
-				}
-			}
-			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
-			eduprogcomp.BlockName = ""
-			eduprogcomp.BlockNum = ""
-		} else if eduprogcomp.Type == "ВБ" { //if educomp type is "VB"
-			var maxCode uint64 = 0
-			eduprogcomp.Category = BLOC
-			for i := range comps.Selective {
-				for _, comp := range comps.Selective[i].CompsInBlock {
-					if comp.Name == eduprogcomp.Name {
-						log.Printf("EduprogcompController: %s", err)
-						controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-						return
-					}
-					if comp.BlockNum == eduprogcomp.BlockNum {
-						temp, _ := strconv.ParseUint(comp.Code, 10, 64)
-						if i == 0 || temp > maxCode {
-							maxCode = temp
-						}
-					}
-				}
-
-			}
-			eduprogcomp.Code = strconv.FormatUint(maxCode+1, 10)
-		}
-
-		//Free credits check
-
-		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-		creditsDto, err := c.eduprogController.GetCreditsInfo(comps, eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		if eduprogcomp.Type == "ОК" {
-			if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits"))
-				return
-			}
-		} else if eduprogcomp.Type == "ВБ" {
-			if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits or wrong number (must be > 0)"))
-				return
-			}
-		} else {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.BadRequest(w, errors.New(`wrong type, it can only be "ОК" or "ВБ"`))
 			return
 		}
 
@@ -143,138 +57,29 @@ func (c EduprogcompController) Update() http.HandlerFunc {
 			return
 		}
 
-		eduprogcomp, err := requests.Bind(r, requests.UpdateEduprogcompRequest{}, domain.Eduprogcomp{})
+		req, err := requests.Bind(r, requests.UpdateEduprogcompRequest{}, domain.Eduprogcomp{})
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcompById, err := c.eduprogcompService.FindById(id)
+		ref, err := c.eduprogcompService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
-		eduprogcomp.Id = eduprogcompById.Id
 
-		comps, _ := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
+		req, err = c.eduprogcompService.Update(ref, req)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
-		}
-		comps.Mandatory = sortByCode(comps.Mandatory)
-
-		maxSelectiveBlocCode := 1
-
-		if eduprogcomp.Type == "ОК" { //if educomp type is "OK"
-			eduprogcomp.Category = MANDATORY
-			for i := range comps.Mandatory {
-				if comps.Mandatory[i].Name == eduprogcomp.Name && comps.Mandatory[i].Id != eduprogcomp.Id {
-					log.Printf("EduprogcompController: %s", err)
-					controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-					return
-				}
-			}
-			eduprogcomp.BlockName = ""
-			eduprogcomp.BlockNum = ""
-		} else if eduprogcomp.Type == "ВБ" { //if educomp type is "VB"
-			eduprogcomp.Category = BLOC
-			for i := range comps.Selective {
-				for _, comp := range comps.Selective[i].CompsInBlock {
-					if comp.Name == eduprogcomp.Name && (comp.Id > eduprogcomp.Id || comp.Id < eduprogcomp.Id) {
-						log.Printf("EduprogcompController: %s", err)
-						controllers.BadRequest(w, errors.New("eduprog component with this name already exists"))
-						return
-					}
-					if comp.BlockNum == eduprogcomp.BlockNum {
-						maxSelectiveBlocCode++
-					}
-				}
-			}
-		}
-
-		//Free credits check
-
-		eduprog, err := c.eduprogService.FindById(eduprogcomp.EduprogId)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-		creditsDto, err := c.eduprogController.GetCreditsInfo(comps, eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		if eduprogcomp.Type == "ОК" {
-			if eduprogcomp.Credits+(creditsDto.MandatoryCredits-eduprogcompById.Credits) > creditsDto.MandatoryCreditsForLevel {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits"))
-				return
-			}
-		} else if eduprogcomp.Type == "ВБ" {
-			if eduprogcomp.Credits+(creditsDto.SelectiveCredits-eduprogcompById.Credits) > creditsDto.SelectiveCreditsForLevel {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.BadRequest(w, errors.New("too much credits"))
-				return
-			}
-		} else {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.BadRequest(w, errors.New(`wrong type, it can only be "ОК" or "ВБ"`))
-			return
-		}
-
-		eduprogcomp.Id = id
-		eduprogcomp.Code = eduprogcompById.Code
-		eduprogcomp, err = c.eduprogcompService.Update(eduprogcomp)
-		if err != nil {
-			log.Printf("EduprogcompController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		if eduprogcomp.Type == "ВБ" {
-			for i := range comps.Selective {
-				for i2, comp := range comps.Selective[i].CompsInBlock {
-					if comp.Id == eduprogcomp.Id {
-						comps.Selective[i].CompsInBlock[i2].BlockNum = eduprogcomp.BlockNum
-						comps.Selective[i].CompsInBlock[i2].BlockName = eduprogcomp.BlockName
-						comps.Selective[i].CompsInBlock[i2].Name = eduprogcomp.Name
-						comps.Selective[i].CompsInBlock[i2].ControlType = eduprogcomp.ControlType
-						comps.Selective[i].CompsInBlock[i2].Credits = eduprogcomp.Credits
-						comps.Selective[i].CompsInBlock[i2].Type = eduprogcomp.Type
-						comps.Selective[i].CompsInBlock[i2].Code = strconv.Itoa(maxSelectiveBlocCode)
-					} else {
-						comps.Selective[i].CompsInBlock[i2].BlockNum = comps.Selective[i].BlockNum
-						comps.Selective[i].CompsInBlock[i2].BlockName = comps.Selective[i].BlockName
-					}
-					_, _ = c.eduprogcompService.Update(comps.Selective[i].CompsInBlock[i2])
-				}
-			}
-			eduprogcomps, err := c.eduprogcompService.SortComponentsByMnS(eduprogcomp.EduprogId)
-			if err != nil {
-				log.Printf("EduprogcompController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-			for i, elem := range eduprogcomps.Selective {
-				elem.BlockNum = strconv.Itoa(i + 1)
-				eduprogcomps.Selective[i] = elem
-			}
-			for i := range eduprogcomps.Selective {
-				for _, comp := range eduprogcomps.Selective[i].CompsInBlock {
-					comp.BlockNum = eduprogcomps.Selective[i].BlockNum
-					_, _ = c.eduprogcompService.Update(comp)
-				}
-			}
 		}
 
 		var eduprogcompDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompDto.DomainToDto(eduprogcomp))
+		controllers.Success(w, eduprogcompDto.DomainToDto(req))
 	}
 }
 
@@ -386,7 +191,7 @@ func (c EduprogcompController) ReplaceCompBySendingSlice() http.HandlerFunc {
 				return
 			}
 			eduprogcomps[i].Code = strconv.Itoa(i + 1)
-			_, _ = c.eduprogcompService.Update(eduprogcomps[i])
+			_, err = c.eduprogcompService.Update(eduprogcomps[i], eduprogcomps[i])
 			if err != nil {
 				log.Printf("EduprogcompController: %s", err)
 				controllers.InternalServerError(w, err)

@@ -143,7 +143,7 @@ func (c EduprogController) ExportEduprogToExcel() http.HandlerFunc {
 			return
 		}
 
-		creditsDto, err := c.GetCreditsInfo(eduprogcomps, eduprog.EducationLevel)
+		creditsDto, err := c.eduprogcompService.GetCreditsInfo(eduprog)
 		if err != nil {
 			log.Printf("EduprogcompController: %s", err)
 			controllers.InternalServerError(w, err)

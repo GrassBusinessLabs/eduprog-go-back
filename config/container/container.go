@@ -79,7 +79,7 @@ func New(conf config.Configuration) Container {
 	authService := app.NewAuthService(sessionRepository, userService, conf, tknAuth)
 	specialtiesService := app.NewSpecialtiesService(specialtiesRepository)
 	eduprogService := app.NewEduprogService(eduprogRepository, specialtiesService)
-	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository)
+	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository, eduprogService)
 	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
 	disciplineService := app.NewDisciplineService(disciplineRepository)
 	educompRelationsService := app.NewEducompRelationsService(educompRelationsRepository)

@@ -2,8 +2,10 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/database/eduprog"
+	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/resources"
 	"log"
 	"sort"
 	"strconv"
@@ -11,7 +13,7 @@ import (
 
 type EduprogcompService interface {
 	Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
-	Update(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
+	Update(ref, req domain.Eduprogcomp) (domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
 	FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error)
 	SortComponentsByMnS(eduprogId uint64) (domain.Components, error)
@@ -22,34 +24,260 @@ type EduprogcompService interface {
 	ReplaceOK(eduprogcompId, putAfter uint64) (domain.Components, error)
 	ReplaceVBBlock(firstCompId uint64, putAfter uint64) (domain.Components, error)
 	ReplaceVB(eduprogcompId, blockNum, putAfter uint64) (domain.Components, error)
+	GetCreditsInfo(eduprog domain.Eduprog) (resources.CreditsDto, error)
 }
 
 type eduprogcompService struct {
 	eduprogcompRepo eduprog.EduprogcompRepository
+	eduprogService  EduprogService
 }
 
-func NewEduprogcompService(er eduprog.EduprogcompRepository) EduprogcompService {
+func NewEduprogcompService(er eduprog.EduprogcompRepository, es EduprogService) EduprogcompService {
 	return eduprogcompService{
 		eduprogcompRepo: er,
+		eduprogService:  es,
 	}
 }
 
 func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
+	exists, err := s.eduprogcompRepo.CheckName(eduprogcomp)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+	if exists {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, fmt.Errorf("eduprogcomp with name '%s' already exists in VB block/OK list", eduprogcomp.Name)
+	}
+
+	eduprogById, err := s.eduprogService.FindById(eduprogcomp.EduprogId)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+
+	creditsDto, err := s.GetCreditsInfo(eduprogById)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+
+	if eduprogcomp.Type == "ОК" {
+		if eduprogcomp.Credits > creditsDto.MandatoryFreeCredits {
+			log.Printf("EduprogcompService: %s", err)
+			return domain.Eduprogcomp{}, fmt.Errorf("too much credits")
+		}
+	} else if eduprogcomp.Type == "ВБ" {
+		if eduprogcomp.Credits > creditsDto.SelectiveFreeCredits {
+			log.Printf("EduprogcompService: %s", err)
+			return domain.Eduprogcomp{}, fmt.Errorf("too much credits")
+		}
+	} else {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, fmt.Errorf("only 'ВБ' or 'ОК'")
+	}
+
+	maxCode := 0
+
+	eduprogcomps, err := s.SortComponentsByMnS(eduprogcomp.EduprogId)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+
+	if eduprogcomp.Type == "ОК" {
+		for i := range eduprogcomps.Mandatory {
+			code, err := strconv.Atoi(eduprogcomps.Mandatory[i].Code)
+			if err != nil {
+				log.Printf("EduprogcompService: %s", err)
+				return domain.Eduprogcomp{}, err
+			}
+			if maxCode < code {
+				maxCode = code
+			}
+		}
+	} else if eduprogcomp.Type == "ВБ" {
+		for i := range eduprogcomps.Selective {
+			if eduprogcomps.Selective[i].BlockNum == eduprogcomp.BlockNum {
+				for i2 := range eduprogcomps.Selective[i].CompsInBlock {
+					code, err := strconv.Atoi(eduprogcomps.Selective[i].CompsInBlock[i2].Code)
+					if err != nil {
+						log.Printf("EduprogcompService: %s", err)
+						return domain.Eduprogcomp{}, err
+					}
+					if maxCode < code {
+						maxCode = code
+					}
+				}
+			}
+		}
+	}
+
+	eduprogcomp.Code = strconv.Itoa(maxCode + 1)
+
 	e, err := s.eduprogcompRepo.Save(eduprogcomp)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
 		return domain.Eduprogcomp{}, err
 	}
-	return e, err
-}
 
-func (s eduprogcompService) Update(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
-	e, err := s.eduprogcompRepo.Update(eduprogcomp)
+	err = s.codesRedefine(eduprogcomp.EduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
 		return domain.Eduprogcomp{}, err
 	}
+
 	return e, err
+}
+
+func (s eduprogcompService) Update(ref, req domain.Eduprogcomp) (domain.Eduprogcomp, error) {
+	if req.Name != "" {
+		exists, err := s.eduprogcompRepo.CheckName(req)
+		if err != nil {
+			log.Printf("EduprogcompService: %s", err)
+			return domain.Eduprogcomp{}, err
+		}
+		if exists {
+			return domain.Eduprogcomp{}, fmt.Errorf("eduprogcomp with name '%s' already exists in VB block/OK list", req.Name)
+		}
+		ref.Name = req.Name
+	}
+	if req.Credits != 0 {
+		eduprogById, err := s.eduprogService.FindById(req.EduprogId)
+		if err != nil {
+			log.Printf("EduprogcompService: %s", err)
+			return domain.Eduprogcomp{}, err
+		}
+
+		creditsDto, err := s.GetCreditsInfo(eduprogById)
+		if err != nil {
+			log.Printf("EduprogcompService: %s", err)
+			return domain.Eduprogcomp{}, err
+		}
+
+		if req.Type == "ОК" {
+			if req.Credits+(creditsDto.MandatoryCredits-ref.Credits) > creditsDto.MandatoryCreditsForLevel {
+				log.Printf("EduprogcompService: %s", err)
+				return domain.Eduprogcomp{}, fmt.Errorf("too much credits")
+			}
+		} else if req.Type == "ВБ" {
+			if req.Credits+(creditsDto.SelectiveCredits-ref.Credits) > creditsDto.SelectiveCreditsForLevel {
+				log.Printf("EduprogcompService: %s", err)
+				return domain.Eduprogcomp{}, fmt.Errorf("too much credits")
+			}
+		} else {
+			log.Printf("EduprogcompService: %s", err)
+			return domain.Eduprogcomp{}, fmt.Errorf("wrong type, only 'ВБ' or 'ОК'")
+		}
+		ref.Credits = req.Credits
+	}
+	if req.ControlType != "" {
+		ref.ControlType = req.ControlType
+	}
+	if req.Type != "" {
+		ref.Type = req.Type
+	}
+	if req.BlockNum != "" {
+		ref.BlockNum = req.BlockNum
+	}
+	if req.BlockName != "" {
+		ref.BlockName = req.BlockName
+	}
+	if req.EduprogId != 0 {
+		ref.EduprogId = req.EduprogId
+	}
+
+	e, err := s.eduprogcompRepo.Update(ref)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+
+	err = s.codesRedefine(req.EduprogId)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return domain.Eduprogcomp{}, err
+	}
+
+	return e, err
+}
+
+func (s eduprogcompService) GetCreditsInfo(eduprog domain.Eduprog) (resources.CreditsDto, error) {
+	var creditsDto resources.CreditsDto
+
+	comps, err := s.SortComponentsByMnS(eduprog.Id)
+	if err != nil {
+		log.Printf("EduprogController: %s", err)
+		return creditsDto, err
+	}
+
+	levelData, err := s.eduprogService.GetOPPLevelData(eduprog.EducationLevel)
+	if err != nil {
+		log.Printf("EduprogController: %s", err)
+		return creditsDto, err
+	}
+
+	for i := range comps.Selective {
+		var minFromBlock domain.Eduprogcomp
+		var maxFromBlock domain.Eduprogcomp
+		minFromBlock.Credits = 500
+		maxFromBlock.Credits = 0
+		for _, comp := range comps.Selective[i].CompsInBlock {
+			creditsDto.SelectiveCredits += comp.Credits
+			if comp.Credits < minFromBlock.Credits {
+				minFromBlock = comp
+			}
+			if comp.Credits > minFromBlock.Credits {
+				maxFromBlock = comp
+			}
+		}
+		creditsDto.MinCreditsForVB += minFromBlock.Credits
+		creditsDto.MaxCreditsForVB += maxFromBlock.Credits
+	}
+
+	for _, comp := range comps.Mandatory {
+		creditsDto.MandatoryCredits += comp.Credits
+	}
+
+	creditsDto.MandatoryCreditsForLevel = levelData.MandatoryCredits
+	creditsDto.SelectiveCreditsForLevel = levelData.SelectiveCredits
+	creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
+	creditsDto.TotalFreeCredits = (creditsDto.MandatoryCreditsForLevel + creditsDto.SelectiveCreditsForLevel) - creditsDto.TotalCredits
+	creditsDto.MandatoryFreeCredits = creditsDto.MandatoryCreditsForLevel - creditsDto.MandatoryCredits
+	creditsDto.SelectiveFreeCredits = creditsDto.SelectiveCreditsForLevel - creditsDto.SelectiveCredits
+
+	return creditsDto, nil
+}
+
+func (s eduprogcompService) codesRedefine(eduprogId uint64) error {
+	eduprogcomps, err := s.SortComponentsByMnS(eduprogId)
+	if err != nil {
+		log.Printf("EduprogcompService: %s", err)
+		return err
+	}
+
+	for i := range eduprogcomps.Mandatory {
+		eduprogcomps.Mandatory[i].Code = strconv.Itoa(i + 1)
+		_, err = s.eduprogcompRepo.Update(eduprogcomps.Mandatory[i])
+		if err != nil {
+			log.Printf("EduprogcompService: %s", err)
+			return err
+		}
+	}
+
+	for i := range eduprogcomps.Selective {
+		eduprogcomps.Selective[i].BlockNum = strconv.Itoa(i + 1)
+		for i2 := range eduprogcomps.Selective[i].CompsInBlock {
+			eduprogcomps.Selective[i].CompsInBlock[i2].Code = strconv.Itoa(i2 + 1)
+			_, err = s.eduprogcompRepo.Update(eduprogcomps.Selective[i].CompsInBlock[i2])
+			if err != nil {
+				log.Printf("EduprogcompService: %s", err)
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s eduprogcompService) FindById(id uint64) (domain.Eduprogcomp, error) {
@@ -125,7 +353,7 @@ func (s eduprogcompService) UpdateVBName(eduprogId uint64, eduprogcompReq domain
 			return []domain.Eduprogcomp{}, err
 		}
 		edcompById.BlockName = eduprogcompReq.BlockName
-		updEduprogcomp, err := s.Update(edcompById)
+		updEduprogcomp, err := s.eduprogcompRepo.Update(edcompById)
 		if err != nil {
 			log.Printf("EduprogcompService: %s", err)
 			return []domain.Eduprogcomp{}, err
@@ -150,41 +378,10 @@ func (s eduprogcompService) Delete(id uint64) error {
 		return err
 	}
 
-	eduprogcomps, err := s.SortComponentsByMnS(eduprogcomp.EduprogId)
+	err = s.codesRedefine(eduprogcomp.EduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
 		return err
-	}
-
-	for i, elem := range eduprogcomps.Mandatory {
-		elem.Code = strconv.Itoa(i + 1)
-		eduprogcomps.Mandatory[i] = elem
-	}
-
-	for i, elem := range eduprogcomps.Selective {
-		elem.BlockNum = strconv.Itoa(i + 1)
-		eduprogcomps.Selective[i] = elem
-	}
-
-	for i := range eduprogcomps.Mandatory {
-		_, err = s.Update(eduprogcomps.Mandatory[i])
-		if err != nil {
-			log.Printf("EduprogcompService: %s", err)
-			return err
-		}
-
-	}
-
-	for i := range eduprogcomps.Selective {
-		for _, comp := range eduprogcomps.Selective[i].CompsInBlock {
-			comp.BlockNum = eduprogcomps.Selective[i].BlockNum
-			_, err = s.Update(comp)
-			if err != nil {
-				log.Printf("EduprogcompService: %s", err)
-				return err
-			}
-
-		}
 	}
 
 	return nil
@@ -213,7 +410,7 @@ func (s eduprogcompService) ReplaceOK(eduprogcompId, putAfter uint64) (domain.Co
 
 	for i := range eduprogcomps.Mandatory {
 		eduprogcomps.Mandatory[i].Code = strconv.Itoa(i + 1)
-		_, err = s.Update(eduprogcomps.Mandatory[i])
+		_, err = s.eduprogcompRepo.Update(eduprogcomps.Mandatory[i])
 		if err != nil {
 			log.Printf("EduprogcompService: %s", err)
 			return domain.Components{}, err
@@ -268,7 +465,7 @@ func (s eduprogcompService) ReplaceVBBlock(firstCompId uint64, putAfter uint64) 
 		components.Selective[i].BlockNum = strconv.Itoa(i + 1)
 		for i2 := range blockInfo.CompsInBlock {
 			components.Selective[i].CompsInBlock[i2].BlockNum = components.Selective[i].BlockNum
-			_, err = s.Update(components.Selective[i].CompsInBlock[i2])
+			_, err = s.eduprogcompRepo.Update(components.Selective[i].CompsInBlock[i2])
 			if err != nil {
 				log.Printf("EduprogcompService: %s", err)
 				return domain.Components{}, err
@@ -327,7 +524,7 @@ func (s eduprogcompService) ReplaceVB(eduprogcompId, blockNum, putAfter uint64) 
 			components.Selective[i].CompsInBlock[i2].Code = strconv.Itoa(i2 + 1)
 			components.Selective[i].CompsInBlock[i2].BlockNum = components.Selective[i].BlockNum
 			components.Selective[i].CompsInBlock[i2].BlockName = components.Selective[i].BlockName
-			_, err = s.Update(components.Selective[i].CompsInBlock[i2])
+			_, err = s.eduprogcompRepo.Update(components.Selective[i].CompsInBlock[i2])
 			if err != nil {
 				log.Printf("EduprogcompService: %s", err)
 				return domain.Components{}, err

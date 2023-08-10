@@ -30,6 +30,7 @@ type eduprogcomp struct {
 }
 
 type EduprogcompRepository interface {
+	CheckName(eduprogcomp domain.Eduprogcomp) (bool, error)
 	Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
 	Update(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error)
 	FindById(id uint64) (domain.Eduprogcomp, error)
@@ -48,6 +49,28 @@ func NewEduprogcompRepository(dbSession db.Session) EduprogcompRepository {
 	return eduprogcompRepository{
 		coll: dbSession.Collection(EduprogcompTableName),
 	}
+}
+
+func (r eduprogcompRepository) CheckName(eduprogcomp domain.Eduprogcomp) (bool, error) {
+	if eduprogcomp.BlockNum != "" {
+		exists, err := r.coll.Find(
+			db.Cond{
+				"name":      eduprogcomp.Name,
+				"type":      eduprogcomp.Type,
+				"block_num": eduprogcomp.BlockNum}).Exists()
+		if err != nil {
+			return false, err
+		}
+		return exists, nil
+	}
+	exists, err := r.coll.Find(
+		db.Cond{
+			"name": eduprogcomp.Name,
+			"type": eduprogcomp.Type}).Exists()
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 func (r eduprogcompRepository) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {

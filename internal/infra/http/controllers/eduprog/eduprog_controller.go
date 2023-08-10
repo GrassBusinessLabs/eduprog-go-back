@@ -231,14 +231,7 @@ func (c EduprogController) CreditsInfo() http.HandlerFunc {
 			return
 		}
 
-		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		creditsDto, err := c.GetCreditsInfo(comps, eduprog.EducationLevel)
+		creditsDto, err := c.eduprogcompService.GetCreditsInfo(eduprog)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -247,47 +240,6 @@ func (c EduprogController) CreditsInfo() http.HandlerFunc {
 
 		controllers.Success(w, creditsDto)
 	}
-}
-
-func (c EduprogController) GetCreditsInfo(comps domain.Components, edLevel string) (resources.CreditsDto, error) {
-	var creditsDto resources.CreditsDto
-
-	levelData, err := c.eduprogService.GetOPPLevelData(edLevel)
-	if err != nil {
-		log.Printf("EduprogController: %s", err)
-		return creditsDto, err
-	}
-
-	for i := range comps.Selective {
-		var minFromBlock domain.Eduprogcomp
-		var maxFromBlock domain.Eduprogcomp
-		minFromBlock.Credits = 500
-		maxFromBlock.Credits = 0
-		for _, comp := range comps.Selective[i].CompsInBlock {
-			creditsDto.SelectiveCredits += comp.Credits
-			if comp.Credits < minFromBlock.Credits {
-				minFromBlock = comp
-			}
-			if comp.Credits > minFromBlock.Credits {
-				maxFromBlock = comp
-			}
-		}
-		creditsDto.MinCreditsForVB += minFromBlock.Credits
-		creditsDto.MaxCreditsForVB += maxFromBlock.Credits
-	}
-
-	for _, comp := range comps.Mandatory {
-		creditsDto.MandatoryCredits += comp.Credits
-	}
-
-	creditsDto.MandatoryCreditsForLevel = levelData.MandatoryCredits
-	creditsDto.SelectiveCreditsForLevel = levelData.SelectiveCredits
-	creditsDto.TotalCredits = creditsDto.SelectiveCredits + creditsDto.MandatoryCredits
-	creditsDto.TotalFreeCredits = (creditsDto.MandatoryCreditsForLevel + creditsDto.SelectiveCreditsForLevel) - creditsDto.TotalCredits
-	creditsDto.MandatoryFreeCredits = creditsDto.MandatoryCreditsForLevel - creditsDto.MandatoryCredits
-	creditsDto.SelectiveFreeCredits = creditsDto.SelectiveCreditsForLevel - creditsDto.SelectiveCredits
-
-	return creditsDto, nil
 }
 
 func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
