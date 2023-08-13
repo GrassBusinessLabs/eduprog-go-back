@@ -46,11 +46,13 @@ type EduprogRepository interface {
 
 type eduprogRepository struct {
 	coll db.Collection
+	sess db.Session
 }
 
 func NewEduprogRepository(dbSession db.Session) EduprogRepository {
 	return eduprogRepository{
 		coll: dbSession.Collection(EduprogTableName),
+		sess: dbSession,
 	}
 }
 
@@ -165,7 +167,53 @@ func (r eduprogRepository) GetOPPLevelData(level string) (domain.OPPLevelStruct,
 }
 
 func (r eduprogRepository) Delete(id uint64) error {
-	return r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).Update(map[string]interface{}{"deleted_date": time.Now()})
+	err := r.sess.Tx(
+		func(tx db.Session) error {
+			err := r.coll.Find(db.Cond{"id": id, "deleted_date": nil}).Update(map[string]interface{}{"deleted_date": time.Now()})
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(EduprogcompTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(CompetenciesMatrixTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(DisciplineTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(EducompRelationsTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(EduprogcompetenciesTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(EduprogschemeTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			err = r.sess.Collection(ResultsMatrixTableName).Find(db.Cond{"eduprog_id": id}).Delete()
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	)
+
+	return err
 }
 
 func (r eduprogRepository) mapDomainToModel(d domain.Eduprog) eduprog {

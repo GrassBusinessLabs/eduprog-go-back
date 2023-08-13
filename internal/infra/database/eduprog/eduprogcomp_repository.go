@@ -55,9 +55,11 @@ func (r eduprogcompRepository) CheckName(eduprogcomp domain.Eduprogcomp) (bool, 
 	if eduprogcomp.BlockNum != "" {
 		exists, err := r.coll.Find(
 			db.Cond{
-				"name":      eduprogcomp.Name,
-				"type":      eduprogcomp.Type,
-				"block_num": eduprogcomp.BlockNum}).Exists()
+				"name":       eduprogcomp.Name,
+				"type":       eduprogcomp.Type,
+				"block_num":  eduprogcomp.BlockNum,
+				"eduprog_id": eduprogcomp.EduprogId,
+			}).Exists()
 		if err != nil {
 			return false, err
 		}
@@ -65,8 +67,10 @@ func (r eduprogcompRepository) CheckName(eduprogcomp domain.Eduprogcomp) (bool, 
 	}
 	exists, err := r.coll.Find(
 		db.Cond{
-			"name": eduprogcomp.Name,
-			"type": eduprogcomp.Type}).Exists()
+			"name":       eduprogcomp.Name,
+			"type":       eduprogcomp.Type,
+			"eduprog_id": eduprogcomp.EduprogId,
+		}).Exists()
 	if err != nil {
 		return false, err
 	}

@@ -40,15 +40,15 @@ func NewEduprogcompService(er eduprog.EduprogcompRepository, es EduprogService) 
 }
 
 func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
-	exists, err := s.eduprogcompRepo.CheckName(eduprogcomp)
-	if err != nil {
-		log.Printf("EduprogcompService: %s", err)
-		return domain.Eduprogcomp{}, err
-	}
-	if exists {
-		log.Printf("EduprogcompService: %s", err)
-		return domain.Eduprogcomp{}, fmt.Errorf("eduprogcomp with name '%s' already exists in VB block/OK list", eduprogcomp.Name)
-	}
+	//exists, err := s.eduprogcompRepo.CheckName(eduprogcomp)
+	//if err != nil {
+	//	log.Printf("EduprogcompService: %s", err)
+	//	return domain.Eduprogcomp{}, err
+	//}
+	//if exists {
+	//	log.Printf("EduprogcompService: %s", err)
+	//	return domain.Eduprogcomp{}, fmt.Errorf("eduprogcomp with name '%s' already exists in VB block/OK list", eduprogcomp.Name)
+	//}
 
 	eduprogById, err := s.eduprogService.FindById(eduprogcomp.EduprogId)
 	if err != nil {

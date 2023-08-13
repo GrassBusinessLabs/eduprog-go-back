@@ -285,6 +285,7 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 
 		for _, eduprogcomp := range eduprogcomps {
 			eduprogcomp.EduprogId = eduprog.Id
+
 			_, err = c.eduprogcompService.Save(eduprogcomp)
 			if err != nil {
 				log.Printf("EduprogController: %s", err)
