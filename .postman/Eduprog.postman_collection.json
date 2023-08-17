@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "66872b03-79c0-47a4-841c-85b5077cf744",
-		"name": "Go boilerplate prj",
+		"name": "Eduprog",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "25231972"
 	},
@@ -779,7 +779,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Основи математики 2\",\r\n    \"credits\": 5,\r\n    \"control_type\": \"іспит\",\r\n    \"type\": \"ОК\",\r\n    \"eduprog_id\": 1\r\n}",
+							"raw": "{\r\n    \"name\": \"Основи математики fdf\",\r\n    \"credits\": 5,\r\n    \"control_type\": \"іспит\",\r\n    \"type\": \"ОК\",\r\n    \"eduprog_id\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -807,7 +807,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Третій блок предметт 1\",\r\n    \"credits\": 5,\r\n    \"control_type\": \"залік\",\r\n    \"type\": \"ВБ\",\r\n    \"block_num\": \"3\",\r\n    \"block_name\": \"Третій блок\",\r\n    \"eduprog_id\": 1\r\n}",
+							"raw": "{\r\n    \"name\": \"Основи математики 4\",\r\n    \"credits\": 3,\r\n    \"control_type\": \"залік\",\r\n    \"type\": \"ВБ\",\r\n    \"block_num\": \"3\",\r\n    \"block_name\": \"Третій блок\",\r\n    \"eduprog_id\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -835,7 +835,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Вступ \",\r\n    \"credits\": 10,\r\n    \"control_type\": \"залік\",\r\n    \"type\": \"ОК\",\r\n    \"block_num\": \"\",\r\n    \"block_name\": \"\",\r\n    \"eduprog_id\": 1\r\n}",
+							"raw": "{\r\n    \"name\": \"Основи математики 2\",\r\n    \"credits\": 5,\r\n    \"control_type\": \"іспит\",\r\n    \"type\": \"ОК\",\r\n    \"block_num\": \"\",\r\n    \"block_name\": \"\",\r\n    \"eduprog_id\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -855,7 +855,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1"
+									"value": "47"
 								}
 							]
 						}
@@ -925,7 +925,7 @@
 						"method": "PUT",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/eduprogs/comps/replaceVB?edcompId=12&blockNum=1&putAfter=0",
+							"raw": "{{base_url}}/eduprogs/comps/replaceVB?edcompId=4&blockNum=1&putAfter=0",
 							"host": [
 								"{{base_url}}"
 							],
@@ -937,7 +937,7 @@
 							"query": [
 								{
 									"key": "edcompId",
-									"value": "12"
+									"value": "4"
 								},
 								{
 									"key": "blockNum",
@@ -1112,7 +1112,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "48"
+									"value": "50"
 								}
 							]
 						}
@@ -1269,7 +1269,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/eduprogs/scheme/shrink/:id?shrinkTo=LEFT",
+							"raw": "{{base_url}}/eduprogs/scheme/shrink/:id?shrinkTo=RIGHT",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1282,14 +1282,14 @@
 							"query": [
 								{
 									"key": "shrinkTo",
-									"value": "LEFT",
+									"value": "RIGHT",
 									"description": "Currently only LEFT"
 								}
 							],
 							"variable": [
 								{
 									"key": "id",
-									"value": "70"
+									"value": "115"
 								}
 							]
 						}
