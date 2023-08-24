@@ -213,7 +213,7 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 		var componentWithMaxSemester domain.Eduprogscheme
 		var componentWithMinSemester domain.Eduprogscheme
 
-		if expandTo == "LEFT" { // EXPANDING SCHEME COMP TO LEFT (+semester)
+		if expandTo == "LEFT" { // EXPANDING SCHEME COMP TO LEFT (-semester)
 			if len(schemeComponentsList) < 2 {
 				if schemeComponentsList[0].SemesterNum > 1 {
 					if (schemeComponentsList[0].CreditsPerSemester / 2) < 3 {
@@ -522,12 +522,10 @@ func (c EduprogschemeController) ShrinkComponentInEduprogscheme() http.HandlerFu
 					return
 				}
 
-				creditsFromSelectedComponent := componentWithMaxSemester.CreditsPerSemester
-				creditsToAddPerComponent := creditsFromSelectedComponent / float64(len(schemeComponentsList)-1)
-
+				creditsInEachSemester := componentWithMaxSemester.CreditsPerSemester / float64(len(schemeComponentsList)-1)
 				for i := range schemeComponentsList {
 					if schemeComponentsList[i].Id != componentWithMaxSemester.Id {
-						schemeComponentsList[i].CreditsPerSemester = schemeComponentsList[i].CreditsPerSemester + creditsToAddPerComponent
+						schemeComponentsList[i].CreditsPerSemester = schemeComponentsList[i].CreditsPerSemester + creditsInEachSemester
 						schemeComponentsList[i].SemesterNum = schemeComponentsList[i].SemesterNum + 1
 						_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(schemeComponentsList[i], schemeComponentsList[i].Id)
 						if err != nil {
