@@ -222,9 +222,9 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 						return
 					}
 					createdSchemeComponent = schemeComponentsList[0]
-					createdSchemeComponent.CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester / 2
-					schemeComponentsList[0].CreditsPerSemester = schemeComponentsList[0].CreditsPerSemester - createdSchemeComponent.CreditsPerSemester
-					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum - 1
+					schemeComponentsList[0].SemesterNum = createdSchemeComponent.SemesterNum - 1
+					schemeComponentsList[0].CreditsPerSemester = createdSchemeComponent.CreditsPerSemester / 2
+					createdSchemeComponent.CreditsPerSemester = createdSchemeComponent.CreditsPerSemester / 2
 
 					if schemeComponentsList[0].CreditsPerSemester <= 0 {
 						log.Printf("EduprogschemeController: %s", err)
@@ -238,6 +238,7 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 						controllers.InternalServerError(w, err)
 						return
 					}
+
 					createdSchemeComponent, err = c.eduprogschemeService.SetComponentToEdprogscheme(createdSchemeComponent)
 					if err != nil {
 						log.Printf("EduprogschemeController: %s", err)
@@ -267,12 +268,12 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 						return
 					}
 
-					createdSchemeComponent = componentWithMinSemester
+					createdSchemeComponent = schemeComponentsList[len(schemeComponentsList)-1]
 					createdSchemeComponent.CreditsPerSemester = creditsInEachSemester
-					createdSchemeComponent.SemesterNum = createdSchemeComponent.SemesterNum - 1
 
 					for _, component := range schemeComponentsList {
 						component.CreditsPerSemester = creditsInEachSemester
+						component.SemesterNum = component.SemesterNum - 1
 						_, err = c.eduprogschemeService.UpdateComponentInEduprogscheme(component, component.Id)
 						if err != nil {
 							log.Printf("EduprogschemeController: %s", err)
@@ -293,7 +294,6 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 					return
 				}
 			}
-
 		} else if expandTo == "RIGHT" { // EXPANDING SCHEME COMP TO RIGHT (+semester)
 			if len(schemeComponentsList) < 2 {
 				if schemeComponentsList[0].SemesterNum < 8 {
