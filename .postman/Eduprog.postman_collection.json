@@ -462,7 +462,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "69"
+									"value": "1"
 								}
 							]
 						}
@@ -1131,7 +1131,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"discipline_id\": 1,\r\n    \"row\":1,\r\n    \"semester_num\": 1,\r\n    \"eduprog_id\": 1,\r\n    \"eduprogcomp_id\": 2,\r\n    \"credits_per_semester\": 15\r\n}",
+							"raw": "{\r\n    \"discipline_id\": 1,\r\n    \"row\":1,\r\n    \"semester_num\": 5,\r\n    \"eduprog_id\": 1,\r\n    \"eduprogcomp_id\": 2,\r\n    \"credits_per_semester\": 15\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1237,7 +1237,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/eduprogs/scheme/expand/:id?expandTo=RIGHT",
+							"raw": "{{base_url}}/eduprogs/scheme/expand/:id?expandTo=LEFT",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1250,13 +1250,46 @@
 							"query": [
 								{
 									"key": "expandTo",
-									"value": "RIGHT"
+									"value": "LEFT"
 								}
 							],
 							"variable": [
 								{
 									"key": "id",
-									"value": "70"
+									"value": "117"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Expand or shrink",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/eduprogs/scheme/expandOrShrink?eduprogcompId=2&semNum=5&direction=RIGHT",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"eduprogs",
+								"scheme",
+								"expandOrShrink"
+							],
+							"query": [
+								{
+									"key": "eduprogcompId",
+									"value": "2"
+								},
+								{
+									"key": "semNum",
+									"value": "5"
+								},
+								{
+									"key": "direction",
+									"value": "RIGHT"
 								}
 							]
 						}
@@ -1289,7 +1322,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "115"
+									"value": "117"
 								}
 							]
 						}
@@ -1456,7 +1489,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "57"
+									"value": "217"
 								}
 							]
 						}
@@ -1579,7 +1612,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1"
+									"value": "8"
 								}
 							]
 						}
@@ -1605,7 +1638,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "2"
+									"value": "8"
 								}
 							]
 						}

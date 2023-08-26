@@ -30,6 +30,56 @@ func NewEduprogschemeController(ess app.EduprogschemeService, ecs app.Eduprogcom
 	}
 }
 
+func (c EduprogschemeController) ExpandOrShrinkComponent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogcompIdStr := r.URL.Query().Get("eduprogcompId")
+		eduprogcompId, err := strconv.ParseUint(eduprogcompIdStr, 10, 64)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, fmt.Errorf("error parsing 'eduprogcompId' parameter"))
+			return
+		}
+
+		semNumStr := r.URL.Query().Get("semNum")
+		semNum, err := strconv.ParseUint(semNumStr, 10, 64)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, fmt.Errorf("error parsing 'semNum' parameter"))
+			return
+		}
+
+		direction := r.URL.Query().Get("direction")
+		if direction != "LEFT" && direction != "RIGHT" && direction != "" {
+			controllers.BadRequest(w, errors.New("direction only 'RIGHT' or LEFT"))
+			return
+		}
+
+		eduprogscheme, err := c.eduprogschemeService.ExpandOrShrinkEduprogschemeComponent(eduprogcompId, semNum, direction)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme[0].EduprogcompId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcompsToShow, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogschemeDto resources.EduprogschemeDto
+		controllers.Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcompsToShow))
+	}
+}
+
 func (c EduprogschemeController) SetComponentToEdprogscheme() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -194,13 +244,6 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 			return
 		}
 
-		eduprogcomp, err := c.eduprogcompService.FindById(eduprogschemeComponent.EduprogcompId)
-		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
 		var schemeComponentsList []domain.Eduprogscheme
 
 		for i := range eduprogscheme {
@@ -221,6 +264,7 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 						controllers.BadRequest(w, errors.New("неможливо розтягнути цей компонент, бо має бути мінімум 3 кредити на семестр"))
 						return
 					}
+
 					createdSchemeComponent = schemeComponentsList[0]
 					schemeComponentsList[0].SemesterNum = createdSchemeComponent.SemesterNum - 1
 					schemeComponentsList[0].CreditsPerSemester = createdSchemeComponent.CreditsPerSemester / 2
@@ -369,14 +413,14 @@ func (c EduprogschemeController) ExpandComponentInEduprogscheme() http.HandlerFu
 			}
 		}
 
-		eduprogschemeToShow, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogcomp.EduprogId)
+		eduprogschemeToShow, err := c.eduprogschemeService.ShowSchemeByEduprogId(eduprogschemeComponent.EduprogId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
 
-		eduprogcompsToShow, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		eduprogcompsToShow, err := c.eduprogcompService.ShowListByEduprogId(eduprogschemeComponent.EduprogId)
 		if err != nil {
 			log.Printf("EduprogschemeController: %s", err)
 			controllers.InternalServerError(w, err)

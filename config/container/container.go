@@ -80,7 +80,7 @@ func New(conf config.Configuration) Container {
 	specialtiesService := app.NewSpecialtiesService(specialtiesRepository)
 	eduprogService := app.NewEduprogService(eduprogRepository, specialtiesService)
 	eduprogcompService := app.NewEduprogcompService(eduprogcompRepository, eduprogService)
-	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository)
+	eduprogschemeService := app.NewEduprogschemeService(eduprogschemeRepository, eduprogcompService)
 	disciplineService := app.NewDisciplineService(disciplineRepository)
 	educompRelationsService := app.NewEducompRelationsService(educompRelationsRepository)
 	competencyBaseService := app.NewCompetenciesBaseService(competencyBaseRepository)
