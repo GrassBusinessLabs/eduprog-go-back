@@ -8,7 +8,7 @@ type EducompRelationsDto struct {
 	ChildCompId uint64 `json:"child_comp_id"`
 }
 
-func (d EducompRelationsDto) DomainToDto(relation domain.Educomp_relations) EducompRelationsDto {
+func (d EducompRelationsDto) DomainToDto(relation domain.EducompRelations) EducompRelationsDto {
 	return EducompRelationsDto{
 		EduprogId:   relation.EduprogId,
 		BaseCompId:  relation.BaseCompId,
@@ -16,7 +16,7 @@ func (d EducompRelationsDto) DomainToDto(relation domain.Educomp_relations) Educ
 	}
 }
 
-func (d EducompRelationsDto) DomainToDtoCollection(relation []domain.Educomp_relations) []EducompRelationsDto {
+func (d EducompRelationsDto) DomainToDtoCollection(relation []domain.EducompRelations) []EducompRelationsDto {
 	result := make([]EducompRelationsDto, len(relation))
 
 	for i := range relation {

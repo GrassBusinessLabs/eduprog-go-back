@@ -1,7 +1,6 @@
 package eduprog
 
 import (
-	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -28,7 +27,7 @@ func (c CompetenciesMatrixController) CreateRelation() http.HandlerFunc {
 		relation, err := requests.Bind(r, requests.CreateCompetenciesMatrixRelationRequest{}, domain.CompetenciesMatrix{})
 		if err != nil {
 			log.Printf("CompetenciesMatrixController: %s", err)
-			controllers.BadRequest(w, errors.New("invalid request body"))
+			controllers.BadRequest(w, err)
 			return
 		}
 

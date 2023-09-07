@@ -24,7 +24,6 @@ func NewDisciplineController(ds app.DisciplineService) DisciplineController {
 
 func (c DisciplineController) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		discipline, err := requests.Bind(r, requests.CreateDisciplineRequest{}, domain.Discipline{})
 		if err != nil {
 			log.Printf("DisciplineController: %s", err)
@@ -88,17 +87,7 @@ func (c DisciplineController) AddRow() http.HandlerFunc {
 			return
 		}
 
-		discipline, err := c.disciplineService.FindById(id)
-		if err != nil {
-			log.Printf("DisciplineController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		req := discipline
-		req.Rows = req.Rows + 1
-
-		discipline, err = c.disciplineService.Update(discipline, req)
+		discipline, err := c.disciplineService.AddRow(id)
 		if err != nil {
 			log.Printf("DisciplineController: %s", err)
 			controllers.InternalServerError(w, err)

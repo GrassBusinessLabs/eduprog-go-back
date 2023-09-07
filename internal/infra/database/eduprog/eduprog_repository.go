@@ -36,7 +36,7 @@ type eduprog struct {
 
 type EduprogRepository interface {
 	Save(eduprog domain.Eduprog) (domain.Eduprog, error)
-	Update(eduprog domain.Eduprog, id uint64) (domain.Eduprog, error)
+	Update(eduprog domain.Eduprog) (domain.Eduprog, error)
 	ShowList() (domain.Eduprogs, error)
 	FindById(id uint64) (domain.Eduprog, error)
 	GetOPPLevelsList() ([]domain.OPPLevelStruct, error)
@@ -68,10 +68,10 @@ func (r eduprogRepository) Save(eduprog domain.Eduprog) (domain.Eduprog, error) 
 	return r.mapModelToDomain(e), nil
 }
 
-func (r eduprogRepository) Update(eduprog domain.Eduprog, id uint64) (domain.Eduprog, error) {
+func (r eduprogRepository) Update(eduprog domain.Eduprog) (domain.Eduprog, error) {
 	e := r.mapDomainToModel(eduprog)
 	e.UpdatedDate = time.Now()
-	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	err := r.coll.Find(db.Cond{"id": eduprog.Id}).Update(&e)
 	if err != nil {
 		return domain.Eduprog{}, err
 	}

@@ -25,6 +25,7 @@ type EduprogcompService interface {
 	ReplaceVBBlock(firstCompId uint64, putAfter uint64) (domain.Components, error)
 	ReplaceVB(eduprogcompId, blockNum, putAfter uint64) (domain.Components, error)
 	GetCreditsInfo(eduprog domain.Eduprog) (resources.CreditsDto, error)
+	SetEduprogService(eduprogService *EduprogService)
 }
 
 type eduprogcompService struct {
@@ -33,13 +34,19 @@ type eduprogcompService struct {
 }
 
 func NewEduprogcompService(er eduprog.EduprogcompRepository, es EduprogService) EduprogcompService {
-	return eduprogcompService{
+	return &eduprogcompService{
 		eduprogcompRepo: er,
 		eduprogService:  es,
 	}
 }
 
-func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
+func (s *eduprogcompService) SetEduprogService(eduprogService *EduprogService) {
+	if eduprogService != nil {
+		s.eduprogService = *eduprogService
+	}
+}
+
+func (s *eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprogcomp, error) {
 	//exists, err := s.eduprogcompRepo.CheckName(eduprogcomp)
 	//if err != nil {
 	//	log.Printf("EduprogcompService: %s", err)
@@ -50,7 +57,7 @@ func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprog
 	//	return domain.Eduprogcomp{}, fmt.Errorf("eduprogcomp with name '%s' already exists in VB block/OK list", eduprogcomp.Name)
 	//}
 
-	eduprogById, err := s.eduprogService.FindById(eduprogcomp.EduprogId)
+	eduprogById, _, err := s.eduprogService.FindById(eduprogcomp.EduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
 		return domain.Eduprogcomp{}, err
@@ -130,7 +137,7 @@ func (s eduprogcompService) Save(eduprogcomp domain.Eduprogcomp) (domain.Eduprog
 	return e, err
 }
 
-func (s eduprogcompService) Update(ref, req domain.Eduprogcomp) (domain.Eduprogcomp, error) {
+func (s *eduprogcompService) Update(ref, req domain.Eduprogcomp) (domain.Eduprogcomp, error) {
 	if req.Name != "" && req.Name != ref.Name {
 		exists, err := s.eduprogcompRepo.CheckName(req)
 		if err != nil {
@@ -143,7 +150,7 @@ func (s eduprogcompService) Update(ref, req domain.Eduprogcomp) (domain.Eduprogc
 		ref.Name = req.Name
 	}
 	if req.Credits != 0 {
-		eduprogById, err := s.eduprogService.FindById(req.EduprogId)
+		eduprogById, _, err := s.eduprogService.FindById(req.EduprogId)
 		if err != nil {
 			log.Printf("EduprogcompService: %s", err)
 			return domain.Eduprogcomp{}, err
@@ -202,7 +209,7 @@ func (s eduprogcompService) Update(ref, req domain.Eduprogcomp) (domain.Eduprogc
 	return e, err
 }
 
-func (s eduprogcompService) GetCreditsInfo(eduprog domain.Eduprog) (resources.CreditsDto, error) {
+func (s *eduprogcompService) GetCreditsInfo(eduprog domain.Eduprog) (resources.CreditsDto, error) {
 	var creditsDto resources.CreditsDto
 
 	comps, err := s.SortComponentsByMnS(eduprog.Id)
@@ -249,7 +256,7 @@ func (s eduprogcompService) GetCreditsInfo(eduprog domain.Eduprog) (resources.Cr
 	return creditsDto, nil
 }
 
-func (s eduprogcompService) codesRedefine(eduprogId uint64) error {
+func (s *eduprogcompService) codesRedefine(eduprogId uint64) error {
 	eduprogcomps, err := s.SortComponentsByMnS(eduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -280,7 +287,7 @@ func (s eduprogcompService) codesRedefine(eduprogId uint64) error {
 	return nil
 }
 
-func (s eduprogcompService) FindById(id uint64) (domain.Eduprogcomp, error) {
+func (s *eduprogcompService) FindById(id uint64) (domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.FindById(id)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -289,7 +296,7 @@ func (s eduprogcompService) FindById(id uint64) (domain.Eduprogcomp, error) {
 	return e, nil
 }
 
-func (s eduprogcompService) FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error) {
+func (s *eduprogcompService) FindByBlockNum(id uint64, blockNum string) ([]domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.FindByBlockNum(id, blockNum)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -298,7 +305,7 @@ func (s eduprogcompService) FindByBlockNum(id uint64, blockNum string) ([]domain
 	return e, nil
 }
 
-func (s eduprogcompService) SortComponentsByMnS(eduprogId uint64) (domain.Components, error) {
+func (s *eduprogcompService) SortComponentsByMnS(eduprogId uint64) (domain.Components, error) {
 	e, err := s.eduprogcompRepo.SortComponentsByMnS(eduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -307,7 +314,7 @@ func (s eduprogcompService) SortComponentsByMnS(eduprogId uint64) (domain.Compon
 	return e, nil
 }
 
-func (s eduprogcompService) ShowListByEduprogId(eduprogId uint64) ([]domain.Eduprogcomp, error) {
+func (s *eduprogcompService) ShowListByEduprogId(eduprogId uint64) ([]domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.ShowListByEduprogId(eduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -316,7 +323,7 @@ func (s eduprogcompService) ShowListByEduprogId(eduprogId uint64) ([]domain.Edup
 	return e, nil
 }
 
-func (s eduprogcompService) ShowListByEduprogIdWithType(eduprogId uint64, _type string) ([]domain.Eduprogcomp, error) {
+func (s *eduprogcompService) ShowListByEduprogIdWithType(eduprogId uint64, _type string) ([]domain.Eduprogcomp, error) {
 	e, err := s.eduprogcompRepo.ShowListByEduprogIdWithType(eduprogId, _type)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -325,7 +332,7 @@ func (s eduprogcompService) ShowListByEduprogIdWithType(eduprogId uint64, _type 
 	return e, nil
 }
 
-func (s eduprogcompService) UpdateVBName(eduprogId uint64, eduprogcompReq domain.Eduprogcomp) ([]domain.Eduprogcomp, error) {
+func (s *eduprogcompService) UpdateVBName(eduprogId uint64, eduprogcompReq domain.Eduprogcomp) ([]domain.Eduprogcomp, error) {
 	eduprogcomps, err := s.SortComponentsByMnS(eduprogId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -365,7 +372,7 @@ func (s eduprogcompService) UpdateVBName(eduprogId uint64, eduprogcompReq domain
 	return result, nil
 }
 
-func (s eduprogcompService) Delete(id uint64) error {
+func (s *eduprogcompService) Delete(id uint64) error {
 	eduprogcomp, err := s.FindById(id)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -387,7 +394,7 @@ func (s eduprogcompService) Delete(id uint64) error {
 	return nil
 }
 
-func (s eduprogcompService) ReplaceOK(eduprogcompId, putAfter uint64) (domain.Components, error) {
+func (s *eduprogcompService) ReplaceOK(eduprogcompId, putAfter uint64) (domain.Components, error) {
 	educompById, err := s.FindById(eduprogcompId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -420,7 +427,7 @@ func (s eduprogcompService) ReplaceOK(eduprogcompId, putAfter uint64) (domain.Co
 	return eduprogcomps, nil
 }
 
-func (s eduprogcompService) ReplaceVBBlock(firstCompId uint64, putAfter uint64) (domain.Components, error) {
+func (s *eduprogcompService) ReplaceVBBlock(firstCompId uint64, putAfter uint64) (domain.Components, error) {
 	eduprogcompById, err := s.eduprogcompRepo.FindById(firstCompId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -476,7 +483,7 @@ func (s eduprogcompService) ReplaceVBBlock(firstCompId uint64, putAfter uint64) 
 	return components, nil
 }
 
-func (s eduprogcompService) ReplaceVB(eduprogcompId, blockNum, putAfter uint64) (domain.Components, error) {
+func (s *eduprogcompService) ReplaceVB(eduprogcompId, blockNum, putAfter uint64) (domain.Components, error) {
 	eduprogcompById, err := s.eduprogcompRepo.FindById(eduprogcompId)
 	if err != nil {
 		log.Printf("EduprogcompService: %s", err)
@@ -535,21 +542,21 @@ func (s eduprogcompService) ReplaceVB(eduprogcompId, blockNum, putAfter uint64) 
 	return components, nil
 }
 
-func (s eduprogcompService) moveEduprogcomp(slice []domain.Eduprogcomp, fromIndex, toIndex int) []domain.Eduprogcomp {
+func (s *eduprogcompService) moveEduprogcomp(slice []domain.Eduprogcomp, fromIndex, toIndex int) []domain.Eduprogcomp {
 	element := slice[fromIndex]
 	slice = append(slice[:fromIndex], slice[fromIndex+1:]...)
 	slice = append(slice[:toIndex], append([]domain.Eduprogcomp{element}, slice[toIndex:]...)...)
 	return slice
 }
 
-func (s eduprogcompService) moveVBBlock(slice []domain.BlockInfo, fromIndex, toIndex int) []domain.BlockInfo {
+func (s *eduprogcompService) moveVBBlock(slice []domain.BlockInfo, fromIndex, toIndex int) []domain.BlockInfo {
 	element := slice[fromIndex]
 	slice = append(slice[:fromIndex], slice[fromIndex+1:]...)
 	slice = append(slice[:toIndex], append([]domain.BlockInfo{element}, slice[toIndex:]...)...)
 	return slice
 }
 
-func (s eduprogcompService) uniqueBlocks(blocks []domain.BlockInfo) []domain.BlockInfo {
+func (s *eduprogcompService) uniqueBlocks(blocks []domain.BlockInfo) []domain.BlockInfo {
 	var unique []domain.BlockInfo
 
 loop:
@@ -566,7 +573,7 @@ loop:
 	return unique
 }
 
-func (s eduprogcompService) sortBlocks(blocks []domain.BlockInfo) {
+func (s *eduprogcompService) sortBlocks(blocks []domain.BlockInfo) {
 	sort.Slice(blocks, func(i, j int) bool {
 		blockNumI, errI := strconv.Atoi(blocks[i].BlockNum)
 		blockNumJ, errJ := strconv.Atoi(blocks[j].BlockNum)

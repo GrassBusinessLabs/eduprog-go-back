@@ -26,7 +26,7 @@ type competencies_base struct {
 
 type CompetenciesBaseRepository interface {
 	CreateCompetency(competency domain.CompetenciesBase) (domain.CompetenciesBase, error)
-	UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error)
+	UpdateCompetency(competency domain.CompetenciesBase) (domain.CompetenciesBase, error)
 	ShowAllCompetencies() ([]domain.CompetenciesBase, error)
 	ShowCompetenciesByType(ttype string, specialty string) ([]domain.CompetenciesBase, error)
 	ShowCompetenciesByEduprogData(ttype string, specialty string, edLevel string) ([]domain.CompetenciesBase, error)
@@ -65,7 +65,7 @@ func (r competenciesBaseRepository) CreateCompetency(competency domain.Competenc
 	return r.mapModelToDomain(cb), nil
 }
 
-func (r competenciesBaseRepository) UpdateCompetency(competency domain.CompetenciesBase, id uint64) (domain.CompetenciesBase, error) {
+func (r competenciesBaseRepository) UpdateCompetency(competency domain.CompetenciesBase) (domain.CompetenciesBase, error) {
 	e := r.mapDomainToModel(competency)
 
 	if competency.EducationLevel == string(ENTRY) {
@@ -80,7 +80,7 @@ func (r competenciesBaseRepository) UpdateCompetency(competency domain.Competenc
 		return domain.CompetenciesBase{}, fmt.Errorf("incorrect education level insert. Use defined key word as 'ENTRY', 'FIRST', 'SECOND', 'THIRD'")
 	}
 
-	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	err := r.coll.Find(db.Cond{"id": competency.Id}).Update(&e)
 	if err != nil {
 		return domain.CompetenciesBase{}, err
 	}

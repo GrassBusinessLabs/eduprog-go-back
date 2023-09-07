@@ -18,7 +18,7 @@ type eduprogcompetencies struct {
 
 type EduprogcompetenciesRepository interface {
 	AddCompetencyToEduprog(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error)
-	UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error)
+	UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error)
 	ShowCompetenciesByEduprogId(eduprogId uint64) ([]domain.Eduprogcompetencies, error)
 	ShowCompetenciesByType(eduprogId uint64, ttype string) ([]domain.Eduprogcompetencies, error)
 	FindById(competencyId uint64) (domain.Eduprogcompetencies, error)
@@ -46,10 +46,10 @@ func (r eduprogcompetenciesRepository) AddCompetencyToEduprog(eduprogcompetency 
 	return r.mapModelToDomain(ec), nil
 }
 
-func (r eduprogcompetenciesRepository) UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies, id uint64) (domain.Eduprogcompetencies, error) {
+func (r eduprogcompetenciesRepository) UpdateCompetency(eduprogcompetency domain.Eduprogcompetencies) (domain.Eduprogcompetencies, error) {
 	e := r.mapDomainToModel(eduprogcompetency)
 
-	err := r.coll.Find(db.Cond{"id": id}).Update(&e)
+	err := r.coll.Find(db.Cond{"id": eduprogcompetency.Id}).Update(&e)
 	if err != nil {
 		return domain.Eduprogcompetencies{}, err
 	}

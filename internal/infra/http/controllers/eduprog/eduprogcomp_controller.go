@@ -15,15 +15,11 @@ import (
 
 type EduprogcompController struct {
 	eduprogcompService app.EduprogcompService
-	eduprogService     app.EduprogService
-	eduprogController  EduprogController
 }
 
-func NewEduprogcompController(es app.EduprogcompService, eps app.EduprogService, edc EduprogController) EduprogcompController {
+func NewEduprogcompController(es app.EduprogcompService) EduprogcompController {
 	return EduprogcompController{
 		eduprogcompService: es,
-		eduprogService:     eps,
-		eduprogController:  edc,
 	}
 }
 

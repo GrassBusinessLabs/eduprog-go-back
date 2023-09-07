@@ -15,15 +15,11 @@ import (
 
 type EduprogcompetenciesController struct {
 	eduprogcompetenciesService app.EduprogcompetenciesService
-	competenciesBaseService    app.CompetenciesBaseService
-	eduprogService             app.EduprogService
 }
 
-func NewEduprogcompetenciesController(ecc app.EduprogcompetenciesService, cbs app.CompetenciesBaseService, es app.EduprogService) EduprogcompetenciesController {
+func NewEduprogcompetenciesController(ecc app.EduprogcompetenciesService) EduprogcompetenciesController {
 	return EduprogcompetenciesController{
 		eduprogcompetenciesService: ecc,
-		competenciesBaseService:    cbs,
-		eduprogService:             es,
 	}
 }
 
@@ -35,41 +31,6 @@ func (c EduprogcompetenciesController) AddCompetencyToEduprog() http.HandlerFunc
 			controllers.BadRequest(w, err)
 			return
 		}
-
-		baseCompetency, err := c.competenciesBaseService.FindById(eduprogcompetency.CompetencyId)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		if eduprogcompetency.Definition == "" {
-			eduprogcompetency.Definition = baseCompetency.Definition
-		}
-
-		eduprogcompetency.Type = baseCompetency.Type
-
-		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(eduprogcompetency.EduprogId, eduprogcompetency.Type)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		var maxCode uint64 = 0
-
-		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].CompetencyId == eduprogcompetency.CompetencyId {
-				log.Printf("EduprogcompetenciesController: %s", err)
-				controllers.InternalServerError(w, errors.New("competency is in this eduprog already"))
-				return
-			}
-			if i == 0 || allEdpcompetencies[i].Code > maxCode {
-				maxCode = allEdpcompetencies[i].Code
-			}
-		}
-
-		eduprogcompetency.Code = maxCode + 1
 
 		eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
 		if err != nil {
@@ -92,27 +53,21 @@ func (c EduprogcompetenciesController) UpdateCompetency() http.HandlerFunc {
 			return
 		}
 
-		eduprogcompetencyID, err := c.eduprogcompetenciesService.FindById(id)
+		req, err := requests.Bind(r, requests.UpdateCompetencyRequest{}, domain.Eduprogcompetencies{})
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcompetency, err := requests.Bind(r, requests.UpdateCompetencyRequest{}, domain.Eduprogcompetencies{})
+		ref, err := c.eduprogcompetenciesService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcompetency.Id = eduprogcompetencyID.Id
-		eduprogcompetency.CompetencyId = eduprogcompetencyID.CompetencyId
-		eduprogcompetency.Type = eduprogcompetencyID.Type
-		eduprogcompetency.Code = eduprogcompetencyID.Code
-		eduprogcompetency.EduprogId = eduprogcompetencyID.EduprogId
-
-		eduprogcompetency, err = c.eduprogcompetenciesService.UpdateCompetency(eduprogcompetency, id)
+		ref, err = c.eduprogcompetenciesService.UpdateCompetency(ref, req)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -120,7 +75,7 @@ func (c EduprogcompetenciesController) UpdateCompetency() http.HandlerFunc {
 		}
 
 		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
-		controllers.Created(w, eduprogcompetenciesDto.DomainToDto(eduprogcompetency))
+		controllers.Created(w, eduprogcompetenciesDto.DomainToDto(ref))
 	}
 }
 
@@ -133,28 +88,7 @@ func (c EduprogcompetenciesController) AddCustomCompetencyToEduprog() http.Handl
 			return
 		}
 
-		eduprogcompetency.CompetencyId = 65
-
-		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(eduprogcompetency.EduprogId, eduprogcompetency.Type)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		var maxCode uint64 = 0
-
-		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].EduprogId == eduprogcompetency.EduprogId {
-				if i == 0 || allEdpcompetencies[i].Code > maxCode {
-					maxCode = allEdpcompetencies[i].Code
-				}
-			}
-		}
-
-		eduprogcompetency.Code = maxCode + 1
-
-		eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
+		eduprogcompetency, err = c.eduprogcompetenciesService.AddCustomCompetecyToEduprog(eduprogcompetency)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -182,56 +116,11 @@ func (c EduprogcompetenciesController) AddAllCompetencies() http.HandlerFunc {
 			return
 		}
 
-		eduprog, err := c.eduprogService.FindById(id)
+		eduprogcompetenciesList, err := c.eduprogcompetenciesService.AddAllCompetencies(id, ttype)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
-		}
-
-		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for i := range eduprogcompetencies {
-			err := c.eduprogcompetenciesService.Delete(eduprogcompetencies[i].Id)
-			if err != nil {
-				log.Printf("EduprogcompetenciesController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		baseCompetencies, err := c.competenciesBaseService.ShowCompetenciesByEduprogData(ttype, eduprog.SpecialtyCode, eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		var eduprogcompetenciesList []domain.Eduprogcompetencies
-
-		for i := range baseCompetencies {
-			var eduprogcompetency domain.Eduprogcompetencies
-
-			eduprogcompetency.CompetencyId = baseCompetencies[i].Id
-			eduprogcompetency.EduprogId = id
-			eduprogcompetency.Type = baseCompetencies[i].Type
-			eduprogcompetency.Code = baseCompetencies[i].Code
-			eduprogcompetency.Definition = baseCompetencies[i].Definition
-
-			eduprogcompetency, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
-			if err != nil {
-				log.Printf("EduprogcompetenciesController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-			//competencyId,err = c.eduprogcompetenciesService.FindById(eduprogcompetency.Id)
-
-			eduprogcompetenciesList = append(eduprogcompetenciesList, eduprogcompetency)
 		}
 
 		var eduprogcompetenciesDto resources.EduprogcompetenciesDto
@@ -251,26 +140,11 @@ func (c EduprogcompetenciesController) DeleteAllCompetencies() http.HandlerFunc 
 
 		ttype := r.URL.Query().Get("type")
 
-		if ttype != "ZK" && ttype != "FK" && ttype != "PR" {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.BadRequest(w, errors.New("only ZK, FK or PR"))
-			return
-		}
-
-		eduprogcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(id, ttype)
+		err = c.eduprogcompetenciesService.DeleteAllCompetencies(id, ttype)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
-		}
-
-		for i := range eduprogcompetencies {
-			err := c.eduprogcompetenciesService.Delete(eduprogcompetencies[i].Id)
-			if err != nil {
-				log.Printf("EduprogcompetenciesController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
 		}
 
 		controllers.Ok(w)
@@ -356,38 +230,11 @@ func (c EduprogcompetenciesController) Delete() http.HandlerFunc {
 			return
 		}
 
-		competency, err := c.eduprogcompetenciesService.FindById(id)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
 		err = c.eduprogcompetenciesService.Delete(id)
 		if err != nil {
 			log.Printf("EduprogcompetenciesController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
-		}
-
-		allEdpcompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByType(competency.EduprogId, competency.Type)
-		if err != nil {
-			log.Printf("EduprogcompetenciesController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for i := range allEdpcompetencies {
-			if allEdpcompetencies[i].Code > competency.Code {
-				allEdpcompetencies[i].Code = allEdpcompetencies[i].Code - 1
-				_, _ = c.eduprogcompetenciesService.UpdateCompetency(allEdpcompetencies[i], allEdpcompetencies[i].Id)
-				if err != nil {
-					log.Printf("EduprogcompetenciesController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-			}
-
 		}
 
 		controllers.Ok(w)

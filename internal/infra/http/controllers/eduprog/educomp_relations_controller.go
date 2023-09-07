@@ -15,29 +15,25 @@ import (
 
 type EducompRelationsController struct {
 	educompRelationsService app.EducompRelationsService
-	eduprogschemeService    app.EduprogschemeService
-	eduprogcompService      app.EduprogcompService
 }
 
-func NewEducompRelationsController(ecrs app.EducompRelationsService, epss app.EduprogschemeService, epcs app.EduprogcompService) EducompRelationsController {
+func NewEducompRelationsController(ecrs app.EducompRelationsService) EducompRelationsController {
 	return EducompRelationsController{
 		educompRelationsService: ecrs,
-		eduprogschemeService:    epss,
-		eduprogcompService:      epcs,
 	}
 }
 
 func (c EducompRelationsController) CreateRelation() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		relation, err := requests.Bind(r, requests.CreateEducompRelationRequest{}, domain.Educomp_relations{})
+		relation, err := requests.Bind(r, requests.CreateEducompRelationRequest{}, domain.EducompRelations{})
 		if err != nil {
 			log.Printf("EducompRelationsController: %s", err)
 			controllers.BadRequest(w, errors.New("invalid request body"))
 			return
 		} else if relation.ChildCompId == relation.BaseCompId {
 			log.Printf("EducompRelationsController: %s", err)
-			controllers.BadRequest(w, errors.New("Base comp cannot be equal to child comp"))
+			controllers.BadRequest(w, errors.New("base comp cannot be equal to child comp"))
 			return
 		}
 
@@ -69,15 +65,6 @@ func (c EducompRelationsController) ShowByEduprogId() http.HandlerFunc {
 			return
 		}
 
-		//var result []domain.Educomp_relations
-		//for i := range relations {
-		//	baseComp, _ := c.eduprogcompService.FindByWODeleteDate(relations[i].BaseCompId)
-		//	childComp, _ := c.eduprogcompService.FindByWODeleteDate(relations[i].ChildCompId)
-		//	if baseComp.DeletedDate == nil && childComp.DeletedDate == nil {
-		//		result = append(result, relations[i])
-		//	}
-		//}
-
 		var educompRelationsDto resources.EducompRelationsDto
 		controllers.Success(w, educompRelationsDto.DomainToDtoCollection(relations))
 	}
@@ -85,83 +72,48 @@ func (c EducompRelationsController) ShowByEduprogId() http.HandlerFunc {
 
 func (c EducompRelationsController) ShowPossibleRelationsForComp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		edId, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
+		eduprogId, err := strconv.ParseUint(chi.URLParam(r, "edId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
+			log.Printf("EducompRelationsController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
-		compId, err := strconv.ParseUint(chi.URLParam(r, "compId"), 10, 64)
+		eduprogcompId, err := strconv.ParseUint(chi.URLParam(r, "compId"), 10, 64)
 		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(edId)
-		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
+			log.Printf("EducompRelationsController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(edId)
+		possibleEduprogcomps, err := c.educompRelationsService.ShowPossibleRelationsForComp(eduprogId, eduprogcompId)
 		if err != nil {
-			log.Printf("EduprogschemeController: %s", err)
-			controllers.BadRequest(w, err)
+			log.Printf("EducompRelationsController: %s", err)
+			controllers.InternalServerError(w, err)
 			return
 		}
-
-		var result []domain.Eduprogcomp
-		var maxCompSemester uint64 = 0
-		for i := range eduprogscheme {
-			if eduprogscheme[i].EduprogcompId == compId {
-				if maxCompSemester < eduprogscheme[i].SemesterNum {
-					maxCompSemester = eduprogscheme[i].SemesterNum
-				}
-			}
-		}
-
-		for i := range eduprogscheme {
-			if eduprogscheme[i].EduprogcompId == compId {
-
-				for i2 := range eduprogscheme {
-					if eduprogscheme[i2].SemesterNum > maxCompSemester {
-						for i3 := range eduprogcomps {
-							if eduprogcomps[i3].Id == eduprogscheme[i2].EduprogcompId {
-								result = append(result, eduprogcomps[i3])
-							}
-						}
-					}
-				}
-			}
-		}
-
-		uniqes := unique(result)
 
 		var eduprogcompDto resources.EduprogcompDto
-		controllers.Success(w, eduprogcompDto.DomainToDtoCollection(uniqes))
+		controllers.Success(w, eduprogcompDto.DomainToDtoCollection(possibleEduprogcomps))
 	}
 }
 
 func (c EducompRelationsController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		base_id, err := strconv.ParseUint(chi.URLParam(r, "baseId"), 10, 64)
+		baseCompId, err := strconv.ParseUint(chi.URLParam(r, "baseId"), 10, 64)
 		if err != nil {
 			log.Printf("EducompRelationsController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
-		child_id, err := strconv.ParseUint(chi.URLParam(r, "childId"), 10, 64)
+		childCompId, err := strconv.ParseUint(chi.URLParam(r, "childId"), 10, 64)
 		if err != nil {
 			log.Printf("EducompRelationsController: %s", err)
-			controllers.InternalServerError(w, err)
+			controllers.BadRequest(w, err)
 			return
 		}
 
-		err = c.educompRelationsService.Delete(base_id, child_id)
+		err = c.educompRelationsService.Delete(baseCompId, childCompId)
 		if err != nil {
 			log.Printf("EducompRelationsController: %s", err)
 			controllers.InternalServerError(w, err)

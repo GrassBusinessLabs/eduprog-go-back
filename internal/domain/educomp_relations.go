@@ -1,6 +1,6 @@
 package domain
 
-type Educomp_relations struct {
+type EducompRelations struct {
 	EduprogId   uint64
 	BaseCompId  uint64
 	ChildCompId uint64

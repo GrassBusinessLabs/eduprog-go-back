@@ -1,7 +1,6 @@
 package eduprog
 
 import (
-	"errors"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/app"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/domain"
 	"github.com/GrassBusinessLabs/eduprog-go-back/internal/infra/http/controllers"
@@ -10,33 +9,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
-	"sort"
 	"strconv"
 )
 
 type EduprogController struct {
-	eduprogService             app.EduprogService
-	eduprogcompService         app.EduprogcompService
-	eduprogcompetenciesService app.EduprogcompetenciesService
-	competenciesMatrixService  app.CompetenciesMatrixService
-	resultsMatrixService       app.ResultsMatrixService
-	specialtiesService         app.SpecialtiesService
-	educompRelationsService    app.EducompRelationsService
-	disciplineService          app.DisciplineService
-	eduprogschemeService       app.EduprogschemeService
+	eduprogService app.EduprogService
 }
 
-func NewEduprogController(es app.EduprogService, ecs app.EduprogcompService, epcs app.EduprogcompetenciesService, cms app.CompetenciesMatrixService, rms app.ResultsMatrixService, ss app.SpecialtiesService, errs app.EducompRelationsService, ds app.DisciplineService, edss app.EduprogschemeService) EduprogController {
+func NewEduprogController(es app.EduprogService) EduprogController {
 	return EduprogController{
-		eduprogService:             es,
-		eduprogcompService:         ecs,
-		eduprogcompetenciesService: epcs,
-		competenciesMatrixService:  cms,
-		resultsMatrixService:       rms,
-		specialtiesService:         ss,
-		educompRelationsService:    errs,
-		disciplineService:          ds,
-		eduprogschemeService:       edss,
+		eduprogService: es,
 	}
 }
 
@@ -73,48 +55,21 @@ func (c EduprogController) Update() http.HandlerFunc {
 			return
 		}
 
-		eduprog, err := requests.Bind(r, requests.UpdateEduprogRequest{}, domain.Eduprog{})
+		req, err := requests.Bind(r, requests.UpdateEduprogRequest{}, domain.Eduprog{})
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		u := r.Context().Value(controllers.UserKey).(domain.User)
-		eduprog.UserId = u.Id
-
-		levelData, err := c.eduprogService.GetOPPLevelData(eduprog.EducationLevel)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, errors.New("eduprog level error: no such level in enumeration, can use only `Початковий рівень (короткий цикл)`, `Перший (бакалаврський) рівень`, `Другий (магістерський) рівень`, `Третій (освітньо-науковий/освітньо-творчий) рівень`; use method LevelsList"))
-			return
-		}
-		eduprog.EducationLevel = levelData.Level
-		eduprog.Stage = levelData.Stage
-
-		allSpecialties, err := c.specialtiesService.ShowAllSpecialties()
+		ref, _, err := c.eduprogService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
 		}
-		check := false
-		for i := range allSpecialties {
-			if allSpecialties[i].Code == eduprog.SpecialtyCode {
-				check = true
-				eduprog.Speciality = allSpecialties[i].Name
-				eduprog.KFCode = allSpecialties[i].KFCode
-				eduprog.KnowledgeField = allSpecialties[i].KnowledgeField
-			}
-		}
-		if !check {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, errors.New("there is no such specialty in enum, only values from `ShowAllSpecialties` can be used"))
-			return
-		}
 
-		eduprog.Id = id
-		eduprog, err = c.eduprogService.Update(eduprog, id)
+		ref, err = c.eduprogService.Update(ref, req)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -122,7 +77,7 @@ func (c EduprogController) Update() http.HandlerFunc {
 		}
 
 		var eduprogDto resources.EduprogDto
-		controllers.Success(w, eduprogDto.DomainToDto(eduprog))
+		controllers.Success(w, eduprogDto.DomainToDto(ref))
 	}
 }
 
@@ -163,37 +118,18 @@ func (c EduprogController) FindById() http.HandlerFunc {
 			return
 		}
 
-		eduprog, err := c.eduprogService.FindById(id)
+		eduprog, comps, err := c.eduprogService.FindById(id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.BadRequest(w, err)
 			return
 		}
 
-		comps, err := c.eduprogcompService.SortComponentsByMnS(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		comps.Mandatory = sortByCode(comps.Mandatory)
+		comps.Mandatory = c.eduprogService.SortByCode(comps.Mandatory)
 
 		var eduprogDto resources.EduprogDto
 		controllers.Success(w, eduprogDto.DomainToDtoWithComps(eduprog, comps, comps.Selective))
 	}
-}
-
-func sortByCode(eduprogcomps []domain.Eduprogcomp) []domain.Eduprogcomp {
-	sort.Slice(eduprogcomps, func(i, j int) bool {
-		codeI, errI := strconv.ParseUint(eduprogcomps[i].Code, 10, 64)
-		codeJ, errJ := strconv.ParseUint(eduprogcomps[j].Code, 10, 64)
-		if errI != nil || errJ != nil {
-			return eduprogcomps[i].Code < eduprogcomps[j].Code
-		}
-		return codeI < codeJ
-	})
-	return eduprogcomps
 }
 
 func (c EduprogController) Delete() http.HandlerFunc {
@@ -224,14 +160,7 @@ func (c EduprogController) CreditsInfo() http.HandlerFunc {
 			return
 		}
 
-		eduprog, err := c.eduprogService.FindById(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.BadRequest(w, err)
-			return
-		}
-
-		creditsDto, err := c.eduprogcompService.GetCreditsInfo(eduprog)
+		creditsDto, err := c.eduprogService.GetCreditsInfo(id)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
@@ -258,263 +187,13 @@ func (c EduprogController) CreateDuplicateOf() http.HandlerFunc {
 			return
 		}
 
-		eduprog, err := c.eduprogService.FindById(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
 		u := r.Context().Value(controllers.UserKey).(domain.User)
-		eduprog.ChildOf = eduprog.Id
-		eduprog.Name = eduprogAdditionalData.Name
-		eduprog.ApprovalYear = eduprogAdditionalData.ApprovalYear
-		eduprog.UserId = u.Id
-		eduprog, err = c.eduprogService.Save(eduprog, u.Id)
+
+		eduprog, err := c.eduprogService.CreateDuplicateOf(id, u.Id, eduprogAdditionalData.Name, eduprogAdditionalData.ApprovalYear)
 		if err != nil {
 			log.Printf("EduprogController: %s", err)
 			controllers.InternalServerError(w, err)
 			return
-		}
-
-		eduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, eduprogcomp := range eduprogcomps {
-			eduprogcomp.EduprogId = eduprog.Id
-
-			_, err = c.eduprogcompService.Save(eduprogcomp)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		eduprogcompetenices, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, eduprogcompetency := range eduprogcompetenices {
-			eduprogcompetency.EduprogId = eduprog.Id
-			_, err = c.eduprogcompetenciesService.AddCompetencyToEduprog(eduprogcompetency)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		disciplines, err := c.disciplineService.ShowDisciplinesByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, discipline := range disciplines {
-			discipline.EduprogId = eduprog.Id
-			_, err = c.disciplineService.Save(discipline)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		eduprogscheme, err := c.eduprogschemeService.ShowSchemeByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		copiedDisciplines, err := c.disciplineService.ShowDisciplinesByEduprogId(eduprog.Id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		copiedEduprogcomps, err := c.eduprogcompService.ShowListByEduprogId(eduprog.Id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, schemeElement := range eduprogscheme {
-			schemeElement.EduprogId = eduprog.Id
-
-			for _, copiedDiscipline := range copiedDisciplines {
-				schemeDiscipline, err := c.disciplineService.FindById(schemeElement.DisciplineId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if copiedDiscipline.Name == schemeDiscipline.Name {
-					schemeElement.DisciplineId = copiedDiscipline.Id
-				}
-			}
-
-			for _, copiedEduprogcomp := range copiedEduprogcomps {
-				schemeComp, err := c.eduprogcompService.FindById(schemeElement.EduprogcompId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if copiedEduprogcomp.Name == schemeComp.Name {
-					schemeElement.EduprogcompId = copiedEduprogcomp.Id
-				}
-			}
-
-			_, err = c.eduprogschemeService.SetComponentToEdprogscheme(schemeElement)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		competenciesMatrix, err := c.competenciesMatrixService.ShowByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		copiedCompetencies, err := c.eduprogcompetenciesService.ShowCompetenciesByEduprogId(eduprog.Id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, matrix := range competenciesMatrix {
-			matrix.EduprogId = eduprog.Id
-
-			for _, eduprogcomp := range copiedEduprogcomps {
-				matrixComp, err := c.eduprogcompService.FindById(matrix.ComponentId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if matrixComp.Name == eduprogcomp.Name {
-					matrix.ComponentId = eduprogcomp.Id
-				}
-			}
-
-			for _, copiedCompetency := range copiedCompetencies {
-				matrixCompetency, err := c.eduprogcompetenciesService.FindById(matrix.CompetencyId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if matrixCompetency.CompetencyId == copiedCompetency.CompetencyId {
-					matrix.CompetencyId = copiedCompetency.Id
-				}
-			}
-
-			_, err = c.competenciesMatrixService.CreateRelation(matrix)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		resultsMatrix, err := c.resultsMatrixService.ShowByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, matrix := range resultsMatrix {
-			matrix.EduprogId = eduprog.Id
-
-			for _, eduprogcomp := range copiedEduprogcomps {
-				matrixComp, err := c.eduprogcompService.FindById(matrix.ComponentId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if matrixComp.Name == eduprogcomp.Name {
-					matrix.ComponentId = eduprogcomp.Id
-				}
-			}
-
-			for _, copiedCompetency := range copiedCompetencies {
-				matrixCompetency, err := c.eduprogcompetenciesService.FindById(matrix.EduprogresultId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if matrixCompetency.CompetencyId == copiedCompetency.CompetencyId {
-					matrix.EduprogresultId = copiedCompetency.Id
-				}
-			}
-
-			_, err = c.resultsMatrixService.CreateRelation(matrix)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
-		}
-
-		educompRelations, err := c.educompRelationsService.ShowByEduprogId(id)
-		if err != nil {
-			log.Printf("EduprogController: %s", err)
-			controllers.InternalServerError(w, err)
-			return
-		}
-
-		for _, relation := range educompRelations {
-			relation.EduprogId = eduprog.Id
-
-			for _, eduprogcomp := range copiedEduprogcomps {
-				baseComp, err := c.eduprogcompService.FindById(relation.BaseCompId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if baseComp.Name == eduprogcomp.Name {
-					relation.BaseCompId = eduprogcomp.Id
-				}
-			}
-
-			for _, eduprogcomp := range copiedEduprogcomps {
-				childComp, err := c.eduprogcompService.FindById(relation.ChildCompId)
-				if err != nil {
-					log.Printf("EduprogController: %s", err)
-					controllers.InternalServerError(w, err)
-					return
-				}
-				if childComp.Name == eduprogcomp.Name {
-					relation.ChildCompId = eduprogcomp.Id
-				}
-			}
-
-			_, err = c.educompRelationsService.CreateRelation(relation)
-			if err != nil {
-				log.Printf("EduprogController: %s", err)
-				controllers.InternalServerError(w, err)
-				return
-			}
 		}
 
 		var eduprogDto resources.EduprogDto

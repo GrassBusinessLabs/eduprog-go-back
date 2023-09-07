@@ -14,8 +14,8 @@ type educomp_relations struct {
 }
 
 type EducompRelationsRepository interface {
-	CreateRelation(relation domain.Educomp_relations) (domain.Educomp_relations, error)
-	ShowByEduprogId(eduprog_id uint64) ([]domain.Educomp_relations, error)
+	CreateRelation(relation domain.EducompRelations) (domain.EducompRelations, error)
+	ShowByEduprogId(eduprog_id uint64) ([]domain.EducompRelations, error)
 	Delete(base_comp_id uint64, child_comp_id uint64) error
 }
 
@@ -29,21 +29,21 @@ func NewEducompRelationsRepository(dbSession db.Session) EducompRelationsReposit
 	}
 }
 
-func (r educompRelationsRepository) CreateRelation(relation domain.Educomp_relations) (domain.Educomp_relations, error) {
+func (r educompRelationsRepository) CreateRelation(relation domain.EducompRelations) (domain.EducompRelations, error) {
 	er := r.mapDomainToModel(relation)
 	err := r.coll.InsertReturning(&er)
 	if err != nil {
-		return domain.Educomp_relations{}, err
+		return domain.EducompRelations{}, err
 	}
 
 	return r.mapModelToDomain(er), nil
 }
 
-func (r educompRelationsRepository) ShowByEduprogId(eduprog_id uint64) ([]domain.Educomp_relations, error) {
+func (r educompRelationsRepository) ShowByEduprogId(eduprog_id uint64) ([]domain.EducompRelations, error) {
 	var er []educomp_relations
 	err := r.coll.Find(db.Cond{"eduprog_id": eduprog_id}).All(&er)
 	if err != nil {
-		return []domain.Educomp_relations{}, err
+		return []domain.EducompRelations{}, err
 	}
 	return r.mapModelToDomainCollection(er), nil
 }
@@ -52,7 +52,7 @@ func (r educompRelationsRepository) Delete(base_comp_id uint64, child_comp_id ui
 	return r.coll.Find(db.Cond{"base_comp_id": base_comp_id, "child_comp_id": child_comp_id}).Delete()
 }
 
-func (r educompRelationsRepository) mapDomainToModel(d domain.Educomp_relations) educomp_relations {
+func (r educompRelationsRepository) mapDomainToModel(d domain.EducompRelations) educomp_relations {
 	return educomp_relations{
 		EduprogId:   d.EduprogId,
 		BaseCompId:  d.BaseCompId,
@@ -60,16 +60,16 @@ func (r educompRelationsRepository) mapDomainToModel(d domain.Educomp_relations)
 	}
 }
 
-func (r educompRelationsRepository) mapModelToDomain(m educomp_relations) domain.Educomp_relations {
-	return domain.Educomp_relations{
+func (r educompRelationsRepository) mapModelToDomain(m educomp_relations) domain.EducompRelations {
+	return domain.EducompRelations{
 		EduprogId:   m.EduprogId,
 		BaseCompId:  m.BaseCompId,
 		ChildCompId: m.ChildCompId,
 	}
 }
 
-func (r educompRelationsRepository) mapModelToDomainCollection(m []educomp_relations) []domain.Educomp_relations {
-	result := make([]domain.Educomp_relations, len(m))
+func (r educompRelationsRepository) mapModelToDomainCollection(m []educomp_relations) []domain.EducompRelations {
+	result := make([]domain.EducompRelations, len(m))
 
 	for i := range m {
 		result[i] = r.mapModelToDomain(m[i])

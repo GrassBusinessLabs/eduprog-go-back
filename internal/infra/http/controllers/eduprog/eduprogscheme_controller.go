@@ -20,13 +20,15 @@ type EduprogschemeController struct {
 	eduprogschemeService app.EduprogschemeService
 	eduprogcompService   app.EduprogcompService
 	disciplineService    app.DisciplineService
+	eduprogService       app.EduprogService
 }
 
-func NewEduprogschemeController(ess app.EduprogschemeService, ecs app.EduprogcompService, ds app.DisciplineService) EduprogschemeController {
+func NewEduprogschemeController(ess app.EduprogschemeService, ecs app.EduprogcompService, ds app.DisciplineService, es app.EduprogService) EduprogschemeController {
 	return EduprogschemeController{
 		eduprogschemeService: ess,
 		eduprogcompService:   ecs,
 		disciplineService:    ds,
+		eduprogService:       es,
 	}
 }
 
@@ -876,7 +878,7 @@ func (c EduprogschemeController) ShowFreeComponents() http.HandlerFunc {
 				return result[i].Name > result[j].Name
 			})
 		} else {
-			result = sortByCode(result)
+			result = c.eduprogService.SortByCode(result)
 		}
 
 		var eduprogcompDto resources.EduprogcompDtoWithFreeCredits
@@ -902,16 +904,4 @@ func (c EduprogschemeController) Delete() http.HandlerFunc {
 
 		controllers.Ok(w)
 	}
-}
-
-func unique(compSlice []domain.Eduprogcomp) []domain.Eduprogcomp {
-	keys := make(map[domain.Eduprogcomp]bool)
-	var list []domain.Eduprogcomp
-	for _, entry := range compSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
 }

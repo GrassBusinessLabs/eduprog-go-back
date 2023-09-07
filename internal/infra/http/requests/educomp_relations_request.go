@@ -9,7 +9,7 @@ type CreateEducompRelationRequest struct {
 }
 
 func (r CreateEducompRelationRequest) ToDomainModel() (interface{}, error) {
-	return domain.Educomp_relations{
+	return domain.EducompRelations{
 		EduprogId:   r.EduprogId,
 		BaseCompId:  r.BaseCompId,
 		ChildCompId: r.ChildCompId,

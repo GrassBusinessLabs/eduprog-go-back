@@ -11,6 +11,7 @@ type DisciplineService interface {
 	Update(ref, req domain.Discipline) (domain.Discipline, error)
 	ShowDisciplinesByEduprogId(eduprog_id uint64) ([]domain.Discipline, error)
 	FindById(id uint64) (domain.Discipline, error)
+	AddRow(disciplineId uint64) (domain.Discipline, error)
 	Delete(id uint64) error
 }
 
@@ -60,6 +61,24 @@ func (s disciplineService) FindById(id uint64) (domain.Discipline, error) {
 		return domain.Discipline{}, err
 	}
 	return e, nil
+}
+
+func (s disciplineService) AddRow(disciplineId uint64) (domain.Discipline, error) {
+	discipline, err := s.FindById(disciplineId)
+	if err != nil {
+		log.Printf("DisciplineService: %s", err)
+		return domain.Discipline{}, err
+	}
+
+	req := discipline
+	req.Rows = req.Rows + 1
+
+	discipline, err = s.Update(discipline, req)
+	if err != nil {
+		log.Printf("DisciplineService: %s", err)
+		return domain.Discipline{}, err
+	}
+	return discipline, nil
 }
 
 func (s disciplineService) Delete(id uint64) error {

@@ -47,14 +47,14 @@ func (s eduprogschemeService) UpdateComponentInEduprogscheme(eduprogscheme domai
 	return e, err
 }
 
-func (s eduprogschemeService) ExpandOrShrinkEduprogschemeComponent(eduprogcomp_id uint64, semNum uint64, direction string) ([]domain.Eduprogscheme, error) {
+func (s eduprogschemeService) ExpandOrShrinkEduprogschemeComponent(eduprogcompId uint64, semNum uint64, direction string) ([]domain.Eduprogscheme, error) {
 	if semNum < 1 && semNum > 8 {
 		err := fmt.Errorf("invalid semester num, must be from 1 to 8")
 		log.Printf("EduprogschemeService: %s", err)
 		return []domain.Eduprogscheme{}, err
 	}
 
-	eduprogcomp, err := s.eduprogcompService.FindById(eduprogcomp_id)
+	eduprogcomp, err := s.eduprogcompService.FindById(eduprogcompId)
 	if err != nil {
 		log.Printf("EduprogschemeService: %s", err)
 		return []domain.Eduprogscheme{}, err
@@ -214,8 +214,8 @@ func (s eduprogschemeService) FindById(id uint64) (domain.Eduprogscheme, error) 
 	return e, nil
 }
 
-func (s eduprogschemeService) FindBySemesterNum(semester_num uint16, eduprog_id uint64) ([]domain.Eduprogscheme, error) {
-	e, err := s.eduprogschemeRepo.FindBySemesterNum(semester_num, eduprog_id)
+func (s eduprogschemeService) FindBySemesterNum(semesterNum uint16, eduprogId uint64) ([]domain.Eduprogscheme, error) {
+	e, err := s.eduprogschemeRepo.FindBySemesterNum(semesterNum, eduprogId)
 	if err != nil {
 		log.Printf("EduprogschemeService: %s", err)
 		return []domain.Eduprogscheme{}, err

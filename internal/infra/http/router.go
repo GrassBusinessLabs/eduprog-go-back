@@ -318,7 +318,6 @@ func EducompRelationsRouter(r chi.Router, ecrc eduprog.EducompRelationsControlle
 }
 
 func CompetenciesBaseRouter(r chi.Router, cbc eduprog.CompetenciesBaseController) {
-
 	r.Route("/eduprogs/baseCompetencies", func(apiRouter chi.Router) {
 		apiRouter.Post(
 			"/create",
