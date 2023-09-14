@@ -9,16 +9,16 @@ type EducompRelationsDto struct {
 }
 
 type EducompWithPossibleRelationsDto struct {
-	Id                uint64  `json:"id"`
-	Code              string  `json:"code"`
-	Name              string  `json:"name"`
-	Credits           float64 `json:"credits"`
-	ControlType       string  `json:"controlType"`
-	Type              string  `json:"type"`
-	BlockNum          string  `json:"blockNum"`
-	BlockName         string  `json:"blockName"`
-	EduprogId         uint64  `json:"eduprogId"`
-	PossibleRelations []EduprogcompDto
+	Id                uint64           `json:"id"`
+	Code              string           `json:"code"`
+	Name              string           `json:"name"`
+	Credits           float64          `json:"credits"`
+	ControlType       string           `json:"controlType"`
+	Type              string           `json:"type"`
+	BlockNum          string           `json:"blockNum"`
+	BlockName         string           `json:"blockName"`
+	EduprogId         uint64           `json:"eduprogId"`
+	PossibleRelations []EduprogcompDto `json:"possibleRelations"`
 }
 
 func (d EducompWithPossibleRelationsDto) DomainToDto(relation domain.EducompWithPossibleRelations) EducompWithPossibleRelationsDto {

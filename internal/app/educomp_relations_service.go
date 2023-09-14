@@ -74,7 +74,7 @@ func (s educompRelationsService) ShowPossibleRelations(eduprogId uint64) ([]doma
 		for _, schemecomp := range eduprogscheme {
 			if eduprogcomp.Id == schemecomp.EduprogcompId {
 				for _, schemecomp2 := range eduprogscheme {
-					if schemecomp.SemesterNum < schemecomp2.SemesterNum {
+					if schemecomp2.SemesterNum > schemecomp.SemesterNum {
 						eduprogcompById, err := s.eduprogcompService.FindById(schemecomp2.EduprogcompId)
 						if err != nil {
 							log.Printf("EducompRelationsService: %s", err)
@@ -98,18 +98,12 @@ func (s educompRelationsService) ShowPossibleRelationsForComp(eduprogId, eduprog
 		return []domain.Eduprogcomp{}, err
 	}
 
-	eduprogcomps, err := s.eduprogcompService.ShowListByEduprogId(eduprogcompId)
-	if err != nil {
-		log.Printf("EducompRelationsService: %s", err)
-		return []domain.Eduprogcomp{}, err
-	}
-
-	possibleRelations := make([]domain.Eduprogcomp, len(eduprogcomps))
+	possibleRelations := make([]domain.Eduprogcomp, 10)
 
 	for _, schemecomp := range eduprogscheme {
 		if schemecomp.EduprogcompId == eduprogcompId {
 			for _, schemecomp2 := range eduprogscheme {
-				if schemecomp.SemesterNum < schemecomp2.SemesterNum {
+				if schemecomp2.SemesterNum > schemecomp.SemesterNum {
 					eduprogcompById, err := s.eduprogcompService.FindById(schemecomp2.EduprogcompId)
 					if err != nil {
 						log.Printf("EducompRelationsService: %s", err)
@@ -122,6 +116,8 @@ func (s educompRelationsService) ShowPossibleRelationsForComp(eduprogId, eduprog
 		}
 	}
 
+	possibleRelations = s.unique(possibleRelations)
+
 	return possibleRelations, nil
 }
 
@@ -132,4 +128,16 @@ func (s educompRelationsService) Delete(baseCompId uint64, childCompId uint64) e
 		return err
 	}
 	return nil
+}
+
+func (s educompRelationsService) unique(compSlice []domain.Eduprogcomp) []domain.Eduprogcomp {
+	keys := make(map[domain.Eduprogcomp]bool)
+	var list []domain.Eduprogcomp
+	for _, entry := range compSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
