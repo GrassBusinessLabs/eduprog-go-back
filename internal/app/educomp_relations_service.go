@@ -10,6 +10,7 @@ type EducompRelationsService interface {
 	CreateRelation(relation domain.EducompRelations) (domain.EducompRelations, error)
 	ShowByEduprogId(eduprogId uint64) ([]domain.EducompRelations, error)
 	ShowPossibleRelationsForComp(eduprogId, eduprogcompId uint64) ([]domain.Eduprogcomp, error)
+	ShowPossibleRelations(eduprogId uint64) ([]domain.EducompWithPossibleRelations, error)
 	Delete(baseCompId uint64, childCompId uint64) error
 }
 
@@ -45,6 +46,51 @@ func (s educompRelationsService) ShowByEduprogId(eduprogId uint64) ([]domain.Edu
 	return e, err
 }
 
+func (s educompRelationsService) ShowPossibleRelations(eduprogId uint64) ([]domain.EducompWithPossibleRelations, error) {
+	eduprogscheme, err := s.eduprogschemeService.ShowSchemeByEduprogId(eduprogId)
+	if err != nil {
+		log.Printf("EducompRelationsService: %s", err)
+		return []domain.EducompWithPossibleRelations{}, err
+	}
+
+	eduprogcomps, err := s.eduprogcompService.ShowListByEduprogId(eduprogId)
+	if err != nil {
+		log.Printf("EducompRelationsService: %s", err)
+		return []domain.EducompWithPossibleRelations{}, err
+	}
+
+	educompsWithPossibleRelations := make([]domain.EducompWithPossibleRelations, len(eduprogcomps))
+
+	for i, eduprogcomp := range eduprogcomps {
+		educompsWithPossibleRelations[i].Id = eduprogcomp.Id
+		educompsWithPossibleRelations[i].Name = eduprogcomp.Name
+		educompsWithPossibleRelations[i].Code = eduprogcomp.Code
+		educompsWithPossibleRelations[i].Type = eduprogcomp.Type
+		educompsWithPossibleRelations[i].ControlType = eduprogcomp.ControlType
+		educompsWithPossibleRelations[i].Credits = eduprogcomp.Credits
+		educompsWithPossibleRelations[i].BlockName = eduprogcomp.BlockName
+		educompsWithPossibleRelations[i].BlockNum = eduprogcomp.BlockNum
+		educompsWithPossibleRelations[i].EduprogId = eduprogcomp.EduprogId
+		for _, schemecomp := range eduprogscheme {
+			if eduprogcomp.Id == schemecomp.EduprogcompId {
+				for _, schemecomp2 := range eduprogscheme {
+					if schemecomp.SemesterNum < schemecomp2.SemesterNum {
+						eduprogcompById, err := s.eduprogcompService.FindById(schemecomp2.EduprogcompId)
+						if err != nil {
+							log.Printf("EducompRelationsService: %s", err)
+							return []domain.EducompWithPossibleRelations{}, err
+						}
+
+						educompsWithPossibleRelations[i].PossibleRelations = append(educompsWithPossibleRelations[i].PossibleRelations, eduprogcompById)
+					}
+				}
+			}
+		}
+	}
+
+	return educompsWithPossibleRelations, nil
+}
+
 func (s educompRelationsService) ShowPossibleRelationsForComp(eduprogId, eduprogcompId uint64) ([]domain.Eduprogcomp, error) {
 	eduprogscheme, err := s.eduprogschemeService.ShowSchemeByEduprogId(eduprogId)
 	if err != nil {
@@ -58,34 +104,25 @@ func (s educompRelationsService) ShowPossibleRelationsForComp(eduprogId, eduprog
 		return []domain.Eduprogcomp{}, err
 	}
 
-	var result []domain.Eduprogcomp
-	var maxCompSemester uint64 = 0
-	for i := range eduprogscheme {
-		if eduprogscheme[i].EduprogcompId == eduprogcompId {
-			if maxCompSemester < eduprogscheme[i].SemesterNum {
-				maxCompSemester = eduprogscheme[i].SemesterNum
-			}
-		}
-	}
+	possibleRelations := make([]domain.Eduprogcomp, len(eduprogcomps))
 
-	for i := range eduprogscheme {
-		if eduprogscheme[i].EduprogcompId == eduprogcompId {
-
-			for i2 := range eduprogscheme {
-				if eduprogscheme[i2].SemesterNum > maxCompSemester {
-					for i3 := range eduprogcomps {
-						if eduprogcomps[i3].Id == eduprogscheme[i2].EduprogcompId {
-							result = append(result, eduprogcomps[i3])
-						}
+	for _, schemecomp := range eduprogscheme {
+		if schemecomp.EduprogcompId == eduprogcompId {
+			for _, schemecomp2 := range eduprogscheme {
+				if schemecomp.SemesterNum < schemecomp2.SemesterNum {
+					eduprogcompById, err := s.eduprogcompService.FindById(schemecomp2.EduprogcompId)
+					if err != nil {
+						log.Printf("EducompRelationsService: %s", err)
+						return []domain.Eduprogcomp{}, err
 					}
+
+					possibleRelations = append(possibleRelations, eduprogcompById)
 				}
 			}
 		}
 	}
 
-	uniqes := s.unique(result)
-
-	return uniqes, nil
+	return possibleRelations, nil
 }
 
 func (s educompRelationsService) Delete(baseCompId uint64, childCompId uint64) error {
@@ -95,16 +132,4 @@ func (s educompRelationsService) Delete(baseCompId uint64, childCompId uint64) e
 		return err
 	}
 	return nil
-}
-
-func (s educompRelationsService) unique(compSlice []domain.Eduprogcomp) []domain.Eduprogcomp {
-	keys := make(map[domain.Eduprogcomp]bool)
-	var list []domain.Eduprogcomp
-	for _, entry := range compSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
 }

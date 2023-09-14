@@ -306,6 +306,10 @@ func EducompRelationsRouter(r chi.Router, ecrc eduprog.EducompRelationsControlle
 			ecrc.ShowByEduprogId(),
 		)
 		apiRouter.Get(
+			"/possible-rel/{epId}",
+			ecrc.ShowPossibleRelations(),
+		)
+		apiRouter.Get(
 			"/posRel/{edId}/{compId}",
 			ecrc.ShowPossibleRelationsForComp(),
 		)

@@ -23,6 +23,27 @@ func NewEducompRelationsController(ecrs app.EducompRelationsService) EducompRela
 	}
 }
 
+func (c EducompRelationsController) ShowPossibleRelations() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogId, err := strconv.ParseUint(chi.URLParam(r, "epId"), 10, 64)
+		if err != nil {
+			log.Printf("EducompRelationsController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		educompPossibleRelations, err := c.educompRelationsService.ShowPossibleRelations(eduprogId)
+		if err != nil {
+			log.Printf("EducompRelationsController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var educompWithPossibleRelationsDto resources.EducompWithPossibleRelationsDto
+		controllers.Success(w, educompWithPossibleRelationsDto.DomainToDtoCollection(educompPossibleRelations))
+	}
+}
+
 func (c EducompRelationsController) CreateRelation() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
