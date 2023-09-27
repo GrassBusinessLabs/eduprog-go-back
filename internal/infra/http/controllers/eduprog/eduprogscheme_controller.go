@@ -32,6 +32,50 @@ func NewEduprogschemeController(ess app.EduprogschemeService, ecs app.Eduprogcom
 	}
 }
 
+func (c EduprogschemeController) SplitEduprogschemeComponent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eduprogcompIdStr := r.URL.Query().Get("eduprogcompId")
+		eduprogcompId, err := strconv.ParseUint(eduprogcompIdStr, 10, 64)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, fmt.Errorf("error parsing 'eduprogcompId' parameter"))
+			return
+		}
+
+		semNumStr := r.URL.Query().Get("semNum")
+		semNum, err := strconv.ParseUint(semNumStr, 10, 64)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.BadRequest(w, fmt.Errorf("error parsing 'semNum' parameter"))
+			return
+		}
+
+		eduprogscheme, err := c.eduprogschemeService.SplitEduprogschemeComponent(eduprogcompId, semNum)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcomp, err := c.eduprogcompService.FindById(eduprogscheme[0].EduprogcompId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		eduprogcompsToShow, err := c.eduprogcompService.ShowListByEduprogId(eduprogcomp.EduprogId)
+		if err != nil {
+			log.Printf("EduprogschemeController: %s", err)
+			controllers.InternalServerError(w, err)
+			return
+		}
+
+		var eduprogschemeDto resources.EduprogschemeDto
+		controllers.Success(w, eduprogschemeDto.DomainToDtoCollection(eduprogscheme, eduprogcompsToShow))
+	}
+}
+
 func (c EduprogschemeController) ExpandOrShrinkComponent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eduprogcompIdStr := r.URL.Query().Get("eduprogcompId")

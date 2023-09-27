@@ -10,6 +10,7 @@ import (
 type EduprogschemeService interface {
 	SetComponentToEdprogscheme(eduprogscheme domain.Eduprogscheme) (domain.Eduprogscheme, error)
 	UpdateComponentInEduprogscheme(eduprogscheme domain.Eduprogscheme, id uint64) (domain.Eduprogscheme, error)
+	SplitEduprogschemeComponent(eduprogcompId uint64, semNum uint64) ([]domain.Eduprogscheme, error)
 	ExpandOrShrinkEduprogschemeComponent(eduprogcomp_id uint64, semNum uint64, direction string) ([]domain.Eduprogscheme, error)
 	FindById(id uint64) (domain.Eduprogscheme, error)
 	FindBySemesterNum(semester_num uint16, eduprog_id uint64) ([]domain.Eduprogscheme, error)
@@ -45,6 +46,44 @@ func (s eduprogschemeService) UpdateComponentInEduprogscheme(eduprogscheme domai
 		return domain.Eduprogscheme{}, err
 	}
 	return e, err
+}
+
+func (s eduprogschemeService) SplitEduprogschemeComponent(eduprogcompId uint64, semNum uint64) ([]domain.Eduprogscheme, error) {
+	if semNum < 1 && semNum > 8 {
+		err := fmt.Errorf("invalid semester num, must be from 1 to 8")
+		log.Printf("EduprogschemeService: %s", err)
+		return []domain.Eduprogscheme{}, err
+	}
+
+	eduprogcomp, err := s.eduprogcompService.FindById(eduprogcompId)
+	if err != nil {
+		log.Printf("EduprogschemeService: %s", err)
+		return []domain.Eduprogscheme{}, err
+	}
+
+	eduprogscheme, err := s.ShowSchemeByEduprogId(eduprogcomp.EduprogId)
+	if err != nil {
+		log.Printf("EduprogschemeService: %s", err)
+		return []domain.Eduprogscheme{}, err
+	}
+
+	for _, schemecomp := range eduprogscheme {
+		if schemecomp.EduprogcompId == eduprogcompId && schemecomp.SemesterNum == semNum {
+			err := s.Delete(schemecomp.Id)
+			if err != nil {
+				log.Printf("EduprogschemeService: %s", err)
+				return []domain.Eduprogscheme{}, err
+			}
+		}
+	}
+
+	eduprogschemeToShow, err := s.ShowSchemeByEduprogId(eduprogcomp.EduprogId)
+	if err != nil {
+		log.Printf("EduprogschemeService: %s", err)
+		return []domain.Eduprogscheme{}, err
+	}
+
+	return eduprogschemeToShow, nil
 }
 
 func (s eduprogschemeService) ExpandOrShrinkEduprogschemeComponent(eduprogcompId uint64, semNum uint64, direction string) ([]domain.Eduprogscheme, error) {

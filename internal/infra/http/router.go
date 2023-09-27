@@ -227,6 +227,10 @@ func EduprogschemeRouter(r chi.Router, esc eduprog.EduprogschemeController) {
 			esc.MoveComponentInEduprogscheme(),
 		)
 		apiRouter.Post(
+			"/split",
+			esc.SplitEduprogschemeComponent(),
+		)
+		apiRouter.Post(
 			"/expandOrShrink",
 			esc.ExpandOrShrinkComponent(),
 		)
